@@ -27,6 +27,7 @@
 - 新字体大小为 7,207,444 bytes，SHA-256 为 `FED1647EF627BFA9E246D908CC20555D410C80A2917DB7B9CB5D6EDE253F5236`；旧 portal 字体在提交前移除，不作为最终素材。
 - 用户人物图原始尺寸为 1122×1402、仅带 DPI 信息；重新编码后的 `character-source.png` 为 RGB PNG、`info={}`、SHA-256 `64A4DCE7C8113641D4985EC7749B927E26DFD652137DA85EEF1F21FBAF970E0F`。
 - 当前沙箱 PATH 不含 `node`/`npm`；Codex bundled Node 位于 `.../dependencies/node/bin/node.exe`，bundled pnpm 版本为 11.9.0；`C:/Program Files/nodejs` 未发现系统安装。
+- 用户允许后续按需安装系统级 Node/npm；当前检查点使用 bundled Node 与已恢复的项目依赖即可完成验证，因此未增加电脑级安装或 PATH 改动。
 - bundled Node 为 v24.14.0；临时官方 npm 11.5.2 可在为该进程加入 bundled Node 路径后运行。npm latest 当时要求 Node 24.15.0，故不使用不兼容版本。
 - npm registry 当前版本快照：React 19.2.8、Vite 8.1.5、Vitest 4.1.10、Framer Motion 12.42.2、web-vitals 6.0.0、ESLint 10.8.0。
 - `typescript-eslint@8.65.0` 支持 ESLint 10，但 TypeScript peer 范围为 `<6.1.0`；因此不能采用 registry 最新 TypeScript 7.0.2，需锁定 TypeScript 6.0.x。
@@ -34,7 +35,7 @@
 - Vite 8.1.5、Vitest 4.1.10 与 jsdom 29.1.1 均支持 bundled Node 24.14.0。
 - 当前 typecheck 与 lint 均通过；帧数学与采样器为 2 files / 10 tests passed。
 - 原 lint 错误已通过将测试 fake cancel 改为无参数实现修复；未降低或关闭规则。
-- Git 当前为 `No commits yet on main`，所有项目文件均未跟踪；尚未 push、尚未启用 Pages、尚未运行线上验证。
+- Git 本地 `main` 已创建检查点提交 `9f26f73`；尚未 push、尚未启用 Pages、尚未运行线上验证。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
@@ -88,7 +89,7 @@
 3. 从实施计划 Task 3 开始：先写 observers/environment 的失败测试，再写生产实现。
 4. 完整 typecheck/lint/test/build、浏览器与安全验证前不要部署 Pages 或创建正式版本。
 
-提交准备复核确认：三个规划文件均包含恢复检查点；现有门禁通过，尚未推送或部署。
+本地提交复核确认：三个规划文件均包含恢复检查点；现有门禁通过，检查点提交为 `9f26f73`，尚未推送或部署。
 
 ---
 

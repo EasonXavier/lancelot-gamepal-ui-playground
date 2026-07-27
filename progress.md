@@ -45,7 +45,7 @@
   - `docs/superpowers/plans/2026-07-27-mobile-ui-performance-playground.md`
   - `public/assets/fonts/lsvis-td-chinese.otf`
   - `public/assets/character-source.png`
-  - 工程配置、设计令牌、素材/安全说明、帧性能模块与测试（均未提交）
+  - 工程配置、设计令牌、素材/安全说明、帧性能模块与测试（已创建本地检查点提交 `9f26f73`）
 
 ## Test Results
 
@@ -75,17 +75,18 @@
 | 2026-07-27 11:28 +08:00 | TypeScript 不识别 Vite `UserConfig` 的 `test` 字段 | 1 | 将 `defineConfig` 导入切换为 `vitest/config`，保留同一 Vite 配置 |
 | 2026-07-27 11:31 +08:00 | Frame baseline expected 8ms but received 12ms | 1 | 从低四分位建立稳定样本窗口，再计算中位数；测试转绿 |
 | 2026-07-27 11:34 +08:00 | ESLint `_id` is defined but never used | 1 | 提交前改为无参数 fake cancel；lint 通过且未降低规则 |
+| 2026-07-27 12:28 +08:00 | bundled pnpm 尝试接管 npm 安装的 `node_modules`，随后因沙箱网络限制失败 | 1 | 将 `.ignored` 中的依赖逐项恢复并删除本地 `.pnpm-store`；改用 bundled Node 直接调用项目内 TypeScript、ESLint 与 Vitest，避免联网和包管理器迁移 |
 
 ## Pause Checkpoint: 2026-07-27
 
 - **Reason:** 用户要求先结束当前会话内任务并更新文档，稍后继续。
-- **Repository:** PUBLIC remote exists; local `main` has no commits; all files are untracked.
+- **Repository:** PUBLIC remote exists; local `main` has checkpoint commit `9f26f73`; no push has been performed.
 - **Completed:** 独立仓库创建、视觉规格确认、详细实施计划、依赖锁定与安装、素材清理/登记、设计令牌、帧核心 TDD。
 - **Validated:** typecheck passes; lint passes; 2 frame test files / 10 tests pass; npm audit reported 0 vulnerabilities at install time.
 - **Not yet validated:** full application build, preview, mobile/browser QA, GitHub Actions, Pages.
-- **Not performed:** commit, push, Pages source configuration, deployment, release or tag.
-- **Resume command context:** sandbox has no PATH npm; use bundled Node plus the approved `pnpm dlx npm@11.5.2` wrapper, or a future environment with normal npm.
-- **Checkpoint verification:** `task_plan.md`、`findings.md`、本文件与详细实施计划均已更新；用户随后明确要求创建 Git 提交。
+- **Not performed:** push, Pages source configuration, deployment, release or tag.
+- **Resume command context:** sandbox has no PATH npm; use bundled Node directly with project-local tool entrypoints. The user permits a future system-wide Node/npm installation if needed, but this checkpoint does not require or perform one.
+- **Checkpoint verification:** `task_plan.md`、`findings.md`、本文件与详细实施计划均已更新；本地检查点已提交，后续工作从未完成的 UI 实现继续。
 
 ## 5-Question Reboot Check
 
