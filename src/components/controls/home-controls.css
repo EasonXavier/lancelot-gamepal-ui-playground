@@ -64,6 +64,51 @@
 }
 
 .experimental-placeholder {
+  position: fixed;
+  inset: 0;
+  width: min(82vw, 360px);
+  margin: auto;
+  padding: 24px;
+  border: 1px solid rgb(214 226 221 / 18%);
+  border-radius: 24px;
+  background: rgb(22 31 30 / 78%);
+  box-shadow:
+    0 24px 64px rgb(0 0 0 / 48%),
+    inset 0 1px 0 rgb(255 255 255 / 7%);
+  color: inherit;
+  backdrop-filter: blur(24px) saturate(112%);
+}
+
+.experimental-placeholder[open] {
   display: grid;
   gap: 12px;
+}
+
+.experimental-placeholder:not([open]) {
+  display: none;
+}
+
+.experimental-placeholder::backdrop {
+  background: rgb(2 7 7 / 72%);
+  backdrop-filter: blur(5px);
+}
+
+.experimental-placeholder h2,
+.experimental-placeholder p {
+  margin: 0;
+}
+
+.experimental-placeholder__close {
+  justify-self: end;
+  padding: 0 18px;
+  border: 1px solid rgb(214 226 221 / 20%);
+  border-radius: 999px;
+  background: rgb(221 231 226 / 10%);
+  color: inherit;
+  font: inherit;
+}
+
+.experimental-placeholder__close:focus-visible {
+  outline: 2px solid rgb(238 226 194 / 82%);
+  outline-offset: 3px;
 }

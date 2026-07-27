@@ -1,6 +1,7 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BottomNav } from '../../src/components/navigation/BottomNav';
 import { GameRail } from '../../src/components/navigation/GameRail';
 import {
@@ -9,6 +10,49 @@ import {
 } from '../../src/components/controls/ServiceGrid';
 import { ExperimentalPlaceholder } from '../../src/components/controls/ExperimentalPlaceholder';
 import { App } from '../../src/App';
+
+const originalShowModal = HTMLDialogElement.prototype.showModal;
+const originalClose = HTMLDialogElement.prototype.close;
+
+function installDialogApi() {
+  const showModal = vi.fn(function (this: HTMLDialogElement) {
+    if (this.open) throw new DOMException('Dialog is already open');
+    this.open = true;
+  });
+  const close = vi.fn(function (this: HTMLDialogElement) {
+    this.open = false;
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: showModal,
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value: close,
+  });
+  return { close, showModal };
+}
+
+afterEach(() => {
+  cleanup();
+  if (originalShowModal) {
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value: originalShowModal,
+    });
+  } else {
+    delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).showModal;
+  }
+  if (originalClose) {
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      configurable: true,
+      value: originalClose,
+    });
+  } else {
+    delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>).close;
+  }
+  vi.restoreAllMocks();
+});
 
 describe('home controls', () => {
   it('renders four games and only the selected game logo', () => {
@@ -75,11 +119,45 @@ describe('home controls', () => {
   it('shows and closes the Experimental / Mock dialog', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
+    const { showModal } = installDialogApi();
     render(<ExperimentalPlaceholder service="趣味单" onClose={onClose} />);
     const dialog = screen.getByRole('dialog', { name: '趣味单' });
+
+    expect(dialog).toBeInstanceOf(HTMLDialogElement);
+    expect(showModal).toHaveBeenCalledOnce();
+    expect(dialog).toHaveAttribute('open');
     expect(within(dialog).getByText('Experimental / Mock')).toBeVisible();
-    await user.click(within(dialog).getByRole('button', { name: '关闭' }));
+    const closeButton = within(dialog).getByRole('button', { name: '关闭' });
+    expect(closeButton).toHaveFocus();
+    await user.click(closeButton);
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('closes the modal on cancel without letting the browser close it first', () => {
+    const onClose = vi.fn();
+    installDialogApi();
+    render(<ExperimentalPlaceholder service="趣味单" onClose={onClose} />);
+
+    const dialog = screen.getByRole('dialog', { name: '趣味单' });
+    const cancelEvent = new Event('cancel', { bubbles: false, cancelable: true });
+    dialog.dispatchEvent(cancelEvent);
+
+    expect(cancelEvent.defaultPrevented).toBe(true);
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('supports StrictMode effect replay without reopening an open dialog', () => {
+    const { close, showModal } = installDialogApi();
+
+    render(
+      <StrictMode>
+        <ExperimentalPlaceholder service="趣味单" onClose={vi.fn()} />
+      </StrictMode>,
+    );
+
+    expect(showModal).toHaveBeenCalledTimes(2);
+    expect(close).toHaveBeenCalledOnce();
+    expect(screen.getByRole('dialog', { name: '趣味单' })).toHaveAttribute('open');
   });
 });
 
@@ -99,12 +177,15 @@ describe('HomeScreen', () => {
 
   it('opens the selected service and restores home state when closed', async () => {
     const user = userEvent.setup();
+    installDialogApi();
     render(<App />);
-    await user.click(screen.getByRole('button', { name: '客服接待' }));
+    const opener = screen.getByRole('button', { name: '客服接待' });
+    await user.click(opener);
     expect(screen.getByRole('dialog', { name: '客服接待' })).toBeVisible();
     await user.click(screen.getByRole('button', { name: '关闭' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: '服务入口' })).toBeVisible();
+    expect(opener).toHaveFocus();
   });
 
   it('updates selected game and bottom item without duplicating the page', async () => {

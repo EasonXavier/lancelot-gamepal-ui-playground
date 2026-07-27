@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { ServiceName } from './ServiceGrid';
 import './home-controls.css';
 
@@ -10,18 +11,46 @@ export function ExperimentalPlaceholder({
   service,
   onClose,
 }: ExperimentalPlaceholderProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const activeElement = document.activeElement;
+    const opener = activeElement instanceof HTMLElement ? activeElement : null;
+
+    if (!dialog) return;
+
+    dialog.showModal();
+    closeButtonRef.current?.focus();
+
+    return () => {
+      if (dialog.open) dialog.close();
+      if (opener?.isConnected) opener.focus();
+    };
+  }, []);
+
   return (
-    <div
+    <dialog
       aria-labelledby="experimental-service-title"
       aria-modal="true"
       className="experimental-placeholder"
-      role="dialog"
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      ref={dialogRef}
     >
       <h2 id="experimental-service-title">{service}</h2>
       <p>Experimental / Mock</p>
-      <button className="tap-target" onClick={onClose} type="button">
+      <button
+        className="tap-target experimental-placeholder__close"
+        onClick={onClose}
+        ref={closeButtonRef}
+        type="button"
+      >
         关闭
       </button>
-    </div>
+    </dialog>
   );
 }
