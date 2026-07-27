@@ -238,6 +238,12 @@
 - 审查阻塞项：buffered observer 重连重复累计 long-task/LoAF/resource 历史；三条状态文案编码为乱码；StrictMode、可见性、取消/迟到回调、reset 与 snapshot 引用稳定性测试不足。已进入修复轮 1/5。
 - Task 6.3 修复轮 1 提交 `17eafc9`：新增真实 RED 和 5 个 runtime 回归测试、1 个 StrictMode hook 测试，统一 observer 历史所有权并修正 `等待`/`不支持`/`不可测`。
 - 定向复审确认 3 个阻塞项全部 ADDRESSED，0 open，无新 Critical/Important；Task 6.3 标记 review clean，进入 Task 6.4。
+- Task 6.4 初始提交 `256ab8e` 通过实现代理门禁（16 files / 87 tests、TypeScript、ESLint、Prettier、隐私/路径扫描、diff check、生产 build），但独立审查发现 6 个 Important。
+- 阻塞项涵盖 Benchmark 采样启停、全阶段取消入口、粒子场景恢复、object URL 异常清理、page identifier 隐私净化和异步操作状态竞态；已进入修复轮 1/5。
+- Task 6.4 修复轮 1 提交 `bae5273`：5 个原始问题得到解决；定向复审仍发现“重置设置”可在运行中改写粒子现场，以及 StrictMode effect replay 会永久抑制报告状态，进入修复轮 2/5。
+- Task 6.4 修复轮 2 提交 `7391e45`：运行期间禁用重置，并让 mounted 标志在每次 effect setup 恢复为 true；新增两类行为回归测试。
+- 第二轮定向复审 APPROVED：剩余 2 个阻断项均 ADDRESSED，0 个新 Critical/Important；Task 6.4 标记 review clean。
+- 修复轮 2 的既有实现证据为 focused 2 files / 37 tests、全量 16 files / 115 tests、TypeScript、ESLint、Prettier、diff check、Vite build 与 staged 隐私/路径扫描全部退出 0；这些证据仍需在最终完成声明前由控制器重新运行。
 
 ---
 

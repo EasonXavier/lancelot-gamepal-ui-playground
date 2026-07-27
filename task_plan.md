@@ -8,7 +8,7 @@
 
 ## Next Step
 
-Task 6.3 修复轮 1 已通过定向复审。当前从 Task 6.4 RED 继续：连接 30 秒 Benchmark 与纯本地 Copy JSON、Download JSON、Copy Summary 操作，并保持报告白名单和场景恢复语义。
+Task 6.4 已在两轮定向修复后通过独立复审。当前对 `main` 合并点至 `7391e45` 的完整 Task 6 分支执行合并前代码审查；审查清零后再进行一次新鲜的全量门禁与浏览器验证。
 
 ## Current Phase
 
@@ -43,12 +43,12 @@ Phase 4
 
 ### Phase 4: 移动 UI、动态与实验控制
 
-- [ ] 将报告序列化接入 Copy JSON、Download JSON 和 Copy Summary
+- [x] 将报告序列化接入 Copy JSON、Download JSON 和 Copy Summary
 - [x] 复刻已确认的主界面与展开控制面板
-- [ ] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
-- [ ] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
-- [ ] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
-- **Status:** in_progress
+- [x] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
+- [x] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
+- [x] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
+- **Status:** complete; pending whole-branch review and Phase 5 browser validation
 
 ### Phase 5: 验证、文档与公开安全
 
