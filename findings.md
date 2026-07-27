@@ -36,6 +36,9 @@
 - 当前 typecheck 与 lint 均通过；帧数学与采样器为 2 files / 10 tests passed。
 - 原 lint 错误已通过将测试 fake cancel 改为无参数实现修复；未降低或关闭规则。
 - Git 本地 `main` 已创建检查点提交 `9f26f73`；尚未 push、尚未启用 Pages、尚未运行线上验证。
+- 首次生产构建稳定失败于 `Failed to resolve /src/main.tsx`；根因是 `index.html` 已声明入口但 Phase 2 尚未创建该文件，而非 Vite、React 或 Node 版本不兼容。
+- 新增入口后的 TS2882 来自缺少 `vite/client` 类型声明；补齐标准 `src/vite-env.d.ts` 即可让 CSS 副作用导入保留类型安全。
+- GitHub 官方 Actions 的当前稳定主版本已通过仓库 API 核对：checkout v7、setup-node v7、configure-pages v6、upload-pages-artifact v5、deploy-pages v5；Pages API 当前返回未配置。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 

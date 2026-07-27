@@ -1,7 +1,6 @@
 @font-face {
   font-family: 'LSVIS TD Demo';
-  src: url('/lancelot-gamepal-ui-playground/assets/fonts/lsvis-td-chinese.otf')
-    format('opentype');
+  src: url('/assets/fonts/lsvis-td-chinese.otf') format('opentype');
   font-display: swap;
   font-style: normal;
   font-weight: 400;

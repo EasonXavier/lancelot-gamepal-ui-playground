@@ -76,6 +76,8 @@
 | 2026-07-27 11:31 +08:00 | Frame baseline expected 8ms but received 12ms | 1 | 从低四分位建立稳定样本窗口，再计算中位数；测试转绿 |
 | 2026-07-27 11:34 +08:00 | ESLint `_id` is defined but never used | 1 | 提交前改为无参数 fake cancel；lint 通过且未降低规则 |
 | 2026-07-27 12:28 +08:00 | bundled pnpm 尝试接管 npm 安装的 `node_modules`，随后因沙箱网络限制失败 | 1 | 将 `.ignored` 中的依赖逐项恢复并删除本地 `.pnpm-store`；改用 bundled Node 直接调用项目内 TypeScript、ESLint 与 Vitest，避免联网和包管理器迁移 |
+| 2026-07-27 12:42 +08:00 | 生产构建无法解析 `index.html` 引用的 `/src/main.tsx` | 1 | 确认仓库尚无 React 入口；以失败构建作为回归门禁，补齐明确标注开发状态的最小入口，再重新运行完整构建 |
+| 2026-07-27 12:48 +08:00 | TypeScript TS2882 不接受新增入口的 CSS 副作用导入 | 1 | 确认缺少 Vite 模板的客户端类型声明；新增 `src/vite-env.d.ts`，不降低严格模式或跳过类型检查 |
 
 ## Pause Checkpoint: 2026-07-27
 
