@@ -1,0 +1,57 @@
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.game-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-height: 50px;
+  max-height: 56px;
+}
+
+.game-rail__item,
+.bottom-nav__item,
+.service-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.game-rail__item .glass-surface,
+.bottom-nav__item .glass-surface,
+.service-card .glass-surface {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.game-rail__item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: 34px;
+}
+
+.service-card--wide { grid-column: span 7; grid-row: span 2; }
+.service-card--compact { grid-column: span 5; grid-row: span 2; }
+.service-card--tall { grid-column: span 5; grid-row: span 3; }
+.service-card--medium { grid-column: span 7; grid-row: span 3; }
+
+.bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.experimental-placeholder {
+  display: grid;
+  gap: 12px;
+}
