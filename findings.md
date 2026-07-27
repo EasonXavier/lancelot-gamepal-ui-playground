@@ -14,6 +14,8 @@
 - 毛玻璃普通边缘不发光，仅选中的游戏、导航或实验选项允许强调光效。
 - 真实性能 HUD、30 秒 Benchmark、本地报告导出、微信 UA 标记和 feature detection。
 - 不模拟 CPU、GPU、温度、整机功耗或其他浏览器无法取得的数据。
+- 原始规格将 Motion Level 固定为 `off | low | medium | high | maximum`，Particle Count 为 `0 | 20 | 50 | 100 | maximum`，DPR 为 `native | cap-2 | cap-1.5`。
+- Benchmark 固定总长 30 秒：预热 3 秒、静止动态 8 秒、动态压力 8 秒、滚动和转场 8 秒、结果整理 3 秒；进入后台的数据必须排除并把结果标为未完整保持前台。
 
 ## Research Findings
 
@@ -62,6 +64,8 @@
 | 角色原图作为独立 `<picture>`/背景层，UI 全部代码原生 | 可替换、可响应式裁切，避免把 UI 烘焙进图片 |
 | 使用 Canvas 2D 单层粒子，并按 DPR 上限调整 backing store | 在高 DPR 手机上控制像素成本 |
 | `LSVIS TD.woff2` 通过 `@font-face` 和 CSS 变量集中引用 | 使用更适合 Web 的压缩格式，后期替换仍只需更改一处令牌 |
+| Task 4 的 Benchmark 继续使用注入时钟与动作接口 | 保持状态机脱离 React，可用假时钟精确验证 3/8/8/8/3 秒阶段与取消恢复 |
+| 报告导出采用显式白名单模式而非递归复制应用状态 | 防止 cookie、token、IP、位置或用户身份字段意外进入本地报告 |
 
 ## Issues Encountered
 

@@ -52,8 +52,9 @@
 
 ### Phase 3: 性能核心（TDD）
 
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-07-27 13:23 +08:00
+- **Completed:** 2026-07-27 13:55 +08:00
 - Actions taken:
   - 在 `agent/performance-observers` 分支创建隔离工作树。
   - 复用已验证的项目依赖目录；typecheck、lint 与 2 files / 10 tests 基线通过。
@@ -67,6 +68,14 @@
   - 对工作树执行凭据特征扫描、`git diff --check` 和差异审查；无敏感命中或空白错误。
   - 创建本地开发分支检查点 `36b38af`（`feat: add browser performance observers`），未推送、未部署。
   - 将工作构建号更新为 `0.1.0+20260727.1337.36b38af`，保留正式版本 `0.1.0` 不变。
+  - 继续 Task 4 前运行 Planning with Files session catchup；未发现未同步上下文，工作树干净且仍位于 `agent/performance-observers`。
+  - 重读 Task 4 计划，确认本批次范围为设置不可变更新与持久化、隐私安全报告序列化、30 秒 Benchmark 状态机及现场恢复。
+  - 写入 settings、report exporter、benchmark runner 三组测试；目标测试 RED 按计划因三个生产模块不存在而失败（3 suites / 0 tests imported）。
+  - 最小实现后目标测试 GREEN（3 files / 11 tests）；审查发现缺少直接重置契约，新增重置测试先以 `resetSettings is not a function` RED，再以 1 file / 6 tests GREEN。
+  - 实现不可变设置、Reduced Motion 覆盖、DPR 上限、schema v1 持久化与显式重置。
+  - 实现隐私白名单报告 schema；Estimated Dropped Frames 带 `Estimated` 标签，unsupported/not-measurable/null 原样保留。
+  - 实现注入时钟的 30 秒 Benchmark：3/8/8/8/3 秒阶段、后台样本暂停、前台完整性标记、完成/取消恢复现场。
+  - Task 4 最终门禁：typecheck 0、lint 0、7 files / 32 tests、18 modules production build 全部通过。
 
 ## Test Results
 
@@ -81,6 +90,9 @@
 | Observer/environment GREEN | 全量 TypeScript + ESLint + Vitest | 全部通过 | typecheck 0；lint 0；4 files / 20 tests passed | ✓ |
 | Task 3 final gate | TypeScript + ESLint + Vitest + Vite build | 全部通过 | typecheck 0；lint 0；4 files / 20 tests；18 modules built | ✓ |
 | WOFF2 production artifact | 构建产物和 CSS 引用 | 新字体存在且不引用 OTF | 2,982,896 bytes；`format('woff2')`；无 OTF 引用 | ✓ |
+| Task 4 RED | 三个目标测试文件 | 因生产模块缺失失败 | 3 suites import-analysis failed on missing modules | ✓ RED |
+| Settings reset RED/GREEN | 设置测试文件 | 缺实现先失败，再通过 | `resetSettings is not a function` → 1 file / 6 tests passed | ✓ |
+| Task 4 final gate | TypeScript + ESLint + Vitest + Vite build | 全部通过 | typecheck 0；lint 0；7 files / 32 tests；18 modules built | ✓ |
 | Typecheck checkpoint | `npm run typecheck` | 退出 0 | 退出 0 | ✓ |
 | Lint checkpoint | ESLint CLI | 退出 0 | 退出 0 | ✓ |
 | Commit preflight | TypeScript + ESLint + Vitest | 全部通过 | typecheck 0；lint 0；2 files / 10 tests passed | ✓ |
@@ -108,6 +120,8 @@
 | 2026-07-27 13:25 +08:00 | Vite 在沙箱中无法创建 worktree 的 `dist` 目录 | 1 | 确认失败发生在输出目录权限边界；在授权 Windows 上下文重跑同一构建，生产构建成功 |
 | 2026-07-27 13:25 +08:00 | PowerShell 未展开传给 `rg` 的 `dist/assets/*.css` | 1 | 不重复构建；改用目录参数配合 `-g '*.css'` 读取产物，确认 Pages 子路径引用 WOFF2 |
 | 2026-07-27 13:31 +08:00 | `resourceMetrics.ts` 在 `noUncheckedIndexedAccess` 下无法从数组前置检查收窄 `number \| undefined` | 1 | 改为单次显式循环，在验证每个值的同时累加；不降低 TypeScript 规则 |
+| 2026-07-27 14:00 +08:00 | Task 4 规格搜索包含尚不存在的 `README.md`，使 `rg` 在返回有效匹配后仍退出 1 | 1 | 保留已获得的计划匹配；后续只搜索实际存在的规划文件和原始需求附件，不把缺失 README 误判为实现失败 |
+| 2026-07-27 14:05 +08:00 | 沙箱拒绝在隔离 worktree 创建 `tests/experiments` 目录 | 1 | 在用户既有工作树授权范围内提升同一 `New-Item` 命令，仅创建该测试目录 |
 
 ## Published Checkpoint: 2026-07-27
 

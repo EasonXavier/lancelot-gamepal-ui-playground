@@ -120,23 +120,23 @@
 **Interfaces:**
 - Produces: `ExperimentSettings`, `GlassMode = 'real' | 'simulated' | 'preblur' | 'off'`, `MotionLevel`, `DprMode`; `serializeReport(snapshot): string`; `BenchmarkRunner.start(context)`, `cancel()`, `getState()`.
 
-- [ ] **Step 1: Write failing settings tests**
+- [x] **Step 1: Write failing settings tests**
 
   Verify one Glass Mode at a time, immediate immutable setting updates, reduced-motion override, DPR caps, reset behavior, and schema-versioned local persistence without rebuilding app state.
 
-- [ ] **Step 2: Write failing report tests**
+- [x] **Step 2: Write failing report tests**
 
   Verify stable JSON schema, explicit estimate labels, null/unsupported serialization, and absence of cookie/token/IP/location/user identity fields.
 
-- [ ] **Step 3: Write failing Benchmark tests**
+- [x] **Step 3: Write failing Benchmark tests**
 
   Using a fake clock, verify exact phases `warmup 3s → ambient 8s → stress 8s → scroll-transition 8s → summarize 3s`, foreground completeness tracking, background sample exclusion, cancellation, and restoration of scroll/category/particle/panel state.
 
-- [ ] **Step 4: Run RED**
+- [x] **Step 4: Run RED**
 
   Run the three test files. Expected: FAIL because settings/report/runner modules are missing.
 
-- [ ] **Step 5: Implement minimal modules and run GREEN**
+- [x] **Step 5: Implement minimal modules and run GREEN**
 
   Keep the runner independent of React using injected clock/actions/snapshot functions. Rerun all three test files. Expected: PASS.
 

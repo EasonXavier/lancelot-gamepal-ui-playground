@@ -8,11 +8,11 @@
 
 ## Next Step
 
-恢复后从 Task 4 设置、报告序列化与 30 秒 Benchmark 的 RED 阶段继续；Task 3 已通过 typecheck、lint、20 项测试和生产构建。
+恢复后从 Task 5 主界面与 Glass Surface 的 RED 阶段继续；Task 4 已通过 typecheck、lint、32 项测试和生产构建。
 
 ## Current Phase
 
-Phase 3
+Phase 4
 
 ## Phases
 
@@ -37,12 +37,13 @@ Phase 3
 
 - [x] 先写失败测试，再实现帧采样、刷新间隔、P95 与 Estimated Dropped Frames
 - [x] 实现 Web Vitals、Long Task/LoAF、资源、环境和可见性采集
-- [ ] 实现固定容量缓冲、暂停/恢复、报告序列化与本地导出
-- [ ] 实现 30 秒 Benchmark 状态机和恢复语义
-- **Status:** in_progress
+- [x] 实现固定容量缓冲、暂停/恢复与隐私白名单报告序列化
+- [x] 实现 30 秒 Benchmark 状态机、后台样本排除和恢复语义
+- **Status:** complete
 
 ### Phase 4: 移动 UI、动态与实验控制
 
+- [ ] 将报告序列化接入 Copy JSON、Download JSON 和 Copy Summary
 - [ ] 复刻已确认的主界面与展开控制面板
 - [ ] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
 - [ ] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
