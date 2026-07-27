@@ -65,6 +65,8 @@
   - 完成前重新执行全量门禁：typecheck、lint、4 files / 20 tests 与 Vite 生产构建均通过。
   - 最终产物包含 2,982,896 字节的 `dist/assets/fonts/lsvis-td.woff2`；源码与产物均不再引用旧 OTF。
   - 对工作树执行凭据特征扫描、`git diff --check` 和差异审查；无敏感命中或空白错误。
+  - 创建本地开发分支检查点 `36b38af`（`feat: add browser performance observers`），未推送、未部署。
+  - 将工作构建号更新为 `0.1.0+20260727.1337.36b38af`，保留正式版本 `0.1.0` 不变。
 
 ## Test Results
 
