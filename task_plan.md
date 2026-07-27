@@ -8,7 +8,7 @@
 
 ## Next Step
 
-从 Task 6 的 RED 阶段继续：先为控制面板、HUD 和动效/生命周期写失败测试。Task 5 的首页、共享单一 DOM Glass Surface、服务入口和底栏已完成本地检查点；全量门禁通过 typecheck、lint、format、46 项测试和生产构建。
+从 Task 6 的 RED 阶段继续：先为控制面板、HUD 和动效/生命周期写失败测试。Task 5 已通过 PR #1 合并到 `main` 并由 Pages workflow 成功部署；当前门禁为 typecheck、lint、format、48 项测试和生产构建。
 
 ## Current Phase
 
@@ -61,7 +61,7 @@ Phase 4
 
 ### Phase 6: 提交、部署与交付证据
 
-> 历史说明：以下已勾选的推送和 Pages 部署仅属于 earlier published checkpoint `d20b849`/`e26b75c`；当前 `agent/performance-observers` 的 Task 5 本地检查点没有 push、deploy、tag 或 release。
+> 当前发布状态：PR #1 已于 2026-07-27 合并为 `4f42867`，Pages workflow run `30273041434` 已成功部署 Task 5；没有创建 Release 或标签。
 
 - [x] 提交并推送 `main`
 - [x] 启用 GitHub Actions Pages 发布源并运行 CI/部署
@@ -96,6 +96,8 @@ Phase 4
 | 沙箱 Git 报 `dubious ownership`               | 1       | 不改系统配置；所有沙箱 Git 命令显式使用 `-c safe.directory=C:/Project/lancelot-gamepal-ui-playground` |
 | 帧基准首次 GREEN 被长帧拉高为 12ms            | 1       | 使用低四分位建立稳定窗口后再取中位数；10 个帧测试通过                                                 |
 | ESLint 报测试 fake cancel 的 `_id` 未使用     | 1       | 提交前将 fake cancel 改为无参数实现；lint 通过且未降低规则                                            |
+| `gh pr checks` 对无检查项分支返回退出码 1     | 1       | 通过 PR mergeability、本地 48 项门禁和 Pages workflow 全门禁确认可合并                                |
+| 主工作树 ESLint 扫描嵌套已合并 worktree       | 1       | 清理已合并 worktree 后重跑；typecheck、lint、format 与 48 项测试全部通过                              |
 
 ## Notes
 
@@ -103,4 +105,4 @@ Phase 4
 - 规划、素材、报告、CI 与 Pages 只属于本仓库。
 - 高频采样不得每帧更新 React state；HUD 最多每秒更新四次。
 - 每次重大决策前重读本文件；每个阶段结束后更新状态与进度。
-- **Earlier published checkpoint（2026-07-27）：** 基础提交为 `9f26f73`，Pages/入口提交为 `d20b849`，构建元数据提交为 `e26b75c`，工作构建号为 `0.1.0+20260727.1309.d20b849`；该历史检查点的 typecheck、lint、10 个测试与生产 build 通过，且确有 Pages 推送与部署。当前 `agent/performance-observers` 已完成 Task 5 本地检查点（46 tests/build），未进行新的 push、deploy、tag 或 release；完整 UI 与性能实验仍未完成。
+- **Current published checkpoint（2026-07-27）：** PR #1 将 Task 3–5 的性能核心、设置/Benchmark 与首页提交合并为 `4f42867`；Pages run `30273041434` 的 build/deploy 均成功，线上已确认新 JS/CSS、朗世乐品牌、原生 modal、人物与 WOFF2 子路径。没有创建 Release 或版本标签；Task 6/7 仍未完成。

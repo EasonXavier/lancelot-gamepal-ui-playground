@@ -48,6 +48,9 @@
 - 新增入口后的 TS2882 来自缺少 `vite/client` 类型声明；补齐标准 `src/vite-env.d.ts` 即可让 CSS 副作用导入保留类型安全。
 - GitHub 官方 Actions 的当前稳定主版本已通过仓库 API 核对：checkout v7、setup-node v7、configure-pages v6、upload-pages-artifact v5、deploy-pages v5；Pages 已启用为 workflow 发布源。
 - GitHub Actions run `30239061058` 的 build 与 deploy job 均成功；实际 Pages 地址继承账号自定义域名，为 `https://easonx.me/lancelot-gamepal-ui-playground/`。
+- PR #1 已以 merge commit `4f42867` 合并到 `main`；Pages run `30273041434` 的 build 与 deploy job 均成功。
+- 在线检查返回 HTTP 200，HTML 引用 `index-DCtTWxh3.js` 与 `index-BsZojuUi.css`；JS 包含“朗世乐”，CSS 包含原生 modal backdrop、人物与 WOFF2 的正确 Pages 子路径。
+- 在主仓库保留嵌套 linked worktree 时运行 `eslint .` 会让 typescript-eslint 同时发现两个 `tsconfig` 根并报解析错误；移除已合并 worktree 后同一门禁通过，因此该错误不是合并代码回归。
 - 线上 390×844 验证确认页面标题、语义结构、工作构建号、字体族、人物资源 URL 与 Pages 子路径正确；`clientWidth`/`scrollWidth` 均为 390，控制台无 error/warning。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。

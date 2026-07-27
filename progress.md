@@ -139,6 +139,10 @@
 | 2026-07-27 14:20 +08:00 | 沙箱拒绝在隔离 worktree 创建 `docs/superpowers/specs` 目录                                        | 1       | 在用户确认方案 A 后，于已授权 Windows 上下文创建这一精确规格目录；未扩大写入范围                                                              |
 | 2026-07-27 14:24 +08:00 | Git 无法在主仓库 worktree 元数据中创建 `index.lock`                                               | 1       | 规格自检通过后，在已授权 Windows 上下文执行同一组精确暂存与提交命令                                                                           |
 | 2026-07-27 14:25 +08:00 | 授权上下文的 Git 拒绝 worktree 所有权并使后续命令退化为 `--no-index`                              | 2       | 不修改全局配置；改为对每条 Git 命令显式传入该 worktree 的 `safe.directory`                                                                    |
+| 2026-07-27 22:02 +08:00 | `gh pr checks` 对没有检查项的分支返回退出码 1                                                     | 1       | 使用 PR mergeability、本地 48 项门禁和合并后 Pages workflow 的 lint/test/build 结果作为合并证据                                               |
+| 2026-07-27 22:04 +08:00 | 主工作树 ESLint 递归扫描嵌套已合并 worktree，发现两个 `tsconfig` 根并报 68 个解析错误             | 1       | 确认 GitHub Actions 干净 checkout 已通过；移除已合并 worktree 后相同主分支门禁 9 files / 48 tests 全部通过                                    |
+| 2026-07-27 22:10 +08:00 | 沙箱拒绝在新的 Task 6 worktree 创建 `node_modules` 目录联接                                       | 1       | 在已授权 Windows 上下文创建仅指向项目既有依赖目录的 junction；没有下载、升级或全局安装依赖                                                    |
+| 2026-07-27 22:12 +08:00 | 新规划记录未符合 Prettier，沙箱随后拒绝格式化器覆写 worktree 文件                                 | 1       | 在已授权 Windows 上下文仅机械格式化三份规划文档；随后 typecheck、lint、format 与 48 项测试全部通过                                            |
 
 ## Task 5 Design Gate: 2026-07-27
 
@@ -168,13 +172,33 @@
 
 ## 5-Question Reboot Check
 
-| Question             | Answer                                                                                    |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| Where am I?          | Phase 4：Task 5 本地首页检查点完成，Task 6 尚未开始                                       |
-| Where am I going?    | Task 6 RED：控制面板、HUD、动效与生命周期测试/实现                                        |
-| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                                    |
-| What have I learned? | 见 `findings.md`                                                                          |
-| What have I done?    | 已完成历史公开检查点；当前分支已完成 Task 5 本地检查点、46 tests 与 build，尚未推送或部署 |
+| Question             | Answer                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| Where am I?          | Phase 4：Task 5 已合并并部署，Task 6 尚未开始                                      |
+| Where am I going?    | Task 6 RED：控制面板、HUD、动效与生命周期测试/实现                                 |
+| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                             |
+| What have I learned? | 见 `findings.md`                                                                   |
+| What have I done?    | PR #1 已合并为 `4f42867`；Pages run `30273041434` 成功，主分支 48 tests 与门禁通过 |
+
+## Task 5 Merge and Pages Deployment: 2026-07-27
+
+- PR #1 从 `agent/performance-observers` 合并到 `main`，merge commit 为 `4f42867`；保留完整阶段性提交历史。
+- GitHub Pages workflow run `30273041434`：build 25s、deploy 29s，最终 conclusion 为 `success`。
+- 线上 `https://easonx.me/lancelot-gamepal-ui-playground/` 返回 HTTP 200，并加载新哈希 `index-DCtTWxh3.js` / `index-BsZojuUi.css`。
+- 在线 JS/CSS 已确认包含朗世乐品牌、原生 modal backdrop，以及人物和 WOFF2 的 `/lancelot-gamepal-ui-playground/` 子路径。
+- 本地 `main` 已 fast-forward 到 `4f42867`；已合并 worktree 和本地功能分支已清理，远端 PR/分支历史保留。
+- 合并后主工作树重新通过 typecheck、ESLint、Prettier 和 9 files / 48 tests。
+- `gh pr checks` 因仓库没有 PR checks 返回退出码 1；改以 PR mergeability、本地门禁及 Pages workflow 内的 lint/test/build 作为合并证据。
+- 主工作树第一次 ESLint 因嵌套 linked worktree 同时暴露两个 `tsconfig` 根而失败；清理已合并 worktree 后同一命令通过。
+
+## Phase 4: Task 6 experiment controls start
+
+- 从已部署的 `main` merge commit `4f42867` 创建隔离分支 `agent/experiment-controls` 与 `.worktrees/experiment-controls`。
+- 合并/部署规划记录通过可恢复 stash 精确迁移到新 worktree，stash 已成功应用并删除。
+- 复用主项目现有 `node_modules` 目录联接；未修改电脑级 Node/npm 或全局依赖。
+- 新 worktree 基线：typecheck、ESLint、Prettier、9 files / 48 tests 全部通过。
+- Task 6 规格审计未发现阻塞性歧义；控制面板保持非模态，由 `App` 持有运行时设置，粒子上限采用本地常量 160。
+- 已创建 `docs/superpowers/plans/2026-07-27-experiment-controls-motion-hud.md`，拆分为设置面板、动效生命周期、性能 HUD、Benchmark/报告四个 TDD 任务；40 个代码围栏成对且无占位文本。
 
 ---
 
