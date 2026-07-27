@@ -143,6 +143,7 @@
 | 2026-07-27 22:04 +08:00 | 主工作树 ESLint 递归扫描嵌套已合并 worktree，发现两个 `tsconfig` 根并报 68 个解析错误             | 1       | 确认 GitHub Actions 干净 checkout 已通过；移除已合并 worktree 后相同主分支门禁 9 files / 48 tests 全部通过                                    |
 | 2026-07-27 22:10 +08:00 | 沙箱拒绝在新的 Task 6 worktree 创建 `node_modules` 目录联接                                       | 1       | 在已授权 Windows 上下文创建仅指向项目既有依赖目录的 junction；没有下载、升级或全局安装依赖                                                    |
 | 2026-07-27 22:12 +08:00 | 新规划记录未符合 Prettier，沙箱随后拒绝格式化器覆写 worktree 文件                                 | 1       | 在已授权 Windows 上下文仅机械格式化三份规划文档；随后 typecheck、lint、format 与 48 项测试全部通过                                            |
+| 2026-07-28 01:48 +08:00 | 恢复时用 `rg --files` 同时搜索尚未创建的 `src/hooks`，在输出有效 performance 文件后返回退出码 2   | 1       | 确认 `src/hooks` 正是 Task 6.2 待创建目录；后续只对已存在目录搜索，不把预期缺失误判为回归                                                     |
 
 ## Task 5 Design Gate: 2026-07-27
 
@@ -208,6 +209,23 @@
 - 已实现：`App` 持有并持久化设置、拒绝 storage 时安全降级、非模态实验控制区、4/5/5/3/3 互斥选项、四个开关、重置与 `data-glass-mode` 即时切换。
 - 未完成：Task 6.1 独立审查报告；Task 6.2 动效生命周期；Task 6.3 性能 HUD；Task 6.4 Benchmark/本地报告操作；最终浏览器/设备验证与 Task 6 推送部署。
 - 恢复入口：工作树 `C:\Project\lancelot-gamepal-ui-playground\.worktrees\experiment-controls`，分支 `agent/experiment-controls`，先重读三份持续文档和详细 Task 6 计划，然后从 Task 6.2 RED 继续，不重复 Task 6.1 测试。
+
+## Resume: 2026-07-28
+
+- 用户要求继续任务；session catch-up 未发现未同步源代码，HEAD 为暂停提交 `d09b410`，工作树只有本地 SDD 交接工件。
+- 已确认当前处于 linked worktree `agent/experiment-controls`，不是主分支或 detached HEAD。
+- 按 SDD 恢复规则先补完 Task 6.1 独立审查；审查通过前不启动 Task 6.2 实现。
+- Task 6.1 独立审查已补完并 APPROVED：规格符合、任务质量和测试有效性均通过，无 Critical/Important 问题。
+- 恢复基线通过：10 files / 54 tests、TypeScript 与 ESLint 均退出 0；随后以 `d09b410` 作为 Task 6.2 review base 进入 TDD。
+
+## Pause Checkpoint: 2026-07-28
+
+- 用户要求停止测试并记录进度；已立即中断 Task 6.2 实现代理，未启动独立审查、Task 6.3 或任何后续测试。
+- Task 6.2 已按 TDD 完成并提交为 `549fa19`（`feat: add lifecycle-aware motion layer`）：新增 viewport/visibility/reduced-motion hooks、单 Canvas 粒子层、触摸视差及 HomeScreen 接线。
+- RED 证据：初始缺失模块导致 focused suite 在 Vite import analysis 失败；随后新增 DPR 首帧行为测试，在修复前因 `setTransform(2, 0, 0, 2, 0, 0)` 未调用而失败。
+- 停止前最后一次已有 GREEN 证据：focused 9/9、全量 11 files / 63 tests、TypeScript、ESLint、scoped Prettier 与 `git diff --check` 全部退出 0，Vitest 输出无警告。
+- Task 6.1 独立审查已 APPROVED，无 Critical/Important 问题；Task 6.2 报告已写入本地 SDD 工件，但 Task 6.2 独立审查尚未开始，因此不能标记 review clean。
+- 恢复入口：工作树 `C:\Project\lancelot-gamepal-ui-playground\.worktrees\experiment-controls`，分支 `agent/experiment-controls`；先为 `d09b410..549fa19` 生成完整差异包并完成只读独立审查，再决定是否进入 Task 6.3。
 
 ---
 

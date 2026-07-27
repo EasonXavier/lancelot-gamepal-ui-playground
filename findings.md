@@ -111,9 +111,9 @@
 ## Resume Checkpoint
 
 1. 重读 `task_plan.md`、本文件和 `progress.md`。
-2. 当前位于 Phase 4 暂停点：Task 6.1 已提交为 `115018a`；确认 `agent/experiment-controls` 工作树后，从详细计划 Task 6.2 的 RED 阶段开始。
-3. 不重做 Task 6.1；尚未完成的独立审查可以在恢复后先补做，然后实现 lifecycle-aware motion layer。
-4. 暂停前 Task 6.1 已通过 focused 12/12、全量 10 files / 54 tests、typecheck、ESLint、Prettier 和 `git diff --check`；浏览器与安全验证完成前不要创建正式版本。
+2. 当前位于 Phase 4 暂停点：Task 6.1 已通过独立审查；Task 6.2 已提交为 `549fa19`，但尚未独立审查。
+3. 不重做 Task 6.1/6.2 实现；恢复后先审查 `d09b410..549fa19`，review clean 后才进入 Task 6.3 性能 HUD RED。
+4. 停止前 Task 6.2 已通过 focused 9/9、全量 11 files / 63 tests、typecheck、ESLint、scoped Prettier 和 `git diff --check`；这些是既有证据，暂停后不要无目的重复测试。
 
 历史发布背景：Task 5 已通过 PR #1 合并为 `4f42867`，Pages run `30273041434` 成功；当前 `agent/experiment-controls` 的 Task 6 提交仅在本地，尚未 push、deploy、tag 或 release。
 

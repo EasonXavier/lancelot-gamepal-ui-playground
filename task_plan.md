@@ -8,7 +8,7 @@
 
 ## Next Step
 
-任务已按用户要求暂停，不再继续测试。恢复时从 Task 6.2 的 RED 阶段开始：实现 viewport/visibility、Reduced Motion、单 Canvas 粒子层和触摸视差；不要重做已提交的 Task 6.1。当前 Task 6 分支为 `agent/experiment-controls`，最新实现提交为 `115018a`。
+任务已按用户要求再次暂停并停止测试。Task 6.1 独立审查已通过；Task 6.2 实现已提交为 `549fa19`，但尚未进行独立审查。恢复时先审查 `d09b410..549fa19`，通过后再进入 Task 6.3 性能 HUD RED；不要重复 Task 6.1/6.2 实现测试。
 
 ## Current Phase
 
@@ -48,7 +48,7 @@ Phase 4
 - [ ] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
 - [ ] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
 - [ ] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
-- **Status:** paused_after_task_6_1
+- **Status:** paused_after_task_6_2_implementation
 
 ### Phase 5: 验证、文档与公开安全
 
