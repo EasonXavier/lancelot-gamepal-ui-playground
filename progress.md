@@ -124,6 +124,15 @@
 | 2026-07-27 13:31 +08:00 | `resourceMetrics.ts` 在 `noUncheckedIndexedAccess` 下无法从数组前置检查收窄 `number \| undefined` | 1 | 改为单次显式循环，在验证每个值的同时累加；不降低 TypeScript 规则 |
 | 2026-07-27 14:00 +08:00 | Task 4 规格搜索包含尚不存在的 `README.md`，使 `rg` 在返回有效匹配后仍退出 1 | 1 | 保留已获得的计划匹配；后续只搜索实际存在的规划文件和原始需求附件，不把缺失 README 误判为实现失败 |
 | 2026-07-27 14:05 +08:00 | 沙箱拒绝在隔离 worktree 创建 `tests/experiments` 目录 | 1 | 在用户既有工作树授权范围内提升同一 `New-Item` 命令，仅创建该测试目录 |
+| 2026-07-27 14:20 +08:00 | 沙箱拒绝在隔离 worktree 创建 `docs/superpowers/specs` 目录 | 1 | 在用户确认方案 A 后，于已授权 Windows 上下文创建这一精确规格目录；未扩大写入范围 |
+| 2026-07-27 14:24 +08:00 | Git 无法在主仓库 worktree 元数据中创建 `index.lock` | 1 | 规格自检通过后，在已授权 Windows 上下文执行同一组精确暂存与提交命令 |
+| 2026-07-27 14:25 +08:00 | 授权上下文的 Git 拒绝 worktree 所有权并使后续命令退化为 `--no-index` | 2 | 不修改全局配置；改为对每条 Git 命令显式传入该 worktree 的 `safe.directory` |
+
+## Task 5 Design Gate: 2026-07-27
+
+- 用户明确选择方案 A：所有 Blur 模式共用同一 DOM，仅切换模式类。
+- 已生成 `docs/superpowers/specs/2026-07-27-home-glass-surface-design.md`，范围限定为 Task 5 首页、Glass Surface、游戏栏、服务网格、底栏与 Experimental/Mock 占位层。
+- 设计规格明确了组件边界、数据流、四种玻璃降级语义、可访问性、测试验收与非目标；等待规格书面复核后再进入实施计划。
 
 ## Published Checkpoint: 2026-07-27
 
