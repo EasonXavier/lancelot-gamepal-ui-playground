@@ -3,6 +3,7 @@ import { HomeScreen } from './experiments/home/HomeScreen';
 import { useReducedMotion } from './hooks/useReducedMotion';
 import { useViewportHeight } from './hooks/useViewportHeight';
 import { useVisibility } from './hooks/useVisibility';
+import { usePerformanceRuntime } from './hooks/usePerformanceRuntime';
 import {
   createDefaultSettings,
   loadSettings,
@@ -18,8 +19,11 @@ export function App() {
   const [panelOpen, setPanelOpen] = useState(false);
   const systemReducedMotion = useReducedMotion();
   const visible = useVisibility();
-  useViewportHeight();
   const effectiveSettings = resolveEffectiveSettings(settings, systemReducedMotion);
+  const performanceRuntime = usePerformanceRuntime(
+    visible && effectiveSettings.motionLevel !== 'off',
+  );
+  useViewportHeight();
 
   const changeSettings = useCallback((patch: Partial<ExperimentSettings>) => {
     setSettings((current) => {
@@ -46,6 +50,7 @@ export function App() {
       effectiveSettings={effectiveSettings}
       settings={settings}
       visible={visible}
+      performanceRuntime={performanceRuntime}
     />
   );
 }

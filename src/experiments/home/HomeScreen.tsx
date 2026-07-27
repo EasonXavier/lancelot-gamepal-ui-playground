@@ -3,10 +3,12 @@ import { ExperimentalPlaceholder } from '../../components/controls/ExperimentalP
 import { ExperimentPanel } from '../../components/controls/ExperimentPanel';
 import { ServiceGrid, type ServiceName } from '../../components/controls/ServiceGrid';
 import { BottomNav, type BottomNavId } from '../../components/navigation/BottomNav';
+import { PerformanceHud } from '../../components/performance/PerformanceHud';
 import { GameRail, type GameId } from '../../components/navigation/GameRail';
 import { ParticleField } from '../motion/ParticleField';
 import { useTouchParallax } from '../motion/useTouchParallax';
 import type { ExperimentSettings } from '../settings';
+import type { PerformanceRuntime } from '../../performance/runtime';
 import '../motion/motion.css';
 import './home-screen.css';
 
@@ -15,6 +17,7 @@ export interface HomeScreenProps {
   effectiveSettings: ExperimentSettings;
   panelOpen: boolean;
   visible: boolean;
+  performanceRuntime: PerformanceRuntime;
   onPanelOpenChange: (open: boolean) => void;
   onSettingsChange: (patch: Partial<ExperimentSettings>) => void;
   onSettingsReset: () => void;
@@ -25,6 +28,7 @@ export function HomeScreen({
   effectiveSettings,
   panelOpen,
   visible,
+  performanceRuntime,
   onPanelOpenChange,
   onSettingsChange,
   onSettingsReset,
@@ -80,6 +84,7 @@ export function HomeScreen({
         <ServiceGrid mode={mode} onSelect={setActiveService} />
       </div>
       <BottomNav mode={mode} onSelect={setSelectedNav} selectedItem={selectedNav} />
+      <PerformanceHud mode={effectiveSettings.hudMode} runtime={performanceRuntime} />
       {activeService ? (
         <ExperimentalPlaceholder
           onClose={() => setActiveService(null)}

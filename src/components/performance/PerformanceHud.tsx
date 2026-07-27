@@ -1,0 +1,82 @@
+import { useSyncExternalStore } from 'react';
+import type { HudMode } from '../../experiments/settings';
+import type { PerformanceRuntime } from '../../performance/runtime';
+import type { Measurement } from '../../performance/types';
+import { GlassSurface } from '../glass/GlassSurface';
+import './performance-hud.css';
+
+export interface PerformanceHudProps {
+  mode: HudMode;
+  runtime: PerformanceRuntime;
+}
+
+const statusLabel = {
+  waiting: '\u7EDB\u590A\u7DDF',
+  unsupported: '\u6D93\u5D86\u656E\u93B8\u4E63',
+  'not-measurable': '\u6D93\u5D85\u5F72\u5A34\u5A8A',
+} as const;
+
+function durationValue(
+  measurement: Measurement<{ maxDuration: number }>,
+  digits = 0,
+): string {
+  return measurement.status === 'available'
+    ? measurement.value.maxDuration.toFixed(digits)
+    : statusLabel[measurement.status];
+}
+
+function vitalValue(measurement: Measurement<{ value: number }>, digits = 0): string {
+  return measurement.status === 'available'
+    ? measurement.value.value.toFixed(digits)
+    : statusLabel[measurement.status];
+}
+
+function frameValue(value: number | null, digits = 0): string {
+  return value === null ? statusLabel.waiting : value.toFixed(digits);
+}
+
+export function PerformanceHud({ mode, runtime }: PerformanceHudProps) {
+  const snapshot = useSyncExternalStore(
+    runtime.subscribe,
+    runtime.getSnapshot,
+    runtime.getSnapshot,
+  );
+
+  if (mode === 'hidden') {
+    return null;
+  }
+
+  const { frames, mainThread, resources, webVitals } = snapshot;
+  const compactMetrics = [
+    ['FPS', frameValue(frames.metrics.currentFps)],
+    ['P95', frameValue(frames.metrics.p95FrameTime)],
+  ];
+  const expandedMetrics = [
+    ['Max frame', frameValue(frames.metrics.maxFrameTime)],
+    ['Dropped frames', String(frames.metrics.estimatedDroppedFrames)],
+    ['LCP', vitalValue(webVitals.lcp)],
+    ['CLS', vitalValue(webVitals.cls, 3)],
+    ['INP', vitalValue(webVitals.inp)],
+    ['Long task', durationValue(mainThread.longTasks, 0)],
+    ['LoAF', durationValue(mainThread.longAnimationFrames, 0)],
+    ['Resources', String(resources.resourceCount)],
+  ];
+
+  return (
+    <GlassSurface
+      aria-label="Performance HUD"
+      className={`performance-hud performance-hud--${mode}`}
+      mode="real"
+      role="region"
+    >
+      {compactMetrics
+        .concat(mode === 'expanded' ? expandedMetrics : [])
+        .map(([label, value]) => (
+          <div className="performance-hud__metric" key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+    </GlassSurface>
+  );
+}

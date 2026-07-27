@@ -1,0 +1,30 @@
+.performance-hud {
+  position: fixed;
+  z-index: var(--hud-z);
+  top: calc(var(--safe-top) + 66px);
+  right: calc(var(--safe-right) + 12px);
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 5px 10px;
+  min-width: 126px;
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.performance-hud--expanded {
+  grid-template-columns: repeat(2, auto);
+}
+
+.performance-hud__metric {
+  display: contents;
+}
+
+.performance-hud__metric strong {
+  color: var(--color-text);
+  font-weight: 600;
+  text-align: right;
+}

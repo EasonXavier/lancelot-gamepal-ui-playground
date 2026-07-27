@@ -62,6 +62,7 @@ const snapshotKeyByName = {
 
 export class WebVitalsStore {
   private snapshot: WebVitalsSnapshot;
+  private readonly capabilities: PerformanceCapabilities;
   private readonly listeners = new Set<() => void>();
   private startPromise: Promise<void> | null = null;
   private active = false;
@@ -70,6 +71,7 @@ export class WebVitalsStore {
     capabilities: PerformanceCapabilities,
     private readonly loader: WebVitalsLoader = defaultLoader,
   ) {
+    this.capabilities = capabilities;
     this.snapshot = createInitialWebVitalsSnapshot(capabilities);
   }
 
@@ -84,6 +86,7 @@ export class WebVitalsStore {
 
   start(): Promise<void> {
     if (this.startPromise) {
+      this.active = true;
       return this.startPromise;
     }
     this.active = true;
@@ -93,6 +96,13 @@ export class WebVitalsStore {
 
   stop(): void {
     this.active = false;
+  }
+
+  reset(): void {
+    this.snapshot = createInitialWebVitalsSnapshot(this.capabilities);
+    for (const listener of this.listeners) {
+      listener();
+    }
   }
 
   private async loadAndRegister(): Promise<void> {
