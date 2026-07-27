@@ -47,8 +47,6 @@ describe('GlassSurface', () => {
         当前页
       </GlassSurface>,
     );
-    expect(screen.getByTestId('surface')).toHaveClass(
-      'glass-surface--selected',
-    );
+    expect(screen.getByTestId('surface')).toHaveClass('glass-surface--selected');
   });
 });

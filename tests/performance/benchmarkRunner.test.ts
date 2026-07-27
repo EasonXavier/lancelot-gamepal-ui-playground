@@ -11,10 +11,7 @@ import {
 class FakeClock implements BenchmarkClock {
   private currentTime = 0;
   private nextId = 1;
-  private readonly timers = new Map<
-    number,
-    { dueAt: number; callback: () => void }
-  >();
+  private readonly timers = new Map<number, { dueAt: number; callback: () => void }>();
 
   now = (): number => this.currentTime;
 
@@ -79,10 +76,7 @@ class FakeBenchmarkContext implements BenchmarkContext {
 
   captureResult = (): unknown => ({ averageFps: 57 });
 
-  onComplete = (
-    result: unknown,
-    completedInForeground: boolean,
-  ): void => {
+  onComplete = (result: unknown, completedInForeground: boolean): void => {
     this.completion = { completedInForeground, result };
   };
 }

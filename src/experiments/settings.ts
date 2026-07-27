@@ -36,19 +36,8 @@ const DEFAULT_SETTINGS: ExperimentSettings = {
   hudMode: 'compact',
 };
 
-const glassModes = new Set<GlassMode>([
-  'real',
-  'simulated',
-  'preblur',
-  'off',
-]);
-const motionLevels = new Set<MotionLevel>([
-  'off',
-  'low',
-  'medium',
-  'high',
-  'maximum',
-]);
+const glassModes = new Set<GlassMode>(['real', 'simulated', 'preblur', 'off']);
+const motionLevels = new Set<MotionLevel>(['off', 'low', 'medium', 'high', 'maximum']);
 const particleCounts = new Set<ParticleCount>([0, 20, 50, 100, 'maximum']);
 const dprModes = new Set<DprMode>(['native', 'cap-2', 'cap-1.5']);
 const hudModes = new Set<HudMode>(['compact', 'expanded', 'hidden']);
@@ -88,9 +77,7 @@ export function resolveEffectiveSettings(
 
 export function resolveDpr(devicePixelRatio: number, mode: DprMode): number {
   const nativeDpr =
-    Number.isFinite(devicePixelRatio) && devicePixelRatio > 0
-      ? devicePixelRatio
-      : 1;
+    Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1;
   if (mode === 'cap-2') {
     return Math.min(nativeDpr, 2);
   }

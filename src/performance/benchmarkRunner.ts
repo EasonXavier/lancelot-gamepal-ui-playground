@@ -1,11 +1,7 @@
 import type { ParticleCount } from '../experiments/settings';
 
 export type BenchmarkPhase =
-  | 'warmup'
-  | 'ambient'
-  | 'stress'
-  | 'scroll-transition'
-  | 'summarize';
+  'warmup' | 'ambient' | 'stress' | 'scroll-transition' | 'summarize';
 export type BenchmarkProfile = BenchmarkPhase | 'idle';
 export type BenchmarkStatus = 'idle' | 'running' | 'completed' | 'cancelled';
 
@@ -120,10 +116,7 @@ export class BenchmarkRunner {
     }
     this.state = { ...this.state, phase: current.phase };
     this.context.setProfile(current.phase);
-    this.timerId = this.clock.setTimeout(
-      this.advancePhase,
-      current.durationMs,
-    );
+    this.timerId = this.clock.setTimeout(this.advancePhase, current.durationMs);
   }
 
   private readonly advancePhase = (): void => {
@@ -138,8 +131,7 @@ export class BenchmarkRunner {
       return;
     }
     const result = context.captureResult();
-    const completedInForeground =
-      this.state.completedInForeground === true;
+    const completedInForeground = this.state.completedInForeground === true;
     this.state = {
       status: 'completed',
       phase: null,

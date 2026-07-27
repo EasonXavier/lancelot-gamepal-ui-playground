@@ -10,22 +10,17 @@ const capabilityFor = (
   supported: ReadonlySet<string>,
   entryType: string,
 ): Availability =>
-  supported.has(entryType)
-    ? { status: 'available' }
-    : { status: 'unsupported' };
+  supported.has(entryType) ? { status: 'available' } : { status: 'unsupported' };
 
 export function detectPerformanceCapabilities(
-  supportedEntryTypes: readonly string[] =
-    globalThis.PerformanceObserver?.supportedEntryTypes ?? [],
+  supportedEntryTypes: readonly string[] = globalThis.PerformanceObserver
+    ?.supportedEntryTypes ?? [],
 ): PerformanceCapabilities {
   const supported = new Set(supportedEntryTypes);
   return {
     navigation: capabilityFor(supported, 'navigation'),
     paint: capabilityFor(supported, 'paint'),
-    largestContentfulPaint: capabilityFor(
-      supported,
-      'largest-contentful-paint',
-    ),
+    largestContentfulPaint: capabilityFor(supported, 'largest-contentful-paint'),
     layoutShift: capabilityFor(supported, 'layout-shift'),
     eventTiming: capabilityFor(supported, 'event'),
     longTask: capabilityFor(supported, 'longtask'),
@@ -98,9 +93,7 @@ export class PerformanceObserverRegistry {
   }
 }
 
-const summarizeDurations = (
-  entries: readonly PerformanceEntry[],
-): DurationSummary => {
+const summarizeDurations = (entries: readonly PerformanceEntry[]): DurationSummary => {
   const durations = entries
     .map((entry) => entry.duration)
     .filter((duration) => Number.isFinite(duration) && duration >= 0);

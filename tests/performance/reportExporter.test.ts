@@ -80,9 +80,7 @@ describe('serializeReport', () => {
       label: 'Estimated',
       value: 4,
     });
-    expect(serializeReport(createSnapshot())).toBe(
-      serializeReport(createSnapshot()),
-    );
+    expect(serializeReport(createSnapshot())).toBe(serializeReport(createSnapshot()));
   });
 
   it('preserves null and explicit unsupported states instead of numeric zeroes', () => {

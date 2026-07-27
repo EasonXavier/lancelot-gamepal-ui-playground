@@ -34,15 +34,8 @@ export function GameRail({ mode, selectedGame, onSelect }: GameRailProps) {
           >
             <GlassSurface mode={mode} selected={selected}>
               {selected ? (
-                <svg
-                  aria-hidden="true"
-                  data-testid="game-logo"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 3 21 19h-6l-3-6-3 6H3L12 3Z"
-                    fill="currentColor"
-                  />
+                <svg aria-hidden="true" data-testid="game-logo" viewBox="0 0 24 24">
+                  <path d="M12 3 21 19h-6l-3-6-3 6H3L12 3Z" fill="currentColor" />
                 </svg>
               ) : null}
               {game.label}

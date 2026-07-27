@@ -36,8 +36,5 @@
 
 .glass-surface--selected {
   border-color: var(--glass-border-selected);
-  box-shadow:
-    var(--glass-inner-highlight),
-    var(--glass-shadow),
-    var(--selected-glow);
+  box-shadow: var(--glass-inner-highlight), var(--glass-shadow), var(--selected-glow);
 }

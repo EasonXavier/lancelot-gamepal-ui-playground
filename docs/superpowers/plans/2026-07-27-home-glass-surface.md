@@ -26,11 +26,13 @@
 ### Task 1: 单一 DOM 的 Glass Surface
 
 **Files:**
+
 - Create: `src/components/glass/GlassSurface.tsx`
 - Create: `src/components/glass/glass-surface.css`
 - Create: `tests/ui/glassSurface.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `GlassMode` from `src/experiments/settings.ts`.
 - Produces: `GlassSurfaceProps extends HTMLAttributes<HTMLDivElement>` with `mode: GlassMode`, `selected?: boolean`, and `children: ReactNode`; one persistent `<div>` with `data-glass-mode` and `data-selected`.
 
@@ -86,9 +88,7 @@ describe('GlassSurface', () => {
         当前项
       </GlassSurface>,
     );
-    expect(screen.getByTestId('surface')).toHaveClass(
-      'glass-surface--selected',
-    );
+    expect(screen.getByTestId('surface')).toHaveClass('glass-surface--selected');
   });
 });
 ```
@@ -180,10 +180,7 @@ export function GlassSurface({
 
 .glass-surface--selected {
   border-color: var(--glass-border-selected);
-  box-shadow:
-    var(--glass-inner-highlight),
-    var(--glass-shadow),
-    var(--selected-glow);
+  box-shadow: var(--glass-inner-highlight), var(--glass-shadow), var(--selected-glow);
 }
 ```
 
@@ -203,6 +200,7 @@ git commit -m "feat: add shared glass surface"
 ### Task 2: 游戏、服务与底栏交互组件
 
 **Files:**
+
 - Create: `src/components/navigation/GameRail.tsx`
 - Create: `src/components/navigation/BottomNav.tsx`
 - Create: `src/components/controls/ServiceGrid.tsx`
@@ -211,6 +209,7 @@ git commit -m "feat: add shared glass surface"
 - Create: `tests/ui/homeScreen.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `GlassMode`, `GlassSurface`.
 - Produces: `GameId = 'delta' | 'cs2' | 'valorant' | 'steam'`, `BottomNavId = 'home' | 'select' | 'orders' | 'messages' | 'profile'`, and `ServiceName = '趣味单' | '小时单' | '自助下单' | '客服接待' | '活动专区' | '全部服务'`.
 - Produces controlled props: `GameRail({ mode, selectedGame, onSelect })`, `BottomNav({ mode, selectedItem, onSelect })`, `ServiceGrid({ mode, onSelect })`, and `ExperimentalPlaceholder({ service, onClose })`.
@@ -231,9 +230,7 @@ import { ExperimentalPlaceholder } from '../../src/components/controls/Experimen
 
 describe('home controls', () => {
   it('renders four games and only the selected game logo', () => {
-    render(
-      <GameRail mode="real" selectedGame="delta" onSelect={vi.fn()} />,
-    );
+    render(<GameRail mode="real" selectedGame="delta" onSelect={vi.fn()} />);
     const rail = screen.getByRole('navigation', { name: '游戏切换' });
     const games = within(rail).getAllByRole('button');
     expect(games).toHaveLength(4);
@@ -271,9 +268,7 @@ describe('home controls', () => {
   });
 
   it('marks 首页 current and renders all five bottom items', () => {
-    render(
-      <BottomNav mode="real" selectedItem="home" onSelect={vi.fn()} />,
-    );
+    render(<BottomNav mode="real" selectedItem="home" onSelect={vi.fn()} />);
     const nav = screen.getByRole('navigation', { name: '主要导航' });
     expect(within(nav).getAllByRole('button')).toHaveLength(5);
     expect(screen.getByRole('button', { name: '首页' })).toHaveAttribute(
@@ -333,15 +328,13 @@ export const bottomItems = [
 Each list renders one semantic `<button type="button" className="tap-target ...">`. The button contains one `GlassSurface`; only the controlled selected game/bottom item passes `selected`. The selected game inserts this decorative mark immediately before its label, while unselected games render no SVG:
 
 ```tsx
-{selected ? (
-  <svg
-    aria-hidden="true"
-    data-testid="game-logo"
-    viewBox="0 0 24 24"
-  >
-    <path d="M12 3 21 19h-6l-3-6-3 6H3L12 3Z" fill="currentColor" />
-  </svg>
-) : null}
+{
+  selected ? (
+    <svg aria-hidden="true" data-testid="game-logo" viewBox="0 0 24 24">
+      <path d="M12 3 21 19h-6l-3-6-3 6H3L12 3Z" fill="currentColor" />
+    </svg>
+  ) : null;
+}
 ```
 
 `ExperimentalPlaceholder` must use `role="dialog"`, `aria-modal="true"`, `aria-labelledby="experimental-service-title"`, an `<h2 id="experimental-service-title">{service}</h2>`, visible text `Experimental / Mock`, and a named close button.
@@ -367,10 +360,22 @@ The shared control stylesheet must include these exact minimums and varied spans
   grid-auto-rows: 34px;
 }
 
-.service-card--wide { grid-column: span 7; grid-row: span 2; }
-.service-card--compact { grid-column: span 5; grid-row: span 2; }
-.service-card--tall { grid-column: span 5; grid-row: span 3; }
-.service-card--medium { grid-column: span 7; grid-row: span 3; }
+.service-card--wide {
+  grid-column: span 7;
+  grid-row: span 2;
+}
+.service-card--compact {
+  grid-column: span 5;
+  grid-row: span 2;
+}
+.service-card--tall {
+  grid-column: span 5;
+  grid-row: span 3;
+}
+.service-card--medium {
+  grid-column: span 7;
+  grid-row: span 3;
+}
 ```
 
 - [ ] **Step 4: Run GREEN**
@@ -389,6 +394,7 @@ git commit -m "feat: add accessible home controls"
 ### Task 3: 首页组合、人物遮挡与检查点替换
 
 **Files:**
+
 - Create: `src/experiments/home/HomeScreen.tsx`
 - Create: `src/experiments/home/home-screen.css`
 - Modify: `src/App.tsx`
@@ -396,6 +402,7 @@ git commit -m "feat: add accessible home controls"
 - Delete: `src/styles/checkpoint.css`
 
 **Interfaces:**
+
 - Consumes: `ExperimentSettings`, `createDefaultSettings`, Task 2 controlled components.
 - Produces: `HomeScreen({ settings }: { settings: ExperimentSettings })`; `App()` renders exactly one `HomeScreen`.
 
@@ -460,14 +467,8 @@ Expected: FAIL because `App` still renders “工程基础检查点” and lacks
 ```tsx
 import { useState } from 'react';
 import { ExperimentalPlaceholder } from '../../components/controls/ExperimentalPlaceholder';
-import {
-  ServiceGrid,
-  type ServiceName,
-} from '../../components/controls/ServiceGrid';
-import {
-  BottomNav,
-  type BottomNavId,
-} from '../../components/navigation/BottomNav';
+import { ServiceGrid, type ServiceName } from '../../components/controls/ServiceGrid';
+import { BottomNav, type BottomNavId } from '../../components/navigation/BottomNav';
 import { GameRail, type GameId } from '../../components/navigation/GameRail';
 import type { ExperimentSettings } from '../settings';
 import './home-screen.css';
@@ -486,7 +487,9 @@ export function HomeScreen({ settings }: { settings: ExperimentSettings }) {
         data-testid="character-layer"
       />
       <header className="home-screen__header">
-        <span aria-hidden="true" className="home-screen__mark">L</span>
+        <span aria-hidden="true" className="home-screen__mark">
+          L
+        </span>
         <span className="home-screen__brand">朗世乐</span>
       </header>
       <div className="home-screen__content">
@@ -544,12 +547,14 @@ git commit -m "feat: compose lancelot home screen"
 ### Task 4: Task 5 全量门禁与规划检查点
 
 **Files:**
+
 - Modify: `task_plan.md`
 - Modify: `findings.md`
 - Modify: `progress.md`
 - Modify: `docs/superpowers/plans/2026-07-27-mobile-ui-performance-playground.md`
 
 **Interfaces:**
+
 - Consumes: all Task 1–3 components and tests.
 - Produces: a verified Task 5 checkpoint with exact test evidence and Phase 4 remaining work still accurately pending.
 

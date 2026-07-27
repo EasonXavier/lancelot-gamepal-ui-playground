@@ -41,10 +41,22 @@
   grid-auto-rows: 34px;
 }
 
-.service-card--wide { grid-column: span 7; grid-row: span 2; }
-.service-card--compact { grid-column: span 5; grid-row: span 2; }
-.service-card--tall { grid-column: span 5; grid-row: span 3; }
-.service-card--medium { grid-column: span 7; grid-row: span 3; }
+.service-card--wide {
+  grid-column: span 7;
+  grid-row: span 2;
+}
+.service-card--compact {
+  grid-column: span 5;
+  grid-row: span 2;
+}
+.service-card--tall {
+  grid-column: span 5;
+  grid-row: span 3;
+}
+.service-card--medium {
+  grid-column: span 7;
+  grid-row: span 3;
+}
 
 .bottom-nav {
   display: grid;

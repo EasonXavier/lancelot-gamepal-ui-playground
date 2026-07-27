@@ -43,8 +43,7 @@ export function collectEnvironmentInfo(
 ): EnvironmentSnapshot {
   const browserNavigator = globalThis.navigator as NavigatorEnvironmentInput;
   const navigatorInfo = options.navigator ?? browserNavigator;
-  const devicePixelRatio =
-    options.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
+  const devicePixelRatio = options.devicePixelRatio ?? globalThis.devicePixelRatio ?? 1;
   const prefersReducedMotion =
     options.prefersReducedMotion ??
     globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ??

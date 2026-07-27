@@ -27,12 +27,14 @@
 ### Task 1: 工程基础、公开素材与设计系统
 
 **Files:**
+
 - Create: `package.json`, `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, `.prettierrc.json`, `.gitignore`, `index.html`
 - Create: `public/assets/character-source.png`, `public/assets/fonts/lsvis-td.woff2`
 - Create: `src/styles/tokens.css`, `src/styles/global.css`, `src/styles/motion.css`, `src/buildInfo.ts`
 - Create: `ASSET_SOURCES.md`, `SECURITY.md`, `LICENSE`
 
 **Interfaces:**
+
 - Produces: `BuildInfo { version: string; buildVersion: string }`, CSS variables `--font-brand`, `--glass-*`, `--accent-*`, `--safe-*`.
 
 - [x] **Step 1: Create configuration and scripts**
@@ -56,10 +58,12 @@
 ### Task 2: 帧数学、环形缓冲与采样器（TDD）
 
 **Files:**
+
 - Create: `src/performance/types.ts`, `src/performance/ringBuffer.ts`, `src/performance/frameMath.ts`, `src/performance/frameSampler.ts`
 - Test: `tests/performance/frameMath.test.ts`, `tests/performance/frameSampler.test.ts`
 
 **Interfaces:**
+
 - Produces: `median(values: readonly number[]): number | null`, `percentile(values, quantile): number | null`, `estimateDroppedFrames(intervals, baseline): number`, `FrameSampler.start()`, `pause()`, `resume()`, `reset()`, `subscribe(listener)`, `getSnapshot()`.
 
 - [x] **Step 1: Write failing frame-math tests**
@@ -85,10 +89,12 @@
 ### Task 3: 浏览器性能观察与环境能力（TDD）
 
 **Files:**
+
 - Create: `src/performance/webVitals.ts`, `src/performance/mainThreadMetrics.ts`, `src/performance/navigationMetrics.ts`, `src/performance/resourceMetrics.ts`, `src/performance/environmentInfo.ts`
 - Test: `tests/performance/observers.test.ts`, `tests/performance/environmentInfo.test.ts`
 
 **Interfaces:**
+
 - Produces: `PerformanceCapabilities`, `WebVitalsSnapshot`, `MainThreadSnapshot`, `ResourceSnapshot`, `EnvironmentSnapshot`, each using explicit availability states rather than numeric sentinel zeroes.
 
 - [x] **Step 1: Write failing capability tests**
@@ -114,10 +120,12 @@
 ### Task 4: 设置状态、报告与 30 秒 Benchmark（TDD）
 
 **Files:**
+
 - Create: `src/experiments/settings.ts`, `src/performance/reportExporter.ts`, `src/performance/benchmarkRunner.ts`
 - Test: `tests/experiments/settings.test.ts`, `tests/performance/reportExporter.test.ts`, `tests/performance/benchmarkRunner.test.ts`
 
 **Interfaces:**
+
 - Produces: `ExperimentSettings`, `GlassMode = 'real' | 'simulated' | 'preblur' | 'off'`, `MotionLevel`, `DprMode`; `serializeReport(snapshot): string`; `BenchmarkRunner.start(context)`, `cancel()`, `getState()`.
 
 - [x] **Step 1: Write failing settings tests**
@@ -143,11 +151,13 @@
 ### Task 5: 主界面、Glass Surface 与交互壳（TDD）
 
 **Files:**
+
 - Create: `src/main.tsx`, `src/App.tsx`, `src/experiments/home/HomeScreen.tsx`
 - Create: `src/components/glass/GlassSurface.tsx`, `src/components/navigation/GameRail.tsx`, `src/components/navigation/BottomNav.tsx`, `src/components/controls/ServiceGrid.tsx`, `src/components/controls/ExperimentalPlaceholder.tsx`
 - Test: `tests/ui/homeScreen.test.tsx`, `tests/ui/glassSurface.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `ExperimentSettings`, `GlassMode`.
 - Produces: accessible controls with exact copy and `data-glass-mode`, `data-selected`, `aria-current`, `aria-pressed` state.
 
@@ -174,10 +184,12 @@
 ### Task 6: 控制面板、HUD、动效与粒子（TDD）
 
 **Files:**
+
 - Create: `src/components/controls/ExperimentPanel.tsx`, `src/components/performance/PerformanceHud.tsx`, `src/hooks/useViewportHeight.ts`, `src/hooks/useVisibility.ts`, `src/experiments/motion/ParticleField.tsx`, `src/experiments/motion/useTouchParallax.ts`
 - Test: `tests/ui/experimentPanel.test.tsx`, `tests/ui/performanceHud.test.tsx`, `tests/hooks/lifecycle.test.tsx`
 
 **Interfaces:**
+
 - Consumes: settings store, frame sampler and observer snapshots.
 - Produces: mutually exclusive control groups, HUD compact/expanded/hidden states, a single cleaned-up Canvas RAF loop, CSS variable `--app-height`.
 
@@ -204,11 +216,13 @@
 ### Task 7: 文档、CI、Pages 与全量验证
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`, `.github/workflows/deploy-pages.yml`
 - Create: `README.md`, `docs/ui-exploration-plan.md`, `docs/performance-metrics.md`, `docs/device-test-template.md`
 - Modify: `task_plan.md`, `findings.md`, `progress.md`
 
 **Interfaces:**
+
 - Produces: CI and Pages pipelines using locked dependencies, `dist/` artifact, public documentation matching actual implementation.
 
 - [ ] **Step 1: Create workflows and documentation**

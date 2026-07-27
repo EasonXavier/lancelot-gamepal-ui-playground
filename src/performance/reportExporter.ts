@@ -23,9 +23,7 @@ export interface ReportSnapshot {
       framesOver33: number;
       framesOver50: number;
     };
-    webVitals: Partial<
-      Record<'ttfb' | 'fcp' | 'lcp' | 'cls' | 'inp', MetricValue>
-    >;
+    webVitals: Partial<Record<'ttfb' | 'fcp' | 'lcp' | 'cls' | 'inp', MetricValue>>;
     mainThread: {
       longTasks: MetricValue;
       longAnimationFrames: MetricValue;
@@ -106,16 +104,13 @@ export function serializeReport(snapshot: ReportSnapshot): string {
       },
       mainThread: {
         longTasks: snapshot.performance.mainThread.longTasks,
-        longAnimationFrames:
-          snapshot.performance.mainThread.longAnimationFrames,
+        longAnimationFrames: snapshot.performance.mainThread.longAnimationFrames,
       },
       resources: {
         resourceCount: snapshot.performance.resources.resourceCount,
         totalDuration: snapshot.performance.resources.totalDuration ?? null,
         transferSize: snapshot.performance.resources.transferSize,
-        decodedBodySize: metricOrNull(
-          snapshot.performance.resources.decodedBodySize,
-        ),
+        decodedBodySize: metricOrNull(snapshot.performance.resources.decodedBodySize),
       },
       capabilities: {
         navigation: metricOrNull(snapshot.performance.capabilities.navigation),
