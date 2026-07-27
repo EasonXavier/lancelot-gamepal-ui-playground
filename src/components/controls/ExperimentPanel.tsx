@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { GlassSurface } from '../glass/GlassSurface';
+import type { BenchmarkController } from '../../hooks/useBenchmarkController';
+import type { ReportActions } from '../../performance/reportActions';
 import type {
   DprMode,
   ExperimentSettings,
@@ -10,7 +13,9 @@ import type {
 import './experiment-panel.css';
 
 export interface ExperimentPanelProps {
+  benchmarkController: BenchmarkController;
   open: boolean;
+  reportActions: ReportActions;
   settings: ExperimentSettings;
   onChange: (patch: Partial<ExperimentSettings>) => void;
   onReset: () => void;
@@ -100,15 +105,37 @@ function RadioGroup<T extends string | number>({
 }
 
 export function ExperimentPanel({
+  benchmarkController,
   open,
+  reportActions,
   settings,
   onChange,
   onReset,
   onClose,
 }: ExperimentPanelProps) {
+  const [actionResult, setActionResult] = useState<string | null>(null);
+
   if (!open) {
     return null;
   }
+
+  const copy = async (action: () => Promise<void>) => {
+    try {
+      await action();
+      setActionResult('已复制');
+    } catch {
+      setActionResult('复制失败');
+    }
+  };
+
+  const download = () => {
+    try {
+      reportActions.downloadJson();
+      setActionResult('已下载');
+    } catch {
+      setActionResult('下载失败');
+    }
+  };
 
   return (
     <GlassSurface className="experiment-panel" mode={settings.glassMode}>
@@ -178,6 +205,47 @@ export function ExperimentPanel({
             }
           />
         </div>
+        <section aria-label="Benchmark 与报告" className="experiment-panel__group">
+          <div className="experiment-panel__toggles">
+            <button
+              className="tap-target experiment-panel__reset"
+              onClick={benchmarkController.start}
+              type="button"
+            >
+              运行 30 秒 Benchmark
+            </button>
+            <button
+              className="tap-target experiment-panel__reset"
+              onClick={benchmarkController.cancel}
+              type="button"
+            >
+              取消 Benchmark
+            </button>
+            <button
+              className="tap-target experiment-panel__reset"
+              onClick={() => void copy(reportActions.copyJson)}
+              type="button"
+            >
+              复制 JSON
+            </button>
+            <button
+              className="tap-target experiment-panel__reset"
+              onClick={download}
+              type="button"
+            >
+              下载 JSON
+            </button>
+            <button
+              className="tap-target experiment-panel__reset"
+              onClick={() => void copy(reportActions.copySummary)}
+              type="button"
+            >
+              复制摘要
+            </button>
+          </div>
+          <p>{benchmarkController.state.phase ?? benchmarkController.state.status}</p>
+          {actionResult ? <output aria-live="polite">{actionResult}</output> : null}
+        </section>
         <button
           className="tap-target experiment-panel__reset"
           onClick={onReset}

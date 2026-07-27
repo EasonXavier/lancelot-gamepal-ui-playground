@@ -8,6 +8,8 @@ import { GameRail, type GameId } from '../../components/navigation/GameRail';
 import { ParticleField } from '../motion/ParticleField';
 import { useTouchParallax } from '../motion/useTouchParallax';
 import type { ExperimentSettings } from '../settings';
+import type { BenchmarkController } from '../../hooks/useBenchmarkController';
+import type { ReportActions } from '../../performance/reportActions';
 import type { PerformanceRuntime } from '../../performance/runtime';
 import '../motion/motion.css';
 import './home-screen.css';
@@ -16,9 +18,13 @@ export interface HomeScreenProps {
   settings: ExperimentSettings;
   effectiveSettings: ExperimentSettings;
   panelOpen: boolean;
+  selectedGame: GameId;
   visible: boolean;
+  benchmarkController: BenchmarkController;
   performanceRuntime: PerformanceRuntime;
+  reportActions: ReportActions;
   onPanelOpenChange: (open: boolean) => void;
+  onSelectedGameChange: (game: GameId) => void;
   onSettingsChange: (patch: Partial<ExperimentSettings>) => void;
   onSettingsReset: () => void;
 }
@@ -27,13 +33,16 @@ export function HomeScreen({
   settings,
   effectiveSettings,
   panelOpen,
+  selectedGame,
   visible,
+  benchmarkController,
   performanceRuntime,
+  reportActions,
   onPanelOpenChange,
+  onSelectedGameChange,
   onSettingsChange,
   onSettingsReset,
 }: HomeScreenProps) {
-  const [selectedGame, setSelectedGame] = useState<GameId>('delta');
   const [selectedNav, setSelectedNav] = useState<BottomNavId>('home');
   const [activeService, setActiveService] = useState<ServiceName | null>(null);
   const screenRef = useRef<HTMLElement>(null);
@@ -51,6 +60,7 @@ export function HomeScreen({
       data-card-float={effectiveSettings.cardFloat}
       data-glass-mode={mode}
       data-motion-level={effectiveSettings.motionLevel}
+      data-particle-count={String(effectiveSettings.particleCount)}
       ref={screenRef}
     >
       {effectiveSettings.particleCount !== 0 ? (
@@ -80,7 +90,11 @@ export function HomeScreen({
         </button>
       </header>
       <div className="home-screen__content">
-        <GameRail mode={mode} onSelect={setSelectedGame} selectedGame={selectedGame} />
+        <GameRail
+          mode={mode}
+          onSelect={onSelectedGameChange}
+          selectedGame={selectedGame}
+        />
         <ServiceGrid mode={mode} onSelect={setActiveService} />
       </div>
       <BottomNav mode={mode} onSelect={setSelectedNav} selectedItem={selectedNav} />
@@ -92,10 +106,12 @@ export function HomeScreen({
         />
       ) : null}
       <ExperimentPanel
+        benchmarkController={benchmarkController}
         onChange={onSettingsChange}
         onClose={() => onPanelOpenChange(false)}
         onReset={onSettingsReset}
         open={panelOpen}
+        reportActions={reportActions}
         settings={settings}
       />
     </main>
