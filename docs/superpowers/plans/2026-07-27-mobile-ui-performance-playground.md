@@ -12,7 +12,7 @@
 
 - 唯一仓库与工作目录是 `EasonXavier/lancelot-gamepal-ui-playground`；不得访问或修改 `EasonXavier/lancelot-gamepal`。
 - 品牌固定为“朗世乐”；首页只显示四个指定游戏、六个指定入口和五个指定底栏项。
-- `LSVIS TD - Chinese Metadata Fixed.otf` 仅作 Demo 字体，通过单一 CSS 变量引用并记录来源。
+- `LSVIS TD.woff2` 仅作 Demo 字体，通过单一 CSS 变量引用并记录来源。
 - 角色原图是用户提供且允许使用的公开素材；入库前移除 EXIF，并保持可替换。
 - 普通玻璃不得边缘发光；只有选中的游戏、导航或实验选项允许强调光效。
 - 四种 Glass Mode 共享内容、布局、图片、动画和 DOM，一次只激活一种，不隐藏渲染四套页面。
@@ -28,7 +28,7 @@
 
 **Files:**
 - Create: `package.json`, `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, `.prettierrc.json`, `.gitignore`, `index.html`
-- Create: `public/assets/character-source.png`, `public/assets/fonts/lsvis-td-chinese.otf`
+- Create: `public/assets/character-source.png`, `public/assets/fonts/lsvis-td.woff2`
 - Create: `src/styles/tokens.css`, `src/styles/global.css`, `src/styles/motion.css`, `src/buildInfo.ts`
 - Create: `ASSET_SOURCES.md`, `SECURITY.md`, `LICENSE`
 
@@ -91,23 +91,23 @@
 **Interfaces:**
 - Produces: `PerformanceCapabilities`, `WebVitalsSnapshot`, `MainThreadSnapshot`, `ResourceSnapshot`, `EnvironmentSnapshot`, each using explicit availability states rather than numeric sentinel zeroes.
 
-- [ ] **Step 1: Write failing capability tests**
+- [x] **Step 1: Write failing capability tests**
 
   Verify unsupported PerformanceObserver entry types return `{ status: 'unsupported' }`; INP without interaction returns `waiting`; missing transfer sizes return `not-measurable`; unavailable device memory/network fields remain `null`.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
   Run `npm test -- tests/performance/observers.test.ts tests/performance/environmentInfo.test.ts`. Expected: FAIL on missing modules.
 
-- [ ] **Step 3: Implement observer factories and cleanup**
+- [x] **Step 3: Implement observer factories and cleanup**
 
   Feature-detect `navigation`, `paint`, `largest-contentful-paint`, `layout-shift`, `event`, `longtask`, and `long-animation-frame`; return cleanup functions and never register duplicate global observers.
 
-- [ ] **Step 4: Integrate `web-vitals` lazily**
+- [x] **Step 4: Integrate `web-vitals` lazily**
 
   Dynamically import `web-vitals` after app mount so first render is not blocked; store real TTFB/FCP/LCP/CLS/INP values and their rating/delta when emitted.
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
   Run both test files. Expected: PASS with mocked browser capability surfaces and no unhandled promise rejection.
 

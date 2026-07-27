@@ -21,10 +21,10 @@
 - 当前仓库根目录为 `C:/Project/lancelot-gamepal-ui-playground`，分支为 `main`，唯一远程为目标仓库 `origin`。
 - 当前目录此前为空，不含旧试验场代码，也未访问主项目仓库。
 - GitHub CLI 在 Windows 实际环境中登录为 `EasonXavier`，具备 `repo` 与 `workflow` scope。
-- 用户随后明确将 Demo 字体替换为 `LSVIS TD - Chinese Metadata Fixed.otf`；Web 字体家族名经 Windows PrivateFontCollection 验证为 `LSVIS TD`。
+- 用户随后明确将 Demo 字体替换为 `LSVIS TD.woff2`；文件具有有效 `wOF2` 签名，继续使用集中式 `LSVIS TD Demo` CSS family token。
 - GitHub API 验证字体文件大小为 2,982,360 bytes，blob SHA 为 `fdbd8b76283f9f9b41b0c5e95bda3dc44f4696b1`，原始下载地址来自 `raw.githubusercontent.com/EasonXavier/EasonXavier.github.io/main/...`。
 - 已下载字体，SHA-256 为 `AB0A8DEE8D2821F23616029A7FC8CE4BCAB3FFC46E6D6FDA7DB4D15273B132FF`，大小与 GitHub API 元数据一致。
-- 新字体大小为 7,207,444 bytes，SHA-256 为 `FED1647EF627BFA9E246D908CC20555D410C80A2917DB7B9CB5D6EDE253F5236`；旧 portal 字体在提交前移除，不作为最终素材。
+- 新 WOFF2 大小为 2,982,896 bytes，SHA-256 为 `4BBB34BD34B7525CFF4447E38192AA123614E4CFCB64B97CFA3DD169F16A84BC`；它替换 7,207,444 bytes 的 OTF，字体载荷减少约 58.6%。
 - 用户人物图原始尺寸为 1122×1402、仅带 DPI 信息；重新编码后的 `character-source.png` 为 RGB PNG、`info={}`、SHA-256 `64A4DCE7C8113641D4985EC7749B927E26DFD652137DA85EEF1F21FBAF970E0F`。
 - 当前沙箱 PATH 不含 `node`/`npm`；Codex bundled Node 位于 `.../dependencies/node/bin/node.exe`，bundled pnpm 版本为 11.9.0；`C:/Program Files/nodejs` 未发现系统安装。
 - 用户允许后续按需安装系统级 Node/npm；当前检查点使用 bundled Node 与已恢复的项目依赖即可完成验证，因此未增加电脑级安装或 PATH 改动。
@@ -33,6 +33,12 @@
 - `typescript-eslint@8.65.0` 支持 ESLint 10，但 TypeScript peer 范围为 `<6.1.0`；因此不能采用 registry 最新 TypeScript 7.0.2，需锁定 TypeScript 6.0.x。
 - 兼容选择为 TypeScript 6.0.3 与 `@types/node` 26.1.1；`@vitejs/plugin-react` 的额外 Babel/Rolldown peers 均标记为 optional，无需加入默认依赖。
 - Vite 8.1.5、Vitest 4.1.10 与 jsdom 29.1.1 均支持 bundled Node 24.14.0。
+- Task 3 的现有基础类型只有通用 `Availability`；新增快照必须把 `unsupported`、`waiting` 与 `not-measurable` 作为可观察状态，而不是用数值 0 代替。
+- 已安装的 `web-vitals@6.0.0` 从主入口导出 `onTTFB`、`onFCP`、`onLCP`、`onCLS` 与 `onINP`；实现可在应用挂载后动态导入该入口。
+- `web-vitals@6` 回调提供 `name`、`value`、`rating`、`delta` 与去重 `id`，注册函数不返回清理句柄；本地 store 停止后必须忽略迟到回调。
+- TypeScript DOM 声明已包含 `PerformanceObserver.supportedEntryTypes` 与 `PerformanceResourceTiming`，非标准 device memory/network 字段仍需通过窄接口注入和显式 `null` 表示不可用。
+- Task 3 采用按 entry type 共享的观察器注册表：同类多个消费者只创建一个底层 observer，最后一个 cleanup 才 disconnect；这避免 HUD 与报告层重复注册全局观察器。
+- 资源传输大小只有在所有条目提供正有限值时才汇总为 `available`；缺失或 0 统一标记 `not-measurable`，避免把跨域不可见数据误报为零流量。
 - 当前 typecheck 与 lint 均通过；帧数学与采样器为 2 files / 10 tests passed。
 - 原 lint 错误已通过将测试 fake cancel 改为无参数实现修复；未降低或关闭规则。
 - GitHub 远端 `main` 已包含基础提交 `9f26f73`、可部署入口/Pages 提交 `d20b849` 与构建元数据提交 `e26b75c`。
@@ -55,7 +61,7 @@
 | Glass Mode 只切换 CSS class/背景层策略 | 保持 DOM、内容与动画一致，便于公平比较 |
 | 角色原图作为独立 `<picture>`/背景层，UI 全部代码原生 | 可替换、可响应式裁切，避免把 UI 烘焙进图片 |
 | 使用 Canvas 2D 单层粒子，并按 DPR 上限调整 backing store | 在高 DPR 手机上控制像素成本 |
-| `portal-text` 通过 `@font-face` 和 CSS 变量集中引用 | 后期替换只需更改一处令牌 |
+| `LSVIS TD.woff2` 通过 `@font-face` 和 CSS 变量集中引用 | 使用更适合 Web 的压缩格式，后期替换仍只需更改一处令牌 |
 
 ## Issues Encountered
 
@@ -74,7 +80,7 @@
 
 - 仓库：https://github.com/EasonXavier/lancelot-gamepal-ui-playground
 - 实际 Pages：https://easonx.me/lancelot-gamepal-ui-playground/
-- Demo 字体：用户提供的 `LSVIS TD - Chinese Metadata Fixed.otf`，仓库文件名为 `public/assets/fonts/lsvis-td-chinese.otf`
+- Demo 字体：用户提供的 `LSVIS TD.woff2`，仓库文件名为 `public/assets/fonts/lsvis-td.woff2`
 - 主界面概念：本次 Codex 会话生成的已确认概念图；仅作为实现参考，不作为仓库生产素材。
 - 控制面板概念：本次 Codex 会话生成的已确认概念图；仅作为实现参考，不作为仓库生产素材。
 

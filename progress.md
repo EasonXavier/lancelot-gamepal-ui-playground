@@ -24,8 +24,9 @@
 
 ### Phase 2: 实施计划与工程基础
 
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-07-27 10:50 +08:00
+- **Completed:** 2026-07-27 13:23 +08:00
 - Actions taken:
   - 运行 Planning with Files session catchup，未发现旧会话。
   - 建立详细的七任务 TDD 实施计划，并完成占位语和类型一致性自检。
@@ -33,7 +34,7 @@
   - 查询 npm 当前稳定版本与 engine/peer 范围；识别并避免 TypeScript 7 与 typescript-eslint 8 的不兼容组合。
   - 写入帧数学与采样器测试；首次运行按预期因生产模块不存在而失败，确认 RED 阶段有效。
   - 按用户新指令核验并准备切换至 LSVIS TD Demo 字体。
-  - 导入并校验 `lsvis-td-chinese.otf`，更新字体令牌与素材来源，移除未提交且不再使用的 portal 字体。
+  - 导入并校验原始 OTF，随后按用户要求用更小的 `lsvis-td.woff2` 替换并更新字体令牌与素材来源。
   - 完成帧核心 RED/GREEN；10 个测试通过并修复长帧污染刷新基准的问题。
   - `npm run typecheck` 通过。
   - `npm run lint` 曾发现一个测试 fake 未使用参数；提交准备阶段修复后，typecheck、lint 与测试全部通过。
@@ -43,11 +44,27 @@
   - `findings.md`
   - `progress.md`
   - `docs/superpowers/plans/2026-07-27-mobile-ui-performance-playground.md`
-  - `public/assets/fonts/lsvis-td-chinese.otf`
+  - `public/assets/fonts/lsvis-td.woff2`
   - `public/assets/character-source.png`
   - 工程配置、设计令牌、素材/安全说明、帧性能模块与测试（基础提交 `9f26f73`）
   - 明确标注开发状态的最小 React 入口与 GitHub Pages workflow（可部署提交 `d20b849`）
   - 在 390×844 本地预览中验证字体、人物素材、玻璃层、构建号、零横向溢出与零控制台错误/警告
+
+### Phase 3: 性能核心（TDD）
+
+- **Status:** in_progress
+- **Started:** 2026-07-27 13:23 +08:00
+- Actions taken:
+  - 在 `agent/performance-observers` 分支创建隔离工作树。
+  - 复用已验证的项目依赖目录；typecheck、lint 与 2 files / 10 tests 基线通过。
+  - 校验用户提供的 WOFF2 签名、大小与 SHA-256，并替换旧 OTF。
+  - 生产构建确认 WOFF2 被复制到 `dist/assets/fonts/lsvis-td.woff2`，CSS 使用正确的 Pages 子路径与 `format('woff2')`。
+  - 写入 `observers.test.ts` 与 `environmentInfo.test.ts`；RED 按计划因五个生产模块尚不存在而失败。
+  - 实现能力探测、共享 PerformanceObserver 注册/清理、主线程/导航/资源快照、环境快照与惰性 Web Vitals store。
+  - Task 3 GREEN：typecheck、lint 与 4 files / 20 tests 通过。
+  - 完成前重新执行全量门禁：typecheck、lint、4 files / 20 tests 与 Vite 生产构建均通过。
+  - 最终产物包含 2,982,896 字节的 `dist/assets/fonts/lsvis-td.woff2`；源码与产物均不再引用旧 OTF。
+  - 对工作树执行凭据特征扫描、`git diff --check` 和差异审查；无敏感命中或空白错误。
 
 ## Test Results
 
@@ -58,6 +75,10 @@
 | Git branch | `git branch --show-current` | `main` | `main` | ✓ |
 | Frame core RED | 两个 performance 测试文件 | 因模块缺失失败 | Vite import-analysis 报 `frameMath`/`frameSampler` 不存在 | ✓ RED |
 | Frame core GREEN | 两个 performance 测试文件 | 全部通过 | 2 files / 10 tests passed | ✓ |
+| Observer/environment RED | `observers.test.ts` + `environmentInfo.test.ts` | 因生产模块缺失失败 | 2 suites import-analysis failed on missing modules | ✓ RED |
+| Observer/environment GREEN | 全量 TypeScript + ESLint + Vitest | 全部通过 | typecheck 0；lint 0；4 files / 20 tests passed | ✓ |
+| Task 3 final gate | TypeScript + ESLint + Vitest + Vite build | 全部通过 | typecheck 0；lint 0；4 files / 20 tests；18 modules built | ✓ |
+| WOFF2 production artifact | 构建产物和 CSS 引用 | 新字体存在且不引用 OTF | 2,982,896 bytes；`format('woff2')`；无 OTF 引用 | ✓ |
 | Typecheck checkpoint | `npm run typecheck` | 退出 0 | 退出 0 | ✓ |
 | Lint checkpoint | ESLint CLI | 退出 0 | 退出 0 | ✓ |
 | Commit preflight | TypeScript + ESLint + Vitest | 全部通过 | typecheck 0；lint 0；2 files / 10 tests passed | ✓ |
@@ -80,6 +101,11 @@
 | 2026-07-27 12:28 +08:00 | bundled pnpm 尝试接管 npm 安装的 `node_modules`，随后因沙箱网络限制失败 | 1 | 将 `.ignored` 中的依赖逐项恢复并删除本地 `.pnpm-store`；改用 bundled Node 直接调用项目内 TypeScript、ESLint 与 Vitest，避免联网和包管理器迁移 |
 | 2026-07-27 12:42 +08:00 | 生产构建无法解析 `index.html` 引用的 `/src/main.tsx` | 1 | 确认仓库尚无 React 入口；以失败构建作为回归门禁，补齐明确标注开发状态的最小入口，再重新运行完整构建 |
 | 2026-07-27 12:48 +08:00 | TypeScript TS2882 不接受新增入口的 CSS 副作用导入 | 1 | 确认缺少 Vite 模板的客户端类型声明；新增 `src/vite-env.d.ts`，不降低严格模式或跳过类型检查 |
+| 2026-07-27 13:22 +08:00 | 沙箱拒绝在 Git worktree 中创建 `node_modules` 目录联接 | 1 | 在用户已授权的 Windows 上下文中创建单一目录联接，再运行完整基线 |
+| 2026-07-27 13:24 +08:00 | 沙箱拒绝向 Git worktree 复制 WOFF2 | 1 | 核对源、目标和旧字体精确路径后，在已授权 Windows 上下文完成哈希校验复制与 OTF 删除 |
+| 2026-07-27 13:25 +08:00 | Vite 在沙箱中无法创建 worktree 的 `dist` 目录 | 1 | 确认失败发生在输出目录权限边界；在授权 Windows 上下文重跑同一构建，生产构建成功 |
+| 2026-07-27 13:25 +08:00 | PowerShell 未展开传给 `rg` 的 `dist/assets/*.css` | 1 | 不重复构建；改用目录参数配合 `-g '*.css'` 读取产物，确认 Pages 子路径引用 WOFF2 |
+| 2026-07-27 13:31 +08:00 | `resourceMetrics.ts` 在 `noUncheckedIndexedAccess` 下无法从数组前置检查收窄 `number \| undefined` | 1 | 改为单次显式循环，在验证每个值的同时累加；不降低 TypeScript 规则 |
 
 ## Published Checkpoint: 2026-07-27
 
@@ -98,7 +124,7 @@
 
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 2：实施计划与工程基础 |
+| Where am I? | Phase 3：性能核心（TDD） |
 | Where am I going? | 性能核心、UI、验证、部署与证据交付 |
 | What's the goal? | 建立独立公开的朗世乐移动 UI 性能试验场 |
 | What have I learned? | 见 `findings.md` |

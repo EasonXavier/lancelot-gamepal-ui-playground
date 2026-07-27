@@ -8,11 +8,11 @@
 
 ## Next Step
 
-恢复后从 Task 3 浏览器性能观察测试的 RED 阶段继续；当前 typecheck、lint 与 10 个帧测试均已通过。
+恢复后从 Task 4 设置、报告序列化与 30 秒 Benchmark 的 RED 阶段继续；Task 3 已通过 typecheck、lint、20 项测试和生产构建。
 
 ## Current Phase
 
-Phase 2
+Phase 3
 
 ## Phases
 
@@ -31,15 +31,15 @@ Phase 2
 - [x] 导入、去除元数据并记录用户授权人物素材与 Demo 字体
 - [x] 建立设计令牌、基础样式和构建版本追踪
 - [x] 修复当前 lint 错误并完成现有代码的 typecheck、lint 与测试门禁
-- **Status:** in_progress
+- **Status:** complete
 
 ### Phase 3: 性能核心（TDD）
 
-- [ ] 先写失败测试，再实现帧采样、刷新间隔、P95 与 Estimated Dropped Frames
-- [ ] 实现 Web Vitals、Long Task/LoAF、资源、环境和可见性采集
+- [x] 先写失败测试，再实现帧采样、刷新间隔、P95 与 Estimated Dropped Frames
+- [x] 实现 Web Vitals、Long Task/LoAF、资源、环境和可见性采集
 - [ ] 实现固定容量缓冲、暂停/恢复、报告序列化与本地导出
 - [ ] 实现 30 秒 Benchmark 状态机和恢复语义
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 4: 移动 UI、动态与实验控制
 
@@ -82,7 +82,7 @@ Phase 2
 | 基础玻璃不发光，仅选中选项卡发光 | 保持极简并建立明确焦点 |
 | 六个入口使用不同宽高的非正方形网格 | 避免僵硬，同时保持移动触摸可用性 |
 | 四种 Glass Mode 使用同一 React 结构互斥切换 | 保证性能对比公平且不隐藏渲染四套页面 |
-| 使用 `LSVIS TD - Chinese Metadata Fixed.otf` 作为 Demo 字体 | 用户用新附件明确替换先前 portal 字体；仍通过字体令牌集中管理 |
+| 使用 `LSVIS TD.woff2` 作为 Demo 字体 | 用户明确要求用加载更快的 WOFF2 替换 OTF；仍通过字体令牌集中管理 |
 | 不创建正式 Release 或版本标签 | 原始任务明确禁止本次创建标签和正式发布 |
 
 ## Errors Encountered
