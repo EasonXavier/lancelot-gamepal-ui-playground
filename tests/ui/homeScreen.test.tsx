@@ -8,6 +8,7 @@ import {
   type ServiceName,
 } from '../../src/components/controls/ServiceGrid';
 import { ExperimentalPlaceholder } from '../../src/components/controls/ExperimentalPlaceholder';
+import { App } from '../../src/App';
 
 describe('home controls', () => {
   it('renders four games and only the selected game logo', () => {
@@ -79,5 +80,47 @@ describe('home controls', () => {
     expect(within(dialog).getByText('Experimental / Mock')).toBeVisible();
     await user.click(within(dialog).getByRole('button', { name: '关闭' }));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+});
+
+describe('HomeScreen', () => {
+  it('renders the approved 朗世乐 composition without checkpoint copy', () => {
+    render(<App />);
+    expect(screen.getByRole('banner')).toHaveTextContent('朗世乐');
+    expect(screen.queryByText('工程基础检查点')).not.toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: '游戏切换' })).toBeVisible();
+    expect(screen.getByRole('region', { name: '服务入口' })).toBeVisible();
+    expect(screen.getByRole('navigation', { name: '主要导航' })).toBeVisible();
+    expect(screen.getByTestId('character-layer')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+  });
+
+  it('opens the selected service and restores home state when closed', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: '客服接待' }));
+    expect(screen.getByRole('dialog', { name: '客服接待' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '关闭' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: '服务入口' })).toBeVisible();
+  });
+
+  it('updates selected game and bottom item without duplicating the page', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'CS2' }));
+    expect(screen.getByRole('button', { name: 'CS2' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getAllByTestId('game-logo')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: '挑选' }));
+    expect(screen.getByRole('button', { name: '挑选' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(screen.getAllByRole('main')).toHaveLength(1);
   });
 });
