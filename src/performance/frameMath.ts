@@ -19,10 +19,7 @@ export function median(values: readonly number[]): number | null {
   return lower === undefined || upper === undefined ? null : (lower + upper) / 2;
 }
 
-export function percentile(
-  values: readonly number[],
-  quantile: number,
-): number | null {
+export function percentile(values: readonly number[], quantile: number): number | null {
   const sorted = validSamples(values).toSorted((left, right) => left - right);
   if (sorted.length === 0) {
     return null;
@@ -33,9 +30,7 @@ export function percentile(
   return sorted[rank - 1] ?? null;
 }
 
-export function estimateBaselineFrameTime(
-  intervals: readonly number[],
-): number | null {
+export function estimateBaselineFrameTime(intervals: readonly number[]): number | null {
   const samples = validSamples(intervals).filter((interval) => interval <= 1000);
   const lowerQuartile = percentile(samples, 0.25);
   if (lowerQuartile === null) {
@@ -61,9 +56,7 @@ export function estimateDroppedFrames(
   );
 }
 
-export function summarizeFrameIntervals(
-  intervals: readonly number[],
-): FrameMetrics {
+export function summarizeFrameIntervals(intervals: readonly number[]): FrameMetrics {
   const samples = validSamples(intervals);
   const baselineFrameTime = estimateBaselineFrameTime(samples);
   const averageFrameTime =

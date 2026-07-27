@@ -5,5 +5,5 @@ export interface BuildInfo {
 
 export const buildInfo: BuildInfo = {
   version: '0.1.0',
-  buildVersion: '0.1.0+20260727.1309.d20b849',
+  buildVersion: '0.1.0+20260727.1356.d7a7ea1',
 };

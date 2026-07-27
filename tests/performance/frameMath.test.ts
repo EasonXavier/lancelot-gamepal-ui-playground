@@ -12,7 +12,9 @@ describe('frame math', () => {
   it('returns null for statistics without valid samples', () => {
     expect(median([])).toBeNull();
     expect(percentile([], 0.95)).toBeNull();
-    expect(estimateBaselineFrameTime([0, Number.NaN, Number.POSITIVE_INFINITY])).toBeNull();
+    expect(
+      estimateBaselineFrameTime([0, Number.NaN, Number.POSITIVE_INFINITY]),
+    ).toBeNull();
   });
 
   it('calculates odd and even medians without mutating the source', () => {

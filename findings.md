@@ -14,6 +14,8 @@
 - 毛玻璃普通边缘不发光，仅选中的游戏、导航或实验选项允许强调光效。
 - 真实性能 HUD、30 秒 Benchmark、本地报告导出、微信 UA 标记和 feature detection。
 - 不模拟 CPU、GPU、温度、整机功耗或其他浏览器无法取得的数据。
+- 原始规格将 Motion Level 固定为 `off | low | medium | high | maximum`，Particle Count 为 `0 | 20 | 50 | 100 | maximum`，DPR 为 `native | cap-2 | cap-1.5`。
+- Benchmark 固定总长 30 秒：预热 3 秒、静止动态 8 秒、动态压力 8 秒、滚动和转场 8 秒、结果整理 3 秒；进入后台的数据必须排除并把结果标为未完整保持前台。
 
 ## Research Findings
 
@@ -21,10 +23,10 @@
 - 当前仓库根目录为 `C:/Project/lancelot-gamepal-ui-playground`，分支为 `main`，唯一远程为目标仓库 `origin`。
 - 当前目录此前为空，不含旧试验场代码，也未访问主项目仓库。
 - GitHub CLI 在 Windows 实际环境中登录为 `EasonXavier`，具备 `repo` 与 `workflow` scope。
-- 用户随后明确将 Demo 字体替换为 `LSVIS TD - Chinese Metadata Fixed.otf`；Web 字体家族名经 Windows PrivateFontCollection 验证为 `LSVIS TD`。
+- 用户随后明确将 Demo 字体替换为 `LSVIS TD.woff2`；文件具有有效 `wOF2` 签名，继续使用集中式 `LSVIS TD Demo` CSS family token。
 - GitHub API 验证字体文件大小为 2,982,360 bytes，blob SHA 为 `fdbd8b76283f9f9b41b0c5e95bda3dc44f4696b1`，原始下载地址来自 `raw.githubusercontent.com/EasonXavier/EasonXavier.github.io/main/...`。
 - 已下载字体，SHA-256 为 `AB0A8DEE8D2821F23616029A7FC8CE4BCAB3FFC46E6D6FDA7DB4D15273B132FF`，大小与 GitHub API 元数据一致。
-- 新字体大小为 7,207,444 bytes，SHA-256 为 `FED1647EF627BFA9E246D908CC20555D410C80A2917DB7B9CB5D6EDE253F5236`；旧 portal 字体在提交前移除，不作为最终素材。
+- 新 WOFF2 大小为 2,982,896 bytes，SHA-256 为 `4BBB34BD34B7525CFF4447E38192AA123614E4CFCB64B97CFA3DD169F16A84BC`；它替换 7,207,444 bytes 的 OTF，字体载荷减少约 58.6%。
 - 用户人物图原始尺寸为 1122×1402、仅带 DPI 信息；重新编码后的 `character-source.png` 为 RGB PNG、`info={}`、SHA-256 `64A4DCE7C8113641D4985EC7749B927E26DFD652137DA85EEF1F21FBAF970E0F`。
 - 当前沙箱 PATH 不含 `node`/`npm`；Codex bundled Node 位于 `.../dependencies/node/bin/node.exe`，bundled pnpm 版本为 11.9.0；`C:/Program Files/nodejs` 未发现系统安装。
 - 用户允许后续按需安装系统级 Node/npm；当前检查点使用 bundled Node 与已恢复的项目依赖即可完成验证，因此未增加电脑级安装或 PATH 改动。
@@ -33,6 +35,12 @@
 - `typescript-eslint@8.65.0` 支持 ESLint 10，但 TypeScript peer 范围为 `<6.1.0`；因此不能采用 registry 最新 TypeScript 7.0.2，需锁定 TypeScript 6.0.x。
 - 兼容选择为 TypeScript 6.0.3 与 `@types/node` 26.1.1；`@vitejs/plugin-react` 的额外 Babel/Rolldown peers 均标记为 optional，无需加入默认依赖。
 - Vite 8.1.5、Vitest 4.1.10 与 jsdom 29.1.1 均支持 bundled Node 24.14.0。
+- Task 3 的现有基础类型只有通用 `Availability`；新增快照必须把 `unsupported`、`waiting` 与 `not-measurable` 作为可观察状态，而不是用数值 0 代替。
+- 已安装的 `web-vitals@6.0.0` 从主入口导出 `onTTFB`、`onFCP`、`onLCP`、`onCLS` 与 `onINP`；实现可在应用挂载后动态导入该入口。
+- `web-vitals@6` 回调提供 `name`、`value`、`rating`、`delta` 与去重 `id`，注册函数不返回清理句柄；本地 store 停止后必须忽略迟到回调。
+- TypeScript DOM 声明已包含 `PerformanceObserver.supportedEntryTypes` 与 `PerformanceResourceTiming`，非标准 device memory/network 字段仍需通过窄接口注入和显式 `null` 表示不可用。
+- Task 3 采用按 entry type 共享的观察器注册表：同类多个消费者只创建一个底层 observer，最后一个 cleanup 才 disconnect；这避免 HUD 与报告层重复注册全局观察器。
+- 资源传输大小只有在所有条目提供正有限值时才汇总为 `available`；缺失或 0 统一标记 `not-measurable`，避免把跨域不可见数据误报为零流量。
 - 当前 typecheck 与 lint 均通过；帧数学与采样器为 2 files / 10 tests passed。
 - 原 lint 错误已通过将测试 fake cancel 改为无参数实现修复；未降低或关闭规则。
 - GitHub 远端 `main` 已包含基础提交 `9f26f73`、可部署入口/Pages 提交 `d20b849` 与构建元数据提交 `e26b75c`。
@@ -46,35 +54,37 @@
 
 ## Technical Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| 使用单页本地状态而非服务端路由 | Pages 子路径刷新可靠，无需后端 rewrite |
-| 将 RAF 采样写入固定容量环形缓冲 | 限制内存并避免 React 每帧渲染 |
-| HUD 通过订阅快照最多 4Hz 更新 | 控制观察工具自身开销 |
-| Visibility hidden 时暂停、visible 时清除后台长间隔并重新校准 | 防止后台节流污染帧指标 |
-| Glass Mode 只切换 CSS class/背景层策略 | 保持 DOM、内容与动画一致，便于公平比较 |
-| 角色原图作为独立 `<picture>`/背景层，UI 全部代码原生 | 可替换、可响应式裁切，避免把 UI 烘焙进图片 |
-| 使用 Canvas 2D 单层粒子，并按 DPR 上限调整 backing store | 在高 DPR 手机上控制像素成本 |
-| `portal-text` 通过 `@font-face` 和 CSS 变量集中引用 | 后期替换只需更改一处令牌 |
+| Decision                                                     | Rationale                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 使用单页本地状态而非服务端路由                               | Pages 子路径刷新可靠，无需后端 rewrite                              |
+| 将 RAF 采样写入固定容量环形缓冲                              | 限制内存并避免 React 每帧渲染                                       |
+| HUD 通过订阅快照最多 4Hz 更新                                | 控制观察工具自身开销                                                |
+| Visibility hidden 时暂停、visible 时清除后台长间隔并重新校准 | 防止后台节流污染帧指标                                              |
+| Glass Mode 只切换 CSS class/背景层策略                       | 保持 DOM、内容与动画一致，便于公平比较                              |
+| 角色原图作为独立 `<picture>`/背景层，UI 全部代码原生         | 可替换、可响应式裁切，避免把 UI 烘焙进图片                          |
+| 使用 Canvas 2D 单层粒子，并按 DPR 上限调整 backing store     | 在高 DPR 手机上控制像素成本                                         |
+| `LSVIS TD.woff2` 通过 `@font-face` 和 CSS 变量集中引用       | 使用更适合 Web 的压缩格式，后期替换仍只需更改一处令牌               |
+| Task 4 的 Benchmark 继续使用注入时钟与动作接口               | 保持状态机脱离 React，可用假时钟精确验证 3/8/8/8/3 秒阶段与取消恢复 |
+| 报告导出采用显式白名单模式而非递归复制应用状态               | 防止 cookie、token、IP、位置或用户身份字段意外进入本地报告          |
 
 ## Issues Encountered
 
-| Issue | Resolution |
-|-------|------------|
-| 沙箱 Git 用户与 Windows 目录所有者不同 | 对仓库级命令显式传入 `safe.directory`，不扩大系统信任范围 |
-| 初始图像生成误加未授权游戏图标 | 后续概念修正；最终规则由用户改为仅选中游戏可显示近似图标 |
-| `rg` 在“未找到占位语”时以退出码 1 结束 | 将其解释为自检通过，后续避免把无匹配当成实施失败 |
-| Web 打开 GitHub 二进制 blob 页面返回 cache miss | 改用 GitHub API 验证文件元数据与原始下载地址 |
-| 沙箱 PATH 无 `node`/`npm` 且标准 Program Files 路径不存在 | 使用 Codex bundled Node 与包管理运行时；继续定位可用 npm 入口以满足 npm 锁文件要求 |
+| Issue                                                              | Resolution                                                                                                                  |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| 沙箱 Git 用户与 Windows 目录所有者不同                             | 对仓库级命令显式传入 `safe.directory`，不扩大系统信任范围                                                                   |
+| 初始图像生成误加未授权游戏图标                                     | 后续概念修正；最终规则由用户改为仅选中游戏可显示近似图标                                                                    |
+| `rg` 在“未找到占位语”时以退出码 1 结束                             | 将其解释为自检通过，后续避免把无匹配当成实施失败                                                                            |
+| Web 打开 GitHub 二进制 blob 页面返回 cache miss                    | 改用 GitHub API 验证文件元数据与原始下载地址                                                                                |
+| 沙箱 PATH 无 `node`/`npm` 且标准 Program Files 路径不存在          | 使用 Codex bundled Node 与包管理运行时；继续定位可用 npm 入口以满足 npm 锁文件要求                                          |
 | bundled Python 不含 `fontTools`，无法读取 OTF 完整 name/license 表 | 不为一次性检查增加依赖；改用 Windows PrivateFontCollection 验证可加载且 family name 为 `LSVIS TD`，授权以用户明确提供为依据 |
-| 初次 GREEN 中刷新基准被长帧污染 | 测试捕获 8ms 预期变成 12ms；使用低四分位筛选稳定窗口后通过 |
-| 测试 fake cancel 的参数触发 lint | 改为类型兼容的无参数函数；lint 通过，规则保持启用 |
+| 初次 GREEN 中刷新基准被长帧污染                                    | 测试捕获 8ms 预期变成 12ms；使用低四分位筛选稳定窗口后通过                                                                  |
+| 测试 fake cancel 的参数触发 lint                                   | 改为类型兼容的无参数函数；lint 通过，规则保持启用                                                                           |
 
 ## Resources
 
 - 仓库：https://github.com/EasonXavier/lancelot-gamepal-ui-playground
 - 实际 Pages：https://easonx.me/lancelot-gamepal-ui-playground/
-- Demo 字体：用户提供的 `LSVIS TD - Chinese Metadata Fixed.otf`，仓库文件名为 `public/assets/fonts/lsvis-td-chinese.otf`
+- Demo 字体：用户提供的 `LSVIS TD.woff2`，仓库文件名为 `public/assets/fonts/lsvis-td.woff2`
 - 主界面概念：本次 Codex 会话生成的已确认概念图；仅作为实现参考，不作为仓库生产素材。
 - 控制面板概念：本次 Codex 会话生成的已确认概念图；仅作为实现参考，不作为仓库生产素材。
 
@@ -86,16 +96,26 @@
 - 普通玻璃：中性低透明细边框、内高光、模糊/折射、阴影和噪点；禁止边缘发光。
 - 选中态：允许暖色局部发光；底栏只突出“首页”。
 - 控制面板：大面积底部玻璃抽屉覆盖人物与入口；四种 Blur 实现同时可见但互斥选择；只有选中项发光。
+- 2026-07-27 用户明确选择 Task 5 方案 A：四种 Blur 共用唯一 React/DOM 结构，只切换模式类与表面策略；不采用四套组件或 Canvas 主导界面。
+
+## Task 5 Checkpoint: 2026-07-27
+
+- 首页使用唯一的 React/DOM 组合：`HomeScreen` 组装 `GameRail`、`ServiceGrid`、`BottomNav` 与 `ExperimentalPlaceholder`，四种 Glass mode 不渲染四套页面。
+- `GlassSurface` 始终保留同一子树，仅通过 `glass-surface--real`、`glass-surface--simulated`、`glass-surface--preblur` 或 `glass-surface--off` 切换表面策略；`data-glass-mode` 保持可观察。
+- 基础玻璃只使用中性边框、内高光和阴影；`glass-surface--selected` 是唯一引入 `--selected-glow` 的路径，游戏栏和底栏的选中状态明确使用 `aria-pressed`/`aria-current`。
+- 六个服务入口均可打开可见的 `Experimental / Mock` 对话框；四个游戏和五个底栏项保持要求的精确文案与 44px 级触摸目标。
 
 ## Resume Checkpoint
 
 1. 重读 `task_plan.md`、本文件和 `progress.md`。
-2. 确认工作树与最新提交状态，再运行 typecheck、lint 与 frame tests 复核基线。
-3. 从实施计划 Task 3 开始：先写 observers/environment 的失败测试，再写生产实现。
-4. 当前 Pages 仅发布明确标注开发状态的检查点；完整 UI 的 typecheck/lint/test/build、浏览器与安全验证完成前不要创建正式版本。
+2. 当前位于 Phase 4：Task 5 本地首页检查点已完成；确认工作树与最新提交状态后，从实施计划 Task 6 的 RED 阶段开始。
+3. 先为控制面板、HUD 与动效/生命周期写失败测试；随后才实现 Task 6，不回退到已完成的 Task 3。
+4. 本地 Task 5 检查点已通过 typecheck、lint、format、9 files / 46 tests 和生产 build；浏览器与安全验证完成前不要创建正式版本。
 
-发布检查点复核确认：三个规划文件均包含恢复检查点；现有门禁通过，可部署提交为 `d20b849`，Pages workflow 与线上检查点均已验证。
+历史发布背景：`d20b849`/`e26b75c` 的 GitHub Pages 推送与部署是真实的 earlier published checkpoint，保留其事实记录；本轮 Task 5 和当前 `agent/performance-observers` 分支只创建本地提交，没有 push、deploy、tag 或 release。
+
+恢复检查点复核确认：三个规划文件均包含当前 Phase 4/Task 6 RED 指令；历史 Pages 检查点与当前本地状态已明确区分。
 
 ---
 
-*每两次视觉、浏览或搜索后更新本文件。*
+_每两次视觉、浏览或搜索后更新本文件。_

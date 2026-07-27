@@ -12,7 +12,7 @@
 
 - 唯一仓库与工作目录是 `EasonXavier/lancelot-gamepal-ui-playground`；不得访问或修改 `EasonXavier/lancelot-gamepal`。
 - 品牌固定为“朗世乐”；首页只显示四个指定游戏、六个指定入口和五个指定底栏项。
-- `LSVIS TD - Chinese Metadata Fixed.otf` 仅作 Demo 字体，通过单一 CSS 变量引用并记录来源。
+- `LSVIS TD.woff2` 仅作 Demo 字体，通过单一 CSS 变量引用并记录来源。
 - 角色原图是用户提供且允许使用的公开素材；入库前移除 EXIF，并保持可替换。
 - 普通玻璃不得边缘发光；只有选中的游戏、导航或实验选项允许强调光效。
 - 四种 Glass Mode 共享内容、布局、图片、动画和 DOM，一次只激活一种，不隐藏渲染四套页面。
@@ -27,12 +27,14 @@
 ### Task 1: 工程基础、公开素材与设计系统
 
 **Files:**
+
 - Create: `package.json`, `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, `.prettierrc.json`, `.gitignore`, `index.html`
-- Create: `public/assets/character-source.png`, `public/assets/fonts/lsvis-td-chinese.otf`
+- Create: `public/assets/character-source.png`, `public/assets/fonts/lsvis-td.woff2`
 - Create: `src/styles/tokens.css`, `src/styles/global.css`, `src/styles/motion.css`, `src/buildInfo.ts`
 - Create: `ASSET_SOURCES.md`, `SECURITY.md`, `LICENSE`
 
 **Interfaces:**
+
 - Produces: `BuildInfo { version: string; buildVersion: string }`, CSS variables `--font-brand`, `--glass-*`, `--accent-*`, `--safe-*`.
 
 - [x] **Step 1: Create configuration and scripts**
@@ -56,10 +58,12 @@
 ### Task 2: 帧数学、环形缓冲与采样器（TDD）
 
 **Files:**
+
 - Create: `src/performance/types.ts`, `src/performance/ringBuffer.ts`, `src/performance/frameMath.ts`, `src/performance/frameSampler.ts`
 - Test: `tests/performance/frameMath.test.ts`, `tests/performance/frameSampler.test.ts`
 
 **Interfaces:**
+
 - Produces: `median(values: readonly number[]): number | null`, `percentile(values, quantile): number | null`, `estimateDroppedFrames(intervals, baseline): number`, `FrameSampler.start()`, `pause()`, `resume()`, `reset()`, `subscribe(listener)`, `getSnapshot()`.
 
 - [x] **Step 1: Write failing frame-math tests**
@@ -85,99 +89,109 @@
 ### Task 3: 浏览器性能观察与环境能力（TDD）
 
 **Files:**
+
 - Create: `src/performance/webVitals.ts`, `src/performance/mainThreadMetrics.ts`, `src/performance/navigationMetrics.ts`, `src/performance/resourceMetrics.ts`, `src/performance/environmentInfo.ts`
 - Test: `tests/performance/observers.test.ts`, `tests/performance/environmentInfo.test.ts`
 
 **Interfaces:**
+
 - Produces: `PerformanceCapabilities`, `WebVitalsSnapshot`, `MainThreadSnapshot`, `ResourceSnapshot`, `EnvironmentSnapshot`, each using explicit availability states rather than numeric sentinel zeroes.
 
-- [ ] **Step 1: Write failing capability tests**
+- [x] **Step 1: Write failing capability tests**
 
   Verify unsupported PerformanceObserver entry types return `{ status: 'unsupported' }`; INP without interaction returns `waiting`; missing transfer sizes return `not-measurable`; unavailable device memory/network fields remain `null`.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
   Run `npm test -- tests/performance/observers.test.ts tests/performance/environmentInfo.test.ts`. Expected: FAIL on missing modules.
 
-- [ ] **Step 3: Implement observer factories and cleanup**
+- [x] **Step 3: Implement observer factories and cleanup**
 
   Feature-detect `navigation`, `paint`, `largest-contentful-paint`, `layout-shift`, `event`, `longtask`, and `long-animation-frame`; return cleanup functions and never register duplicate global observers.
 
-- [ ] **Step 4: Integrate `web-vitals` lazily**
+- [x] **Step 4: Integrate `web-vitals` lazily**
 
   Dynamically import `web-vitals` after app mount so first render is not blocked; store real TTFB/FCP/LCP/CLS/INP values and their rating/delta when emitted.
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
   Run both test files. Expected: PASS with mocked browser capability surfaces and no unhandled promise rejection.
 
 ### Task 4: 设置状态、报告与 30 秒 Benchmark（TDD）
 
 **Files:**
+
 - Create: `src/experiments/settings.ts`, `src/performance/reportExporter.ts`, `src/performance/benchmarkRunner.ts`
 - Test: `tests/experiments/settings.test.ts`, `tests/performance/reportExporter.test.ts`, `tests/performance/benchmarkRunner.test.ts`
 
 **Interfaces:**
+
 - Produces: `ExperimentSettings`, `GlassMode = 'real' | 'simulated' | 'preblur' | 'off'`, `MotionLevel`, `DprMode`; `serializeReport(snapshot): string`; `BenchmarkRunner.start(context)`, `cancel()`, `getState()`.
 
-- [ ] **Step 1: Write failing settings tests**
+- [x] **Step 1: Write failing settings tests**
 
   Verify one Glass Mode at a time, immediate immutable setting updates, reduced-motion override, DPR caps, reset behavior, and schema-versioned local persistence without rebuilding app state.
 
-- [ ] **Step 2: Write failing report tests**
+- [x] **Step 2: Write failing report tests**
 
   Verify stable JSON schema, explicit estimate labels, null/unsupported serialization, and absence of cookie/token/IP/location/user identity fields.
 
-- [ ] **Step 3: Write failing Benchmark tests**
+- [x] **Step 3: Write failing Benchmark tests**
 
   Using a fake clock, verify exact phases `warmup 3s → ambient 8s → stress 8s → scroll-transition 8s → summarize 3s`, foreground completeness tracking, background sample exclusion, cancellation, and restoration of scroll/category/particle/panel state.
 
-- [ ] **Step 4: Run RED**
+- [x] **Step 4: Run RED**
 
   Run the three test files. Expected: FAIL because settings/report/runner modules are missing.
 
-- [ ] **Step 5: Implement minimal modules and run GREEN**
+- [x] **Step 5: Implement minimal modules and run GREEN**
 
   Keep the runner independent of React using injected clock/actions/snapshot functions. Rerun all three test files. Expected: PASS.
 
 ### Task 5: 主界面、Glass Surface 与交互壳（TDD）
 
 **Files:**
+
 - Create: `src/main.tsx`, `src/App.tsx`, `src/experiments/home/HomeScreen.tsx`
 - Create: `src/components/glass/GlassSurface.tsx`, `src/components/navigation/GameRail.tsx`, `src/components/navigation/BottomNav.tsx`, `src/components/controls/ServiceGrid.tsx`, `src/components/controls/ExperimentalPlaceholder.tsx`
 - Test: `tests/ui/homeScreen.test.tsx`, `tests/ui/glassSurface.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `ExperimentSettings`, `GlassMode`.
 - Produces: accessible controls with exact copy and `data-glass-mode`, `data-selected`, `aria-current`, `aria-pressed` state.
 
-- [ ] **Step 1: Write failing UI tests**
+- [x] **Step 1: Write failing UI tests**
 
   Assert brand “朗世乐”; exactly four games; selected 三角洲行动 with icon while unselected games have no logo; six exact service names; five exact bottom items; 44px-class tap targets; each service opens a visible `Experimental / Mock` placeholder.
 
-- [ ] **Step 2: Write failing glass tests**
+- [x] **Step 2: Write failing glass tests**
 
   Render every Glass Mode and verify one DOM subtree with only the mode class changing; base surfaces lack selected-glow class; selected tab receives it.
 
-- [ ] **Step 3: Run RED**
+- [x] **Step 3: Run RED**
 
   Run `npm test -- tests/ui/homeScreen.test.tsx tests/ui/glassSurface.test.tsx`. Expected: FAIL on missing components.
 
-- [ ] **Step 4: Implement the approved composition**
+- [x] **Step 4: Implement the approved composition**
 
   Use a full-viewport character layer, compact HUD area, 50-56px game rail, 12-column variable rectangular service grid, fixed safe-area bottom nav, and code-native SVG line icons.
 
-- [ ] **Step 5: Run GREEN and accessibility assertions**
+- [x] **Step 5: Run GREEN and accessibility assertions**
 
   Rerun both tests. Expected: PASS without duplicate roles or inaccessible icon-only buttons.
+
+  Checkpoint evidence: full bundled-Node gate on 2026-07-27 passed typecheck, ESLint, Prettier, 9 Vitest files / 46 tests, and production Vite build. The generated `dist/index.html` references `/lancelot-gamepal-ui-playground/` assets; copy/mode scans and `git diff --check` also exited 0.
 
 ### Task 6: 控制面板、HUD、动效与粒子（TDD）
 
 **Files:**
+
 - Create: `src/components/controls/ExperimentPanel.tsx`, `src/components/performance/PerformanceHud.tsx`, `src/hooks/useViewportHeight.ts`, `src/hooks/useVisibility.ts`, `src/experiments/motion/ParticleField.tsx`, `src/experiments/motion/useTouchParallax.ts`
 - Test: `tests/ui/experimentPanel.test.tsx`, `tests/ui/performanceHud.test.tsx`, `tests/hooks/lifecycle.test.tsx`
 
 **Interfaces:**
+
 - Consumes: settings store, frame sampler and observer snapshots.
 - Produces: mutually exclusive control groups, HUD compact/expanded/hidden states, a single cleaned-up Canvas RAF loop, CSS variable `--app-height`.
 
@@ -204,11 +218,13 @@
 ### Task 7: 文档、CI、Pages 与全量验证
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`, `.github/workflows/deploy-pages.yml`
 - Create: `README.md`, `docs/ui-exploration-plan.md`, `docs/performance-metrics.md`, `docs/device-test-template.md`
 - Modify: `task_plan.md`, `findings.md`, `progress.md`
 
 **Interfaces:**
+
 - Produces: CI and Pages pipelines using locked dependencies, `dist/` artifact, public documentation matching actual implementation.
 
 - [ ] **Step 1: Create workflows and documentation**
