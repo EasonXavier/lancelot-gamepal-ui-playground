@@ -76,6 +76,8 @@
   - 实现隐私白名单报告 schema；Estimated Dropped Frames 带 `Estimated` 标签，unsupported/not-measurable/null 原样保留。
   - 实现注入时钟的 30 秒 Benchmark：3/8/8/8/3 秒阶段、后台样本暂停、前台完整性标记、完成/取消恢复现场。
   - Task 4 最终门禁：typecheck 0、lint 0、7 files / 32 tests、18 modules production build 全部通过。
+  - 创建本地功能检查点 `d7a7ea1`（`feat: add experiment settings and benchmark`），未推送、未部署。
+  - 将工作构建号更新为 `0.1.0+20260727.1356.d7a7ea1`，正式版本字段仍保持 `0.1.0`。
 
 ## Test Results
 
