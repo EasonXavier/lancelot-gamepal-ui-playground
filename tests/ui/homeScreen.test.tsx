@@ -29,6 +29,19 @@ describe('home controls', () => {
     expect(screen.getAllByTestId('game-logo')).toHaveLength(1);
   });
 
+  it('marks the controlled selected game as pressed', () => {
+    render(<GameRail mode="real" selectedGame="delta" onSelect={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: '三角洲行动' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'CS2' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
   it('renders six varied service buttons with 44px targets', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn<(service: ServiceName) => void>();

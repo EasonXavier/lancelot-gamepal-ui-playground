@@ -26,6 +26,7 @@ export function GameRail({ mode, selectedGame, onSelect }: GameRailProps) {
 
         return (
           <button
+            aria-pressed={selected}
             className="tap-target game-rail__item"
             key={game.id}
             onClick={() => onSelect(game.id)}
