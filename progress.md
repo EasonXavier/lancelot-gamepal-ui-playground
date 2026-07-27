@@ -81,16 +81,18 @@
 | 2026-07-27 12:42 +08:00 | 生产构建无法解析 `index.html` 引用的 `/src/main.tsx` | 1 | 确认仓库尚无 React 入口；以失败构建作为回归门禁，补齐明确标注开发状态的最小入口，再重新运行完整构建 |
 | 2026-07-27 12:48 +08:00 | TypeScript TS2882 不接受新增入口的 CSS 副作用导入 | 1 | 确认缺少 Vite 模板的客户端类型声明；新增 `src/vite-env.d.ts`，不降低严格模式或跳过类型检查 |
 
-## Pause Checkpoint: 2026-07-27
+## Published Checkpoint: 2026-07-27
 
-- **Reason:** 用户要求先结束当前会话内任务并更新文档，稍后继续。
-- **Repository:** PUBLIC remote exists; local `main` has deployable checkpoint `d20b849`; no push has been performed yet.
-- **Completed:** 独立仓库创建、视觉规格确认、详细实施计划、依赖锁定与安装、素材清理/登记、设计令牌、帧核心 TDD。
-- **Validated:** typecheck passes; lint passes; 2 frame test files / 10 tests pass; npm audit reported 0 vulnerabilities at install time.
-- **Not yet validated:** full application build, preview, mobile/browser QA, GitHub Actions, Pages.
-- **Not performed:** push, Pages source configuration, deployment, release or tag.
+- **Reason:** 用户恢复任务并明确要求推送 GitHub、部署 Pages。
+- **Repository:** PUBLIC `origin/main` contains deployable checkpoint `d20b849` and metadata commit `e26b75c`.
+- **Completed:** 独立仓库创建、视觉规格确认、详细实施计划、依赖锁定与安装、素材清理/登记、设计令牌、帧核心 TDD、最小检查点入口、Pages workflow、远端推送与首次部署。
+- **Validated:** typecheck、lint、2 frame test files / 10 tests、production build、390×844 local preview、公开仓库扫描、GitHub Actions build/deploy 与线上 390×844 页面检查均通过。
+- **Published URL:** `https://easonx.me/lancelot-gamepal-ui-playground/`
+- **GitHub Actions evidence:** run `30239061058`; build and deploy jobs both concluded `success`.
+- **Not yet validated:** 完整 UI、五个指定视口与横屏、微信 UA、HUD、报告导出和完整视觉 fidelity。
+- **Not performed:** release or tag.
 - **Resume command context:** sandbox has no PATH npm; use bundled Node directly with project-local tool entrypoints. The user permits a future system-wide Node/npm installation if needed, but this checkpoint does not require or perform one.
-- **Checkpoint verification:** `task_plan.md`、`findings.md`、本文件与详细实施计划均已更新；本地检查点已提交，后续工作从未完成的 UI 实现继续。
+- **Checkpoint verification:** `task_plan.md`、`findings.md`、本文件与详细实施计划均已更新；公开检查点已部署，后续工作从未完成的 UI 实现继续。
 
 ## 5-Question Reboot Check
 
@@ -100,7 +102,7 @@
 | Where am I going? | 性能核心、UI、验证、部署与证据交付 |
 | What's the goal? | 建立独立公开的朗世乐移动 UI 性能试验场 |
 | What have I learned? | 见 `findings.md` |
-| What have I done? | 已完成仓库隔离、视觉确认和独立 GitHub 仓库创建 |
+| What have I done? | 已完成仓库隔离、视觉确认、可部署检查点、GitHub Actions 与 Pages 发布 |
 
 ---
 

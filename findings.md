@@ -35,10 +35,12 @@
 - Vite 8.1.5、Vitest 4.1.10 与 jsdom 29.1.1 均支持 bundled Node 24.14.0。
 - 当前 typecheck 与 lint 均通过；帧数学与采样器为 2 files / 10 tests passed。
 - 原 lint 错误已通过将测试 fake cancel 改为无参数实现修复；未降低或关闭规则。
-- Git 本地 `main` 已创建基础提交 `9f26f73` 与可部署入口/Pages 提交 `d20b849`；尚未 push、尚未启用 Pages、尚未运行线上验证。
+- GitHub 远端 `main` 已包含基础提交 `9f26f73`、可部署入口/Pages 提交 `d20b849` 与构建元数据提交 `e26b75c`。
 - 首次生产构建稳定失败于 `Failed to resolve /src/main.tsx`；根因是 `index.html` 已声明入口但 Phase 2 尚未创建该文件，而非 Vite、React 或 Node 版本不兼容。
 - 新增入口后的 TS2882 来自缺少 `vite/client` 类型声明；补齐标准 `src/vite-env.d.ts` 即可让 CSS 副作用导入保留类型安全。
-- GitHub 官方 Actions 的当前稳定主版本已通过仓库 API 核对：checkout v7、setup-node v7、configure-pages v6、upload-pages-artifact v5、deploy-pages v5；Pages API 当前返回未配置。
+- GitHub 官方 Actions 的当前稳定主版本已通过仓库 API 核对：checkout v7、setup-node v7、configure-pages v6、upload-pages-artifact v5、deploy-pages v5；Pages 已启用为 workflow 发布源。
+- GitHub Actions run `30239061058` 的 build 与 deploy job 均成功；实际 Pages 地址继承账号自定义域名，为 `https://easonx.me/lancelot-gamepal-ui-playground/`。
+- 线上 390×844 验证确认页面标题、语义结构、工作构建号、字体族、人物资源 URL 与 Pages 子路径正确；`clientWidth`/`scrollWidth` 均为 390，控制台无 error/warning。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
@@ -71,7 +73,7 @@
 ## Resources
 
 - 仓库：https://github.com/EasonXavier/lancelot-gamepal-ui-playground
-- 预期 Pages：https://easonxavier.github.io/lancelot-gamepal-ui-playground/
+- 实际 Pages：https://easonx.me/lancelot-gamepal-ui-playground/
 - Demo 字体：用户提供的 `LSVIS TD - Chinese Metadata Fixed.otf`，仓库文件名为 `public/assets/fonts/lsvis-td-chinese.otf`
 - 主界面概念：本次 Codex 会话生成的已确认概念图；仅作为实现参考，不作为仓库生产素材。
 - 控制面板概念：本次 Codex 会话生成的已确认概念图；仅作为实现参考，不作为仓库生产素材。
@@ -90,9 +92,9 @@
 1. 重读 `task_plan.md`、本文件和 `progress.md`。
 2. 确认工作树与最新提交状态，再运行 typecheck、lint 与 frame tests 复核基线。
 3. 从实施计划 Task 3 开始：先写 observers/environment 的失败测试，再写生产实现。
-4. 完整 typecheck/lint/test/build、浏览器与安全验证前不要部署 Pages 或创建正式版本。
+4. 当前 Pages 仅发布明确标注开发状态的检查点；完整 UI 的 typecheck/lint/test/build、浏览器与安全验证完成前不要创建正式版本。
 
-本地发布准备复核确认：三个规划文件均包含恢复检查点；现有门禁通过，可部署提交为 `d20b849`，尚未推送或部署。
+发布检查点复核确认：三个规划文件均包含恢复检查点；现有门禁通过，可部署提交为 `d20b849`，Pages workflow 与线上检查点均已验证。
 
 ---
 

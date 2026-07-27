@@ -51,20 +51,20 @@ Phase 2
 
 ### Phase 5: 验证、文档与公开安全
 
-- [ ] 通过 typecheck、lint、test、build 和 preview
+- [x] 通过 typecheck、lint、test、build 和 preview
 - [ ] 验证五个指定视口、横屏、Safe Area、旋转、微信 UA 和无横向溢出
 - [ ] 对照视觉概念完成截图、fidelity ledger 和性能功能检查
 - [ ] 完成 README、指标说明、设备模板、SECURITY 与素材来源
-- [ ] 执行敏感信息、绝对路径、未授权素材与 staged diff 检查
-- **Status:** pending
+- [x] 执行敏感信息、绝对路径、未授权素材与 staged diff 检查
+- **Status:** in_progress
 
 ### Phase 6: 提交、部署与交付证据
 
-- [ ] 提交并推送 `main`
-- [ ] 启用 GitHub Actions Pages 发布源并运行 CI/部署
+- [x] 提交并推送 `main`
+- [x] 启用 GitHub Actions Pages 发布源并运行 CI/部署
 - [ ] 验证线上 HTML、CSS、JS、图片、路由、HUD 与报告导出
 - [ ] 提供完整的仓库、构建、测试、截图、部署和限制证据
-- **Status:** pending
+- **Status:** in_progress
 
 ## Key Questions
 
