@@ -1,0 +1,43 @@
+.glass-surface {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: inherit;
+  background: var(--glass-fill);
+  box-shadow: var(--glass-inner-highlight), var(--glass-shadow);
+}
+
+.glass-surface--real {
+  -webkit-backdrop-filter: blur(var(--blur-real)) saturate(1.12);
+  backdrop-filter: blur(var(--blur-real)) saturate(1.12);
+}
+
+.glass-surface--simulated {
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.07), transparent 48%),
+    var(--glass-fill-strong);
+}
+
+.glass-surface--preblur::before {
+  position: absolute;
+  z-index: -1;
+  inset: -28px;
+  background: url('/assets/character-source.png') center 34% / cover;
+  content: '';
+  filter: blur(var(--blur-real)) saturate(0.9);
+  opacity: 0.5;
+  transform: scale(1.08);
+}
+
+.glass-surface--off {
+  background: var(--glass-fill-strong);
+}
+
+.glass-surface--selected {
+  border-color: var(--glass-border-selected);
+  box-shadow:
+    var(--glass-inner-highlight),
+    var(--glass-shadow),
+    var(--selected-glow);
+}
