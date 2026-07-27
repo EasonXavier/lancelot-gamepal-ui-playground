@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ExperimentalPlaceholder } from '../../components/controls/ExperimentalPlaceholder';
 import { ExperimentPanel } from '../../components/controls/ExperimentPanel';
 import { ServiceGrid, type ServiceName } from '../../components/controls/ServiceGrid';
 import { BottomNav, type BottomNavId } from '../../components/navigation/BottomNav';
 import { GameRail, type GameId } from '../../components/navigation/GameRail';
+import { ParticleField } from '../motion/ParticleField';
+import { useTouchParallax } from '../motion/useTouchParallax';
 import type { ExperimentSettings } from '../settings';
+import '../motion/motion.css';
 import './home-screen.css';
 
 export interface HomeScreenProps {
   settings: ExperimentSettings;
+  effectiveSettings: ExperimentSettings;
   panelOpen: boolean;
+  visible: boolean;
   onPanelOpenChange: (open: boolean) => void;
   onSettingsChange: (patch: Partial<ExperimentSettings>) => void;
   onSettingsReset: () => void;
@@ -17,7 +22,9 @@ export interface HomeScreenProps {
 
 export function HomeScreen({
   settings,
+  effectiveSettings,
   panelOpen,
+  visible,
   onPanelOpenChange,
   onSettingsChange,
   onSettingsReset,
@@ -25,10 +32,30 @@ export function HomeScreen({
   const [selectedGame, setSelectedGame] = useState<GameId>('delta');
   const [selectedNav, setSelectedNav] = useState<BottomNavId>('home');
   const [activeService, setActiveService] = useState<ServiceName | null>(null);
+  const screenRef = useRef<HTMLElement>(null);
   const mode = settings.glassMode;
+  const particlePaused =
+    !visible ||
+    !effectiveSettings.backgroundMotion ||
+    effectiveSettings.motionLevel === 'off';
+
+  useTouchParallax(screenRef, effectiveSettings.touchParallax);
 
   return (
-    <main className="home-screen" data-glass-mode={mode}>
+    <main
+      className="home-screen"
+      data-card-float={effectiveSettings.cardFloat}
+      data-glass-mode={mode}
+      data-motion-level={effectiveSettings.motionLevel}
+      ref={screenRef}
+    >
+      {effectiveSettings.particleCount !== 0 ? (
+        <ParticleField
+          count={effectiveSettings.particleCount}
+          dprMode={effectiveSettings.dprMode}
+          paused={particlePaused}
+        />
+      ) : null}
       <div
         aria-hidden="true"
         className="home-screen__character"

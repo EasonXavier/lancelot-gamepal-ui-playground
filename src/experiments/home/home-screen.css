@@ -32,6 +32,12 @@
   background-repeat: no-repeat;
   background-size: cover;
   filter: saturate(0.74) contrast(1.04);
+  transform: translate3d(
+    calc(var(--parallax-x, 0) * 12px),
+    calc(var(--parallax-y, 0) * 12px),
+    0
+  );
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .home-screen__header {
@@ -92,6 +98,24 @@
 .home-screen .service-card {
   border-radius: var(--radius-md);
   font-size: clamp(13px, 3.6vw, 16px);
+}
+
+.home-screen[data-card-float='true'] .service-card {
+  animation: home-card-float 4.5s var(--ease-out) infinite alternate;
+}
+
+.home-screen .service-card:active {
+  transform: scale(0.98);
+}
+
+@keyframes home-card-float {
+  from {
+    translate: 0 0;
+  }
+
+  to {
+    translate: 0 -3px;
+  }
 }
 
 .home-screen .bottom-nav {

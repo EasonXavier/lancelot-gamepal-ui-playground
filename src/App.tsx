@@ -1,9 +1,13 @@
 import { useCallback, useState } from 'react';
 import { HomeScreen } from './experiments/home/HomeScreen';
+import { useReducedMotion } from './hooks/useReducedMotion';
+import { useViewportHeight } from './hooks/useViewportHeight';
+import { useVisibility } from './hooks/useVisibility';
 import {
   createDefaultSettings,
   loadSettings,
   resetSettings,
+  resolveEffectiveSettings,
   saveSettings,
   updateSettings,
   type ExperimentSettings,
@@ -12,6 +16,10 @@ import {
 export function App() {
   const [settings, setSettings] = useState(loadInitialSettings);
   const [panelOpen, setPanelOpen] = useState(false);
+  const systemReducedMotion = useReducedMotion();
+  const visible = useVisibility();
+  useViewportHeight();
+  const effectiveSettings = resolveEffectiveSettings(settings, systemReducedMotion);
 
   const changeSettings = useCallback((patch: Partial<ExperimentSettings>) => {
     setSettings((current) => {
@@ -35,7 +43,9 @@ export function App() {
       onSettingsChange={changeSettings}
       onSettingsReset={reset}
       panelOpen={panelOpen}
+      effectiveSettings={effectiveSettings}
       settings={settings}
+      visible={visible}
     />
   );
 }
