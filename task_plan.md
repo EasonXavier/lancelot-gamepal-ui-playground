@@ -8,7 +8,7 @@
 
 ## Next Step
 
-恢复后从 Task 5 主界面与 Glass Surface 的 RED 阶段继续；Task 4 已通过 typecheck、lint、32 项测试和生产构建。
+等待用户选择 Task 5 的执行方式；随后从单一 DOM Glass Surface 的 RED 阶段继续。Task 4 已通过 typecheck、lint、32 项测试和生产构建。
 
 ## Current Phase
 

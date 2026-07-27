@@ -133,6 +133,9 @@
 - 用户明确选择方案 A：所有 Blur 模式共用同一 DOM，仅切换模式类。
 - 已生成 `docs/superpowers/specs/2026-07-27-home-glass-surface-design.md`，范围限定为 Task 5 首页、Glass Surface、游戏栏、服务网格、底栏与 Experimental/Mock 占位层。
 - 设计规格明确了组件边界、数据流、四种玻璃降级语义、可访问性、测试验收与非目标；等待规格书面复核后再进入实施计划。
+- 用户已书面确认规格无修改。
+- 已依据当前检查点代码编写 Task 5 专项实施计划 `docs/superpowers/plans/2026-07-27-home-glass-surface.md`；计划识别到 `src/main.tsx` 已存在，Task 5 应修改当前 `App.tsx` 而非重复创建入口。
+- 实施计划自检通过：604 行、34 个成对代码围栏、无禁用占位语或行尾空白；四个任务覆盖规格且保持 Task 6/7 边界。
 
 ## Published Checkpoint: 2026-07-27
 
