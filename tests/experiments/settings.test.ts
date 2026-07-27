@@ -111,4 +111,26 @@ describe('experiment settings', () => {
     expect(reset).toEqual(createDefaultSettings());
     expect(reset).not.toBe(changed);
   });
+
+  it('falls back to defaults when storage access throws', () => {
+    const storage: SettingsStorage = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => undefined,
+    };
+
+    expect(loadSettings(storage)).toEqual(createDefaultSettings());
+  });
+
+  it('does not throw when saving to denied storage', () => {
+    const storage: SettingsStorage = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('blocked');
+      },
+    };
+
+    expect(() => saveSettings(storage, createDefaultSettings())).not.toThrow();
+  });
 });

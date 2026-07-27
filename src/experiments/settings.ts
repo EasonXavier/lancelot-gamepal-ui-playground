@@ -91,18 +91,22 @@ export function saveSettings(
   storage: SettingsStorage,
   settings: ExperimentSettings,
 ): void {
-  storage.setItem(
-    SETTINGS_STORAGE_KEY,
-    JSON.stringify({ schemaVersion: SETTINGS_SCHEMA_VERSION, settings }),
-  );
+  try {
+    storage.setItem(
+      SETTINGS_STORAGE_KEY,
+      JSON.stringify({ schemaVersion: SETTINGS_SCHEMA_VERSION, settings }),
+    );
+  } catch {
+    // Persistence is optional when browser storage is unavailable or denied.
+  }
 }
 
 export function loadSettings(storage: SettingsStorage): ExperimentSettings {
-  const serialized = storage.getItem(SETTINGS_STORAGE_KEY);
-  if (!serialized) {
-    return createDefaultSettings();
-  }
   try {
+    const serialized = storage.getItem(SETTINGS_STORAGE_KEY);
+    if (!serialized) {
+      return createDefaultSettings();
+    }
     const parsed: unknown = JSON.parse(serialized);
     if (!isPersistedSettings(parsed)) {
       return createDefaultSettings();

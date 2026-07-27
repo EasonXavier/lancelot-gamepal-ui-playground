@@ -139,6 +139,14 @@
 | 2026-07-27 14:20 +08:00 | 沙箱拒绝在隔离 worktree 创建 `docs/superpowers/specs` 目录                                        | 1       | 在用户确认方案 A 后，于已授权 Windows 上下文创建这一精确规格目录；未扩大写入范围                                                              |
 | 2026-07-27 14:24 +08:00 | Git 无法在主仓库 worktree 元数据中创建 `index.lock`                                               | 1       | 规格自检通过后，在已授权 Windows 上下文执行同一组精确暂存与提交命令                                                                           |
 | 2026-07-27 14:25 +08:00 | 授权上下文的 Git 拒绝 worktree 所有权并使后续命令退化为 `--no-index`                              | 2       | 不修改全局配置；改为对每条 Git 命令显式传入该 worktree 的 `safe.directory`                                                                    |
+| 2026-07-27 22:02 +08:00 | `gh pr checks` 对没有检查项的分支返回退出码 1                                                     | 1       | 使用 PR mergeability、本地 48 项门禁和合并后 Pages workflow 的 lint/test/build 结果作为合并证据                                               |
+| 2026-07-27 22:04 +08:00 | 主工作树 ESLint 递归扫描嵌套已合并 worktree，发现两个 `tsconfig` 根并报 68 个解析错误             | 1       | 确认 GitHub Actions 干净 checkout 已通过；移除已合并 worktree 后相同主分支门禁 9 files / 48 tests 全部通过                                    |
+| 2026-07-27 22:10 +08:00 | 沙箱拒绝在新的 Task 6 worktree 创建 `node_modules` 目录联接                                       | 1       | 在已授权 Windows 上下文创建仅指向项目既有依赖目录的 junction；没有下载、升级或全局安装依赖                                                    |
+| 2026-07-27 22:12 +08:00 | 新规划记录未符合 Prettier，沙箱随后拒绝格式化器覆写 worktree 文件                                 | 1       | 在已授权 Windows 上下文仅机械格式化三份规划文档；随后 typecheck、lint、format 与 48 项测试全部通过                                            |
+| 2026-07-28 01:48 +08:00 | 恢复时用 `rg --files` 同时搜索尚未创建的 `src/hooks`，在输出有效 performance 文件后返回退出码 2   | 1       | 确认 `src/hooks` 正是 Task 6.2 待创建目录；后续只对已存在目录搜索，不把预期缺失误判为回归                                                     |
+| 2026-07-28 04:49 +08:00 | 最终 Vite 构建在清理 worktree `dist/assets` 时被沙箱拒绝                                          | 1       | 确认 52 modules 已转换且失败仅在输出清理；在授权上下文重跑相同构建，140ms 成功                                                                |
+| 2026-07-28 04:50 +08:00 | 初始绝对路径扫描把 diff 元数据中的 `src/experiments/home/` 误判为 Unix `/home/`                   | 1       | 输出匹配行确认均为 Git header；将扫描限定到新增内容和带用户名层级的绝对路径后重跑，17 files 全部 0 匹配                                       |
+| 2026-07-28 04:55 +08:00 | PowerShell `Start-Process` 因沙箱同时注入 `Path`/`PATH` 而发生环境字典冲突                        | 2       | 不修改系统环境；改用隐藏、无窗口的最小环境 `ProcessStartInfo` 启动本地预览，HTTP 200 后完成浏览器验证并终止进程                               |
 
 ## Task 5 Design Gate: 2026-07-27
 
@@ -168,13 +176,83 @@
 
 ## 5-Question Reboot Check
 
-| Question             | Answer                                                                                    |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| Where am I?          | Phase 4：Task 5 本地首页检查点完成，Task 6 尚未开始                                       |
-| Where am I going?    | Task 6 RED：控制面板、HUD、动效与生命周期测试/实现                                        |
-| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                                    |
-| What have I learned? | 见 `findings.md`                                                                          |
-| What have I done?    | 已完成历史公开检查点；当前分支已完成 Task 5 本地检查点、46 tests 与 build，尚未推送或部署 |
+| Question             | Answer                                                                 |
+| -------------------- | ---------------------------------------------------------------------- |
+| Where am I?          | Phase 4：Task 6.1 已提交，用户要求停止测试并暂停                       |
+| Where am I going?    | 恢复时进入 Task 6.2 RED：动效与生命周期测试/实现                       |
+| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                 |
+| What have I learned? | 见 `findings.md`                                                       |
+| What have I done?    | Task 6.1 已提交为 `115018a`；暂停前 10 files / 54 tests 与静态门禁通过 |
+
+## Task 5 Merge and Pages Deployment: 2026-07-27
+
+- PR #1 从 `agent/performance-observers` 合并到 `main`，merge commit 为 `4f42867`；保留完整阶段性提交历史。
+- GitHub Pages workflow run `30273041434`：build 25s、deploy 29s，最终 conclusion 为 `success`。
+- 线上 `https://easonx.me/lancelot-gamepal-ui-playground/` 返回 HTTP 200，并加载新哈希 `index-DCtTWxh3.js` / `index-BsZojuUi.css`。
+- 在线 JS/CSS 已确认包含朗世乐品牌、原生 modal backdrop，以及人物和 WOFF2 的 `/lancelot-gamepal-ui-playground/` 子路径。
+- 本地 `main` 已 fast-forward 到 `4f42867`；已合并 worktree 和本地功能分支已清理，远端 PR/分支历史保留。
+- 合并后主工作树重新通过 typecheck、ESLint、Prettier 和 9 files / 48 tests。
+- `gh pr checks` 因仓库没有 PR checks 返回退出码 1；改以 PR mergeability、本地门禁及 Pages workflow 内的 lint/test/build 作为合并证据。
+- 主工作树第一次 ESLint 因嵌套 linked worktree 同时暴露两个 `tsconfig` 根而失败；清理已合并 worktree 后同一命令通过。
+
+## Phase 4: Task 6 experiment controls start
+
+- 从已部署的 `main` merge commit `4f42867` 创建隔离分支 `agent/experiment-controls` 与 `.worktrees/experiment-controls`。
+- 合并/部署规划记录通过可恢复 stash 精确迁移到新 worktree，stash 已成功应用并删除。
+- 复用主项目现有 `node_modules` 目录联接；未修改电脑级 Node/npm 或全局依赖。
+- 新 worktree 基线：typecheck、ESLint、Prettier、9 files / 48 tests 全部通过。
+- Task 6 规格审计未发现阻塞性歧义；控制面板保持非模态，由 `App` 持有运行时设置，粒子上限采用本地常量 160。
+- 已创建 `docs/superpowers/plans/2026-07-27-experiment-controls-motion-hud.md`，拆分为设置面板、动效生命周期、性能 HUD、Benchmark/报告四个 TDD 任务；40 个代码围栏成对且无占位文本。
+
+## Pause Checkpoint: 2026-07-27
+
+- 用户要求保存当前进度并停止测试；已终止正在运行的 Task 6.1 独立审查，未启动 Task 6.2。
+- Task 6.1 RED：2 个存储异常用例和 4 个面板用例按预期失败；实现后 focused 12/12、全量 10 files / 54 tests、typecheck、ESLint、Prettier 与 `git diff --check` 均通过。
+- Task 6.1 实现提交：`115018a3329beb3fe916eae7183ba1ae36a602fc`（`feat: add experiment settings panel`），规划提交：`279f8a85fff966298ec0d8519c37600d441badb1`。
+- 已实现：`App` 持有并持久化设置、拒绝 storage 时安全降级、非模态实验控制区、4/5/5/3/3 互斥选项、四个开关、重置与 `data-glass-mode` 即时切换。
+- 未完成：Task 6.1 独立审查报告；Task 6.2 动效生命周期；Task 6.3 性能 HUD；Task 6.4 Benchmark/本地报告操作；最终浏览器/设备验证与 Task 6 推送部署。
+- 恢复入口：工作树 `C:\Project\lancelot-gamepal-ui-playground\.worktrees\experiment-controls`，分支 `agent/experiment-controls`，先重读三份持续文档和详细 Task 6 计划，然后从 Task 6.2 RED 继续，不重复 Task 6.1 测试。
+
+## Resume: 2026-07-28
+
+- 用户要求继续任务；session catch-up 未发现未同步源代码，HEAD 为暂停提交 `d09b410`，工作树只有本地 SDD 交接工件。
+- 已确认当前处于 linked worktree `agent/experiment-controls`，不是主分支或 detached HEAD。
+- 按 SDD 恢复规则先补完 Task 6.1 独立审查；审查通过前不启动 Task 6.2 实现。
+- Task 6.1 独立审查已补完并 APPROVED：规格符合、任务质量和测试有效性均通过，无 Critical/Important 问题。
+- 恢复基线通过：10 files / 54 tests、TypeScript 与 ESLint 均退出 0；随后以 `d09b410` 作为 Task 6.2 review base 进入 TDD。
+
+## Pause Checkpoint: 2026-07-28
+
+- 用户要求停止测试并记录进度；已立即中断 Task 6.2 实现代理，未启动独立审查、Task 6.3 或任何后续测试。
+- Task 6.2 已按 TDD 完成并提交为 `549fa19`（`feat: add lifecycle-aware motion layer`）：新增 viewport/visibility/reduced-motion hooks、单 Canvas 粒子层、触摸视差及 HomeScreen 接线。
+- RED 证据：初始缺失模块导致 focused suite 在 Vite import analysis 失败；随后新增 DPR 首帧行为测试，在修复前因 `setTransform(2, 0, 0, 2, 0, 0)` 未调用而失败。
+- 停止前最后一次已有 GREEN 证据：focused 9/9、全量 11 files / 63 tests、TypeScript、ESLint、scoped Prettier 与 `git diff --check` 全部退出 0，Vitest 输出无警告。
+- Task 6.1 独立审查已 APPROVED，无 Critical/Important 问题；Task 6.2 报告已写入本地 SDD 工件，但 Task 6.2 独立审查尚未开始，因此不能标记 review clean。
+- 恢复入口：工作树 `C:\Project\lancelot-gamepal-ui-playground\.worktrees\experiment-controls`，分支 `agent/experiment-controls`；先为 `d09b410..549fa19` 生成完整差异包并完成只读独立审查，再决定是否进入 Task 6.3。
+
+## Resume: 2026-07-28 (Task 6.2 review)
+
+- 用户要求继续任务；session catch-up 未发现未同步源代码，HEAD 为暂停提交 `c90eff5`，仅本地 SDD 工件未跟踪。
+- 已确认仍在 linked worktree `agent/experiment-controls`，不是主分支、子模块或 detached HEAD。
+- 已为 `d09b410..549fa19` 生成 Task 6.2 完整差异包；先进行只读独立审查，不重复实现代理已经记录的测试。
+- Task 6.2 独立审查已 APPROVED：规格符合、任务质量和测试有效性均通过，无 Critical、Important 或 Required 问题。
+- 以暂停检查点 `c90eff5` 作为 Task 6.3 review base，开始性能运行时与 HUD 的 TDD。
+- Task 6.3 初始实现提交 `a3674ef` 通过实现代理门禁（13 files / 73 tests、TypeScript、ESLint、Prettier、diff check），但独立审查请求修改。
+- 审查阻塞项：buffered observer 重连重复累计 long-task/LoAF/resource 历史；三条状态文案编码为乱码；StrictMode、可见性、取消/迟到回调、reset 与 snapshot 引用稳定性测试不足。已进入修复轮 1/5。
+- Task 6.3 修复轮 1 提交 `17eafc9`：新增真实 RED 和 5 个 runtime 回归测试、1 个 StrictMode hook 测试，统一 observer 历史所有权并修正 `等待`/`不支持`/`不可测`。
+- 定向复审确认 3 个阻塞项全部 ADDRESSED，0 open，无新 Critical/Important；Task 6.3 标记 review clean，进入 Task 6.4。
+- Task 6.4 初始提交 `256ab8e` 通过实现代理门禁（16 files / 87 tests、TypeScript、ESLint、Prettier、隐私/路径扫描、diff check、生产 build），但独立审查发现 6 个 Important。
+- 阻塞项涵盖 Benchmark 采样启停、全阶段取消入口、粒子场景恢复、object URL 异常清理、page identifier 隐私净化和异步操作状态竞态；已进入修复轮 1/5。
+- Task 6.4 修复轮 1 提交 `bae5273`：5 个原始问题得到解决；定向复审仍发现“重置设置”可在运行中改写粒子现场，以及 StrictMode effect replay 会永久抑制报告状态，进入修复轮 2/5。
+- Task 6.4 修复轮 2 提交 `7391e45`：运行期间禁用重置，并让 mounted 标志在每次 effect setup 恢复为 true；新增两类行为回归测试。
+- 第二轮定向复审 APPROVED：剩余 2 个阻断项均 ADDRESSED，0 个新 Critical/Important；Task 6.4 标记 review clean。
+- 修复轮 2 的既有实现证据为 focused 2 files / 37 tests、全量 16 files / 115 tests、TypeScript、ESLint、Prettier、diff check、Vite build 与 staged 隐私/路径扫描全部退出 0；这些证据仍需在最终完成声明前由控制器重新运行。
+- Task 6 完整分支审查 `4f42867..b95b592` 发现 0 Critical、6 Important、2 Minor；Important 涉及 Motion 档位真实差异、runtime 有界聚合、Benchmark 快照冻结、运行中负载锁定、Web Vitals 延迟注册和 HUD 无样本状态。
+- 两个并行、文件所有权不重叠的 TDD 修复子任务完成后，统一提交 `22b6b69`（17 files）：UI/Benchmark focused 5 files / 55 tests，Runtime/Web Vitals/HUD focused 2 files / 18 tests。
+- 控制器新鲜组合门禁：17 files / 136 tests、TypeScript、ESLint、Prettier、`git diff --check` 全部退出 0且无警告；Vite 52 modules production build 成功；精确 staged 扫描为 17 files、绝对路径/真实凭据/`.env`/远程或敏感 ambient read 全部 0。
+- `b95b592..22b6b69` 定向复审 APPROVED：原 6 个 Important 全部 ADDRESSED，0 个新 Critical/Important；两个原 Minor 保持延期。
+- 本地最新生产预览完成五视口与交互验证：375×812、390×844、393×852、430×932、844×390 均无横向溢出，底栏可见，人物背景和 Pages 子路径正常，控制台 0 error/warn。
+- 浏览器交互验证确认设置切换、HUD 展开、Benchmark 运行锁定、取消恢复与复制成功状态；真实 Safe Area 非零 inset 和微信 WebView UA 尚未真机验证，因此 Phase 5 不标记完成。
 
 ---
 

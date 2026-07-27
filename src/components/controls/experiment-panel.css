@@ -1,0 +1,103 @@
+.experiment-panel {
+  position: fixed;
+  z-index: calc(var(--hud-z) + 1);
+  top: max(12px, var(--safe-top));
+  right: max(12px, var(--safe-right));
+  width: min(390px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  border-radius: var(--radius-md);
+}
+
+.home-screen__experiment-toggle {
+  margin-left: auto;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 0.05);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.experiment-panel__content {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.experiment-panel__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.experiment-panel__heading h2,
+.experiment-panel__group legend {
+  margin: 0;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+}
+
+.experiment-panel__heading button,
+.experiment-panel__reset {
+  border: 1px solid var(--glass-border-selected);
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 0.06);
+  color: var(--color-text);
+}
+
+.experiment-panel__group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.experiment-panel__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.experiment-panel__option,
+.experiment-panel__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.experiment-panel__option input,
+.experiment-panel__toggle input {
+  accent-color: var(--color-accent-strong);
+}
+
+.experiment-panel__toggles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.experiment-panel__toggle {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-fill);
+}
+
+.experiment-panel__reset {
+  min-height: 44px;
+  font: inherit;
+}
+
+@media (max-width: 420px) {
+  .experiment-panel__options,
+  .experiment-panel__toggles {
+    grid-template-columns: 1fr;
+  }
+}

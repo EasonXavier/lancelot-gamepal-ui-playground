@@ -48,24 +48,37 @@
 - 新增入口后的 TS2882 来自缺少 `vite/client` 类型声明；补齐标准 `src/vite-env.d.ts` 即可让 CSS 副作用导入保留类型安全。
 - GitHub 官方 Actions 的当前稳定主版本已通过仓库 API 核对：checkout v7、setup-node v7、configure-pages v6、upload-pages-artifact v5、deploy-pages v5；Pages 已启用为 workflow 发布源。
 - GitHub Actions run `30239061058` 的 build 与 deploy job 均成功；实际 Pages 地址继承账号自定义域名，为 `https://easonx.me/lancelot-gamepal-ui-playground/`。
+- PR #1 已以 merge commit `4f42867` 合并到 `main`；Pages run `30273041434` 的 build 与 deploy job 均成功。
+- 在线检查返回 HTTP 200，HTML 引用 `index-DCtTWxh3.js` 与 `index-BsZojuUi.css`；JS 包含“朗世乐”，CSS 包含原生 modal backdrop、人物与 WOFF2 的正确 Pages 子路径。
+- 在主仓库保留嵌套 linked worktree 时运行 `eslint .` 会让 typescript-eslint 同时发现两个 `tsconfig` 根并报解析错误；移除已合并 worktree 后同一门禁通过，因此该错误不是合并代码回归。
 - 线上 390×844 验证确认页面标题、语义结构、工作构建号、字体族、人物资源 URL 与 Pages 子路径正确；`clientWidth`/`scrollWidth` 均为 390，控制台无 error/warning。
+- Task 6 本地生产预览在 375×812、390×844、393×852、430×932、844×390 五个外层视口完成检查；各视口 `scrollWidth === clientWidth`，底栏可见，`--app-height` 与旋转后的高度一致，控制台无 error/warning。
+- 本地浏览器实测：Glass/Motion/HUD 设置即时生效；Benchmark 运行时 Motion/粒子/DPR/动态开关与重置被锁定，取消后恢复；复制 JSON 显示 `已复制`。人物背景资源在 Pages 子路径正确加载。
+- Safe Area 使用 `env(safe-area-inset-*)` 并接入页头、内容、底栏、HUD 与控制面板；桌面模拟环境的 inset 为 0，真实非零 inset 和微信 WebView UA 仍需真机复核。微信识别逻辑已有 `MicroMessenger` 单元测试，但不等同于真机证据。
+- 整体审查的两个非阻断 Minor 已延期：Canvas 每帧仍读取尺寸/DPR；HUD hidden 模式仍保留 store 订阅。两项未在最终修复波次中恶化。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
 ## Technical Decisions
 
-| Decision                                                     | Rationale                                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------------------- |
-| 使用单页本地状态而非服务端路由                               | Pages 子路径刷新可靠，无需后端 rewrite                              |
-| 将 RAF 采样写入固定容量环形缓冲                              | 限制内存并避免 React 每帧渲染                                       |
-| HUD 通过订阅快照最多 4Hz 更新                                | 控制观察工具自身开销                                                |
-| Visibility hidden 时暂停、visible 时清除后台长间隔并重新校准 | 防止后台节流污染帧指标                                              |
-| Glass Mode 只切换 CSS class/背景层策略                       | 保持 DOM、内容与动画一致，便于公平比较                              |
-| 角色原图作为独立 `<picture>`/背景层，UI 全部代码原生         | 可替换、可响应式裁切，避免把 UI 烘焙进图片                          |
-| 使用 Canvas 2D 单层粒子，并按 DPR 上限调整 backing store     | 在高 DPR 手机上控制像素成本                                         |
-| `LSVIS TD.woff2` 通过 `@font-face` 和 CSS 变量集中引用       | 使用更适合 Web 的压缩格式，后期替换仍只需更改一处令牌               |
-| Task 4 的 Benchmark 继续使用注入时钟与动作接口               | 保持状态机脱离 React，可用假时钟精确验证 3/8/8/8/3 秒阶段与取消恢复 |
-| 报告导出采用显式白名单模式而非递归复制应用状态               | 防止 cookie、token、IP、位置或用户身份字段意外进入本地报告          |
+| Decision                                                       | Rationale                                                           |
+| -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 使用单页本地状态而非服务端路由                                 | Pages 子路径刷新可靠，无需后端 rewrite                              |
+| 将 RAF 采样写入固定容量环形缓冲                                | 限制内存并避免 React 每帧渲染                                       |
+| HUD 通过订阅快照最多 4Hz 更新                                  | 控制观察工具自身开销                                                |
+| Visibility hidden 时暂停、visible 时清除后台长间隔并重新校准   | 防止后台节流污染帧指标                                              |
+| Glass Mode 只切换 CSS class/背景层策略                         | 保持 DOM、内容与动画一致，便于公平比较                              |
+| 角色原图作为独立 `<picture>`/背景层，UI 全部代码原生           | 可替换、可响应式裁切，避免把 UI 烘焙进图片                          |
+| 使用 Canvas 2D 单层粒子，并按 DPR 上限调整 backing store       | 在高 DPR 手机上控制像素成本                                         |
+| `LSVIS TD.woff2` 通过 `@font-face` 和 CSS 变量集中引用         | 使用更适合 Web 的压缩格式，后期替换仍只需更改一处令牌               |
+| Task 4 的 Benchmark 继续使用注入时钟与动作接口                 | 保持状态机脱离 React，可用假时钟精确验证 3/8/8/8/3 秒阶段与取消恢复 |
+| 报告导出采用显式白名单模式而非递归复制应用状态                 | 防止 cookie、token、IP、位置或用户身份字段意外进入本地报告          |
+| Benchmark 运行期间禁用所有会改变粒子设置的 UI 路径             | 保证完成或取消后能恢复捕获现场，压力配置仍只作为瞬态覆盖            |
+| 报告操作以递增序号和 StrictMode 安全的 mounted 生命周期发布    | 防止并发旧结果覆盖新状态，同时忽略真实卸载后的迟到 Promise          |
+| 报告页面标识只允许 `/` 与已知 Pages 子路径，其余值 fail closed | 不让凭据、IP、token 或身份路径进入本地导出 JSON                     |
+| Motion 档位使用单一 typed profile 映射到真实负载系数           | 保证 low/medium/high/maximum 可比较；数值仅为 playground 技术调参   |
+| Benchmark 报告持有完成/取消时的不可变快照                      | 后续 HUD、可见性或设置变化不应污染已捕获的 30 秒结果                |
+| Long Task、LoAF 和资源只保留 O(1) 累计摘要                     | 避免原始历史无界增长及每 250ms 重扫对被测页面造成自扰               |
 
 ## Issues Encountered
 
@@ -108,11 +121,11 @@
 ## Resume Checkpoint
 
 1. 重读 `task_plan.md`、本文件和 `progress.md`。
-2. 当前位于 Phase 4：Task 5 本地首页检查点已完成；确认工作树与最新提交状态后，从实施计划 Task 6 的 RED 阶段开始。
-3. 先为控制面板、HUD 与动效/生命周期写失败测试；随后才实现 Task 6，不回退到已完成的 Task 3。
-4. 本地 Task 5 检查点已通过 typecheck、lint、format、9 files / 46 tests 和生产 build；浏览器与安全验证完成前不要创建正式版本。
+2. 当前位于 Phase 4 暂停点：Task 6.1 已通过独立审查；Task 6.2 已提交为 `549fa19`，但尚未独立审查。
+3. 不重做 Task 6.1/6.2 实现；恢复后先审查 `d09b410..549fa19`，review clean 后才进入 Task 6.3 性能 HUD RED。
+4. 停止前 Task 6.2 已通过 focused 9/9、全量 11 files / 63 tests、typecheck、ESLint、scoped Prettier 和 `git diff --check`；这些是既有证据，暂停后不要无目的重复测试。
 
-历史发布背景：`d20b849`/`e26b75c` 的 GitHub Pages 推送与部署是真实的 earlier published checkpoint，保留其事实记录；本轮 Task 5 和当前 `agent/performance-observers` 分支只创建本地提交，没有 push、deploy、tag 或 release。
+历史发布背景：Task 5 已通过 PR #1 合并为 `4f42867`，Pages run `30273041434` 成功；当前 `agent/experiment-controls` 的 Task 6 提交仅在本地，尚未 push、deploy、tag 或 release。
 
 恢复检查点复核确认：三个规划文件均包含当前 Phase 4/Task 6 RED 指令；历史 Pages 检查点与当前本地状态已明确区分。
 
