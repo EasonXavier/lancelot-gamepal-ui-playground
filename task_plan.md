@@ -8,7 +8,7 @@
 
 ## Next Step
 
-任务已按用户要求再次暂停并停止测试。Task 6.1 独立审查已通过；Task 6.2 实现已提交为 `549fa19`，但尚未进行独立审查。恢复时先审查 `d09b410..549fa19`，通过后再进入 Task 6.3 性能 HUD RED；不要重复 Task 6.1/6.2 实现测试。
+Task 6.3 修复轮 1 已通过定向复审。当前从 Task 6.4 RED 继续：连接 30 秒 Benchmark 与纯本地 Copy JSON、Download JSON、Copy Summary 操作，并保持报告白名单和场景恢复语义。
 
 ## Current Phase
 
@@ -48,7 +48,7 @@ Phase 4
 - [ ] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
 - [ ] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
 - [ ] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
-- **Status:** paused_after_task_6_2_implementation
+- **Status:** in_progress
 
 ### Phase 5: 验证、文档与公开安全
 

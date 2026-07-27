@@ -227,6 +227,18 @@
 - Task 6.1 独立审查已 APPROVED，无 Critical/Important 问题；Task 6.2 报告已写入本地 SDD 工件，但 Task 6.2 独立审查尚未开始，因此不能标记 review clean。
 - 恢复入口：工作树 `C:\Project\lancelot-gamepal-ui-playground\.worktrees\experiment-controls`，分支 `agent/experiment-controls`；先为 `d09b410..549fa19` 生成完整差异包并完成只读独立审查，再决定是否进入 Task 6.3。
 
+## Resume: 2026-07-28 (Task 6.2 review)
+
+- 用户要求继续任务；session catch-up 未发现未同步源代码，HEAD 为暂停提交 `c90eff5`，仅本地 SDD 工件未跟踪。
+- 已确认仍在 linked worktree `agent/experiment-controls`，不是主分支、子模块或 detached HEAD。
+- 已为 `d09b410..549fa19` 生成 Task 6.2 完整差异包；先进行只读独立审查，不重复实现代理已经记录的测试。
+- Task 6.2 独立审查已 APPROVED：规格符合、任务质量和测试有效性均通过，无 Critical、Important 或 Required 问题。
+- 以暂停检查点 `c90eff5` 作为 Task 6.3 review base，开始性能运行时与 HUD 的 TDD。
+- Task 6.3 初始实现提交 `a3674ef` 通过实现代理门禁（13 files / 73 tests、TypeScript、ESLint、Prettier、diff check），但独立审查请求修改。
+- 审查阻塞项：buffered observer 重连重复累计 long-task/LoAF/resource 历史；三条状态文案编码为乱码；StrictMode、可见性、取消/迟到回调、reset 与 snapshot 引用稳定性测试不足。已进入修复轮 1/5。
+- Task 6.3 修复轮 1 提交 `17eafc9`：新增真实 RED 和 5 个 runtime 回归测试、1 个 StrictMode hook 测试，统一 observer 历史所有权并修正 `等待`/`不支持`/`不可测`。
+- 定向复审确认 3 个阻塞项全部 ADDRESSED，0 open，无新 Critical/Important；Task 6.3 标记 review clean，进入 Task 6.4。
+
 ---
 
 _每个阶段和每次错误后更新本文件。_
