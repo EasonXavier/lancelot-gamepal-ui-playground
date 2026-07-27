@@ -7,6 +7,7 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../../src/App';
@@ -538,6 +539,69 @@ describe('experiment actions', () => {
     expect(
       JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
     ).toMatchObject({ settings: { particleCount: 20 } });
+  });
+
+  it('prevents reset from replacing captured particles before warmup cancellation', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} />);
+    await openConfiguredPanel(user);
+    await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+    const reset = screen.getByRole('button', { name: '重置设置' });
+
+    expect(reset).toBeDisabled();
+    await user.click(reset);
+    expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', '20');
+    expect(
+      JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+    ).toMatchObject({ settings: { particleCount: 20 } });
+
+    await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
+    expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', '20');
+    expect(
+      JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+    ).toMatchObject({ settings: { particleCount: 20 } });
+  });
+
+  it('prevents reset from replacing captured particles before summarize completion', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} />);
+    await openConfiguredPanel(user);
+    await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+    act(() => clock.advanceBy(27_000));
+    const reset = screen.getByRole('button', { name: '重置设置' });
+
+    expect(reset).toBeDisabled();
+    await user.click(reset);
+    expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', 'maximum');
+    expect(
+      JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+    ).toMatchObject({ settings: { particleCount: 20 } });
+
+    act(() => clock.advanceBy(3_000));
+    expect(screen.getByText('completed')).toBeVisible();
+    expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', '20');
+    expect(
+      JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+    ).toMatchObject({ settings: { particleCount: 20 } });
+  });
+
+  it('publishes copy success after StrictMode replays the mount effect', async () => {
+    const writeText = vi.fn<(text: string) => Promise<void>>(async () => undefined);
+    const { reportActionDependencies } = installBrowserBoundaries(writeText);
+    const user = userEvent.setup();
+    render(
+      <StrictMode>
+        <App reportActionDependencies={reportActionDependencies} />
+      </StrictMode>,
+    );
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+
+    expect(screen.getByText('已复制')).toBeVisible();
   });
 
   it('keeps a later copy success when an earlier copy rejects afterward', async () => {

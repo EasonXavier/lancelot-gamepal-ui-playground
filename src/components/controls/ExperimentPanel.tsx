@@ -119,13 +119,13 @@ export function ExperimentPanel({
   const operationSequence = useRef(0);
   const mounted = useRef(true);
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
       mounted.current = false;
       operationSequence.current += 1;
-    },
-    [],
-  );
+    };
+  }, []);
 
   if (!open) {
     return null;
@@ -269,6 +269,7 @@ export function ExperimentPanel({
         </section>
         <button
           className="tap-target experiment-panel__reset"
+          disabled={benchmarkController.state.status === 'running'}
           onClick={onReset}
           type="button"
         >
