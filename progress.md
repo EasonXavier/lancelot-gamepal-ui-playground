@@ -144,6 +144,9 @@
 | 2026-07-27 22:10 +08:00 | 沙箱拒绝在新的 Task 6 worktree 创建 `node_modules` 目录联接                                       | 1       | 在已授权 Windows 上下文创建仅指向项目既有依赖目录的 junction；没有下载、升级或全局安装依赖                                                    |
 | 2026-07-27 22:12 +08:00 | 新规划记录未符合 Prettier，沙箱随后拒绝格式化器覆写 worktree 文件                                 | 1       | 在已授权 Windows 上下文仅机械格式化三份规划文档；随后 typecheck、lint、format 与 48 项测试全部通过                                            |
 | 2026-07-28 01:48 +08:00 | 恢复时用 `rg --files` 同时搜索尚未创建的 `src/hooks`，在输出有效 performance 文件后返回退出码 2   | 1       | 确认 `src/hooks` 正是 Task 6.2 待创建目录；后续只对已存在目录搜索，不把预期缺失误判为回归                                                     |
+| 2026-07-28 04:49 +08:00 | 最终 Vite 构建在清理 worktree `dist/assets` 时被沙箱拒绝                                          | 1       | 确认 52 modules 已转换且失败仅在输出清理；在授权上下文重跑相同构建，140ms 成功                                                                |
+| 2026-07-28 04:50 +08:00 | 初始绝对路径扫描把 diff 元数据中的 `src/experiments/home/` 误判为 Unix `/home/`                   | 1       | 输出匹配行确认均为 Git header；将扫描限定到新增内容和带用户名层级的绝对路径后重跑，17 files 全部 0 匹配                                       |
+| 2026-07-28 04:55 +08:00 | PowerShell `Start-Process` 因沙箱同时注入 `Path`/`PATH` 而发生环境字典冲突                        | 2       | 不修改系统环境；改用隐藏、无窗口的最小环境 `ProcessStartInfo` 启动本地预览，HTTP 200 后完成浏览器验证并终止进程                               |
 
 ## Task 5 Design Gate: 2026-07-27
 
@@ -244,6 +247,12 @@
 - Task 6.4 修复轮 2 提交 `7391e45`：运行期间禁用重置，并让 mounted 标志在每次 effect setup 恢复为 true；新增两类行为回归测试。
 - 第二轮定向复审 APPROVED：剩余 2 个阻断项均 ADDRESSED，0 个新 Critical/Important；Task 6.4 标记 review clean。
 - 修复轮 2 的既有实现证据为 focused 2 files / 37 tests、全量 16 files / 115 tests、TypeScript、ESLint、Prettier、diff check、Vite build 与 staged 隐私/路径扫描全部退出 0；这些证据仍需在最终完成声明前由控制器重新运行。
+- Task 6 完整分支审查 `4f42867..b95b592` 发现 0 Critical、6 Important、2 Minor；Important 涉及 Motion 档位真实差异、runtime 有界聚合、Benchmark 快照冻结、运行中负载锁定、Web Vitals 延迟注册和 HUD 无样本状态。
+- 两个并行、文件所有权不重叠的 TDD 修复子任务完成后，统一提交 `22b6b69`（17 files）：UI/Benchmark focused 5 files / 55 tests，Runtime/Web Vitals/HUD focused 2 files / 18 tests。
+- 控制器新鲜组合门禁：17 files / 136 tests、TypeScript、ESLint、Prettier、`git diff --check` 全部退出 0且无警告；Vite 52 modules production build 成功；精确 staged 扫描为 17 files、绝对路径/真实凭据/`.env`/远程或敏感 ambient read 全部 0。
+- `b95b592..22b6b69` 定向复审 APPROVED：原 6 个 Important 全部 ADDRESSED，0 个新 Critical/Important；两个原 Minor 保持延期。
+- 本地最新生产预览完成五视口与交互验证：375×812、390×844、393×852、430×932、844×390 均无横向溢出，底栏可见，人物背景和 Pages 子路径正常，控制台 0 error/warn。
+- 浏览器交互验证确认设置切换、HUD 展开、Benchmark 运行锁定、取消恢复与复制成功状态；真实 Safe Area 非零 inset 和微信 WebView UA 尚未真机验证，因此 Phase 5 不标记完成。
 
 ---
 

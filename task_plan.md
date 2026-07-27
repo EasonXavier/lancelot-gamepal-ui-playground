@@ -8,7 +8,7 @@
 
 ## Next Step
 
-Task 6.4 已在两轮定向修复后通过独立复审。当前对 `main` 合并点至 `7391e45` 的完整 Task 6 分支执行合并前代码审查；审查清零后再进行一次新鲜的全量门禁与浏览器验证。
+Task 6 整体审查的 6 个 Important 已在 `22b6b69` 清零，136 项测试、生产构建、公开安全扫描和五视口本地浏览器验证均通过。下一步提交验证记录，将 Task 6 分支合并到 `main` 并部署 Pages；不创建 Release 或标签，随后继续 Phase 5 真机与文档工作。
 
 ## Current Phase
 
@@ -53,7 +53,8 @@ Phase 4
 ### Phase 5: 验证、文档与公开安全
 
 - [x] 通过 typecheck、lint、test、build 和 preview
-- [ ] 验证五个指定视口、横屏、Safe Area、旋转、微信 UA 和无横向溢出
+- [x] 验证五个指定视口、横屏/旋转和无横向溢出
+- [ ] 在真实 Safe Area 与微信 UA/WebView 上复核
 - [ ] 对照视觉概念完成截图、fidelity ledger 和性能功能检查
 - [ ] 完成 README、指标说明、设备模板、SECURITY 与素材来源
 - [x] 执行敏感信息、绝对路径、未授权素材与 staged diff 检查

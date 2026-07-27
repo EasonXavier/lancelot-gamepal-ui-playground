@@ -52,6 +52,10 @@
 - 在线检查返回 HTTP 200，HTML 引用 `index-DCtTWxh3.js` 与 `index-BsZojuUi.css`；JS 包含“朗世乐”，CSS 包含原生 modal backdrop、人物与 WOFF2 的正确 Pages 子路径。
 - 在主仓库保留嵌套 linked worktree 时运行 `eslint .` 会让 typescript-eslint 同时发现两个 `tsconfig` 根并报解析错误；移除已合并 worktree 后同一门禁通过，因此该错误不是合并代码回归。
 - 线上 390×844 验证确认页面标题、语义结构、工作构建号、字体族、人物资源 URL 与 Pages 子路径正确；`clientWidth`/`scrollWidth` 均为 390，控制台无 error/warning。
+- Task 6 本地生产预览在 375×812、390×844、393×852、430×932、844×390 五个外层视口完成检查；各视口 `scrollWidth === clientWidth`，底栏可见，`--app-height` 与旋转后的高度一致，控制台无 error/warning。
+- 本地浏览器实测：Glass/Motion/HUD 设置即时生效；Benchmark 运行时 Motion/粒子/DPR/动态开关与重置被锁定，取消后恢复；复制 JSON 显示 `已复制`。人物背景资源在 Pages 子路径正确加载。
+- Safe Area 使用 `env(safe-area-inset-*)` 并接入页头、内容、底栏、HUD 与控制面板；桌面模拟环境的 inset 为 0，真实非零 inset 和微信 WebView UA 仍需真机复核。微信识别逻辑已有 `MicroMessenger` 单元测试，但不等同于真机证据。
+- 整体审查的两个非阻断 Minor 已延期：Canvas 每帧仍读取尺寸/DPR；HUD hidden 模式仍保留 store 订阅。两项未在最终修复波次中恶化。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
@@ -72,6 +76,9 @@
 | Benchmark 运行期间禁用所有会改变粒子设置的 UI 路径             | 保证完成或取消后能恢复捕获现场，压力配置仍只作为瞬态覆盖            |
 | 报告操作以递增序号和 StrictMode 安全的 mounted 生命周期发布    | 防止并发旧结果覆盖新状态，同时忽略真实卸载后的迟到 Promise          |
 | 报告页面标识只允许 `/` 与已知 Pages 子路径，其余值 fail closed | 不让凭据、IP、token 或身份路径进入本地导出 JSON                     |
+| Motion 档位使用单一 typed profile 映射到真实负载系数           | 保证 low/medium/high/maximum 可比较；数值仅为 playground 技术调参   |
+| Benchmark 报告持有完成/取消时的不可变快照                      | 后续 HUD、可见性或设置变化不应污染已捕获的 30 秒结果                |
+| Long Task、LoAF 和资源只保留 O(1) 累计摘要                     | 避免原始历史无界增长及每 250ms 重扫对被测页面造成自扰               |
 
 ## Issues Encountered
 
