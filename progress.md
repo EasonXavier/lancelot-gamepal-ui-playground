@@ -136,6 +136,9 @@
 - 用户已书面确认规格无修改。
 - 已依据当前检查点代码编写 Task 5 专项实施计划 `docs/superpowers/plans/2026-07-27-home-glass-surface.md`；计划识别到 `src/main.tsx` 已存在，Task 5 应修改当前 `App.tsx` 而非重复创建入口。
 - 实施计划自检通过：604 行、34 个成对代码围栏、无禁用占位语或行尾空白；四个任务覆盖规格且保持 Task 6/7 边界。
+- 多代理执行前置验证确认当前目录是 `agent/performance-observers` linked worktree；基线 Vitest 为 7 files / 32 tests passed。
+
+| 2026-07-27 14:40 +08:00 | bundled Git 路径下不存在预期的 `bin/bash.exe`，无法直接运行 SDD shell helper | 1 | 不重复缺失路径；按 helper 已读取的确定逻辑用 PowerShell 创建同一 plan-scoped workspace、brief 和 review package |
 
 ## Published Checkpoint: 2026-07-27
 
