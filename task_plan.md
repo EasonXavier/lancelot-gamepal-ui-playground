@@ -61,6 +61,8 @@ Phase 4
 
 ### Phase 6: 提交、部署与交付证据
 
+> 历史说明：以下已勾选的推送和 Pages 部署仅属于 earlier published checkpoint `d20b849`/`e26b75c`；当前 `agent/performance-observers` 的 Task 5 本地检查点没有 push、deploy、tag 或 release。
+
 - [x] 提交并推送 `main`
 - [x] 启用 GitHub Actions Pages 发布源并运行 CI/部署
 - [ ] 验证线上 HTML、CSS、JS、图片、路由、HUD 与报告导出
@@ -101,4 +103,4 @@ Phase 4
 - 规划、素材、报告、CI 与 Pages 只属于本仓库。
 - 高频采样不得每帧更新 React state；HUD 最多每秒更新四次。
 - 每次重大决策前重读本文件；每个阶段结束后更新状态与进度。
-- **可部署检查点（2026-07-27）：** 基础提交为 `9f26f73`，Pages/入口提交为 `d20b849`，工作构建号为 `0.1.0+20260727.1309.d20b849`；现有 typecheck、lint、10 个测试与生产 build 通过。完整 UI 与性能实验仍未完成，不要把检查点页面描述为完整交付。
+- **Earlier published checkpoint（2026-07-27）：** 基础提交为 `9f26f73`，Pages/入口提交为 `d20b849`，构建元数据提交为 `e26b75c`，工作构建号为 `0.1.0+20260727.1309.d20b849`；该历史检查点的 typecheck、lint、10 个测试与生产 build 通过，且确有 Pages 推送与部署。当前 `agent/performance-observers` 已完成 Task 5 本地检查点（46 tests/build），未进行新的 push、deploy、tag 或 release；完整 UI 与性能实验仍未完成。

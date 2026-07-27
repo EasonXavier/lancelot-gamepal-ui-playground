@@ -83,6 +83,7 @@
 
 - **Status:** complete checkpoint; Phase 4 remains in progress for Task 6.
 - **Completed:** 2026-07-27 15:45 +08:00
+- **Publication boundary:** `d20b849`/`e26b75c` 的 Pages 推送与部署属于 earlier published checkpoint；当前 `agent/performance-observers` 的 Task 5 本地检查点没有 push、deploy、tag 或 release。
 - Actions and evidence:
   - 重新从 `d4d5a18` 运行 bundled-Node typecheck、ESLint 和 Prettier；三项均退出 0，Prettier 输出 `All matched files use Prettier code style!`。
   - 全量 Vitest 退出 0：9 files / 46 tests passed，耗时 1.40s；没有未处理的 React 警告。
@@ -151,7 +152,7 @@
 
 | 2026-07-27 14:40 +08:00 | bundled Git 路径下不存在预期的 `bin/bash.exe`，无法直接运行 SDD shell helper | 1 | 不重复缺失路径；按 helper 已读取的确定逻辑用 PowerShell 创建同一 plan-scoped workspace、brief 和 review package |
 
-## Published Checkpoint: 2026-07-27
+## Earlier Published Checkpoint: 2026-07-27
 
 - **Reason:** 用户恢复任务并明确要求推送 GitHub、部署 Pages。
 - **Repository:** PUBLIC `origin/main` contains deployable checkpoint `d20b849` and metadata commit `e26b75c`.
@@ -163,16 +164,17 @@
 - **Not performed:** release or tag.
 - **Resume command context:** sandbox has no PATH npm; use bundled Node directly with project-local tool entrypoints. The user permits a future system-wide Node/npm installation if needed, but this checkpoint does not require or perform one.
 - **Checkpoint verification:** `task_plan.md`、`findings.md`、本文件与详细实施计划均已更新；公开检查点已部署，后续工作从未完成的 UI 实现继续。
+- **Current-state boundary:** 此段仅记录 `d20b849`/`e26b75c` 的 earlier published checkpoint；当前工作树已进入 Phase 4，Task 5 本地检查点完成并有 9 files / 46 tests 与生产 build 证据，下一步为 Task 6 RED，未执行新的 push、deploy、tag 或 release。
 
 ## 5-Question Reboot Check
 
-| Question             | Answer                                                               |
-| -------------------- | -------------------------------------------------------------------- |
-| Where am I?          | Phase 3：性能核心（TDD）                                             |
-| Where am I going?    | 性能核心、UI、验证、部署与证据交付                                   |
-| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                               |
-| What have I learned? | 见 `findings.md`                                                     |
-| What have I done?    | 已完成仓库隔离、视觉确认、可部署检查点、GitHub Actions 与 Pages 发布 |
+| Question             | Answer                                                                                    |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| Where am I?          | Phase 4：Task 5 本地首页检查点完成，Task 6 尚未开始                                       |
+| Where am I going?    | Task 6 RED：控制面板、HUD、动效与生命周期测试/实现                                        |
+| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                                    |
+| What have I learned? | 见 `findings.md`                                                                          |
+| What have I done?    | 已完成历史公开检查点；当前分支已完成 Task 5 本地检查点、46 tests 与 build，尚未推送或部署 |
 
 ---
 

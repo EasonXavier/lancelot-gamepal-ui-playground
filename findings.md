@@ -108,11 +108,13 @@
 ## Resume Checkpoint
 
 1. 重读 `task_plan.md`、本文件和 `progress.md`。
-2. 确认工作树与最新提交状态，再运行 typecheck、lint 与 frame tests 复核基线。
-3. 从实施计划 Task 3 开始：先写 observers/environment 的失败测试，再写生产实现。
-4. 当前 Pages 仅发布明确标注开发状态的检查点；完整 UI 的 typecheck/lint/test/build、浏览器与安全验证完成前不要创建正式版本。
+2. 当前位于 Phase 4：Task 5 本地首页检查点已完成；确认工作树与最新提交状态后，从实施计划 Task 6 的 RED 阶段开始。
+3. 先为控制面板、HUD 与动效/生命周期写失败测试；随后才实现 Task 6，不回退到已完成的 Task 3。
+4. 本地 Task 5 检查点已通过 typecheck、lint、format、9 files / 46 tests 和生产 build；浏览器与安全验证完成前不要创建正式版本。
 
-发布检查点复核确认：三个规划文件均包含恢复检查点；现有门禁通过，可部署提交为 `d20b849`，Pages workflow 与线上检查点均已验证。
+历史发布背景：`d20b849`/`e26b75c` 的 GitHub Pages 推送与部署是真实的 earlier published checkpoint，保留其事实记录；本轮 Task 5 和当前 `agent/performance-observers` 分支只创建本地提交，没有 push、deploy、tag 或 release。
+
+恢复检查点复核确认：三个规划文件均包含当前 Phase 4/Task 6 RED 指令；历史 Pages 检查点与当前本地状态已明确区分。
 
 ---
 
