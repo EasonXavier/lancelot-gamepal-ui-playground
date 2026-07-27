@@ -120,9 +120,9 @@ describe('PerformanceHud', () => {
   });
 
   it.each([
-    ['waiting', '\u7EDB\u590A\u7DDF'],
-    ['unsupported', '\u6D93\u5D86\u656E\u93B8\u4E63'],
-    ['not-measurable', '\u6D93\u5D85\u5F72\u5A34\u5A8A'],
+    ['waiting', '\u7B49\u5F85'],
+    ['unsupported', '\u4E0D\u652F\u6301'],
+    ['not-measurable', '\u4E0D\u53EF\u6D4B'],
   ] as const)('catches %s values being replaced with numeric zero', (status, label) => {
     const snapshot: PerformanceSnapshot = {
       ...baseSnapshot,

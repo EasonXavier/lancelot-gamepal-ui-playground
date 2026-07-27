@@ -140,7 +140,14 @@ export function createPerformanceRuntime(
     entryType: string,
     listener: (entries: readonly PerformanceEntry[]) => void,
   ) => {
-    observerUnsubscribers.add(registry.subscribe(entryType, listener));
+    observerUnsubscribers.add(
+      registry.subscribe(entryType, (entries) => {
+        if (!started || paused) {
+          return;
+        }
+        listener(entries);
+      }),
+    );
   };
 
   const connectObservers = (): void => {
@@ -196,11 +203,11 @@ export function createPerformanceRuntime(
       }
       started = true;
       paused = false;
-      if (capabilities.navigation.status === 'available') {
-        navigationEntry = getEntriesByType('navigation').at(-1) as unknown as
-          NavigationTimingInput | undefined;
-      }
-      if (supportsResourceObserver()) {
+      longTasks = [];
+      longAnimationFrames = [];
+      navigationEntry = emptyNavigation;
+      resourceEntries = [];
+      if (!supportsResourceObserver()) {
         resourceEntries = getEntriesByType(
           'resource',
         ) as unknown as ResourceTimingInput[];
@@ -222,7 +229,6 @@ export function createPerformanceRuntime(
       cancelPublication();
       sampler.pause();
       webVitals.stop();
-      disconnectObservers();
     },
 
     resume(): void {
@@ -231,7 +237,6 @@ export function createPerformanceRuntime(
       }
       paused = false;
       sampler.resume();
-      connectObservers();
       void webVitals.start().then(schedulePublication, () => undefined);
     },
 

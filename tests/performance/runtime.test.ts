@@ -28,16 +28,40 @@ function createRegistry() {
   const observers: Array<{
     adapter: PerformanceObserverAdapter;
     emit: (entries: readonly PerformanceEntry[]) => void;
+    type: string;
   }> = [];
   const registry = new PerformanceObserverRegistry((emit) => {
+    const record: {
+      adapter: PerformanceObserverAdapter;
+      emit: (entries: readonly PerformanceEntry[]) => void;
+      type: string;
+    } = {
+      adapter: undefined as unknown as PerformanceObserverAdapter,
+      emit,
+      type: '',
+    };
     const adapter: PerformanceObserverAdapter = {
-      observe: vi.fn(),
+      observe: vi.fn((options: { type: string }) => {
+        record.type = options.type;
+      }),
       disconnect: vi.fn(),
     };
-    observers.push({ adapter, emit });
+    record.adapter = adapter;
+    observers.push(record);
     return adapter;
   });
   return { observers, registry };
+}
+
+function observerFor(
+  observers: ReturnType<typeof createRegistry>['observers'],
+  type: string,
+) {
+  const observer = observers.find((candidate) => candidate.type === type);
+  if (!observer) {
+    throw new Error(`Expected ${type} observer`);
+  }
+  return observer;
 }
 
 describe('PerformanceRuntime', () => {
@@ -137,6 +161,233 @@ describe('PerformanceRuntime', () => {
       value: { count: 0, totalDuration: 0, maxDuration: 0 },
     });
     runtime.stop();
+  });
+
+  it('catches buffered observer history being appended across visibility and StrictMode replay', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('PerformanceObserver', {
+      supportedEntryTypes: [
+        'longtask',
+        'long-animation-frame',
+        'navigation',
+        'resource',
+      ],
+    });
+    const capabilities = detectPerformanceCapabilities([
+      'longtask',
+      'long-animation-frame',
+      'navigation',
+    ]);
+    const { observers, registry } = createRegistry();
+    const resourceHistory = vi.fn(() => [
+      {
+        duration: 8,
+        transferSize: 100,
+        decodedBodySize: 200,
+      } as unknown as PerformanceEntry,
+    ]);
+    const runtime = createPerformanceRuntime({
+      capabilities,
+      getEntriesByType: resourceHistory,
+      registry,
+      webVitals: createVitals(capabilities),
+    });
+
+    await runtime.start();
+    observerFor(observers, 'longtask').emit([{ duration: 50 } as PerformanceEntry]);
+    observerFor(observers, 'long-animation-frame').emit([
+      { duration: 60 } as PerformanceEntry,
+    ]);
+    observerFor(observers, 'navigation').emit([
+      {
+        startTime: 0,
+        requestStart: 4,
+        responseStart: 12,
+        domInteractive: 20,
+        loadEventEnd: 30,
+      } as unknown as PerformanceEntry,
+    ]);
+    observerFor(observers, 'resource').emit([
+      {
+        duration: 8,
+        transferSize: 100,
+        decodedBodySize: 200,
+      } as unknown as PerformanceEntry,
+    ]);
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(runtime.getSnapshot().mainThread.longTasks).toEqual({
+      status: 'available',
+      value: { count: 1, totalDuration: 50, maxDuration: 50 },
+    });
+    expect(runtime.getSnapshot().resources.resourceCount).toBe(1);
+    const observerCountBeforeVisibilityReplay = observers.length;
+    runtime.pause();
+    runtime.resume();
+    expect(observers).toHaveLength(observerCountBeforeVisibilityReplay);
+
+    runtime.stop();
+    await runtime.start();
+    observerFor(observers.slice(observerCountBeforeVisibilityReplay), 'longtask').emit([
+      { duration: 50 } as PerformanceEntry,
+    ]);
+    observerFor(
+      observers.slice(observerCountBeforeVisibilityReplay),
+      'long-animation-frame',
+    ).emit([{ duration: 60 } as PerformanceEntry]);
+    observerFor(observers.slice(observerCountBeforeVisibilityReplay), 'resource').emit([
+      {
+        duration: 8,
+        transferSize: 100,
+        decodedBodySize: 200,
+      } as unknown as PerformanceEntry,
+    ]);
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(runtime.getSnapshot().mainThread.longTasks).toEqual({
+      status: 'available',
+      value: { count: 1, totalDuration: 50, maxDuration: 50 },
+    });
+    expect(runtime.getSnapshot().resources.resourceCount).toBe(1);
+    expect(resourceHistory).not.toHaveBeenCalled();
+    runtime.stop();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('catches pending publications or late callbacks escaping pause and stop', async () => {
+    vi.useFakeTimers();
+    const capabilities = detectPerformanceCapabilities(['longtask']);
+    const { observers, registry } = createRegistry();
+    const runtime = createPerformanceRuntime({
+      capabilities,
+      registry,
+      webVitals: createVitals(capabilities),
+    });
+    const listener = vi.fn();
+    runtime.subscribe(listener);
+
+    await runtime.start();
+    observerFor(observers, 'longtask').emit([{ duration: 40 } as PerformanceEntry]);
+    runtime.pause();
+    await vi.advanceTimersByTimeAsync(250);
+    expect(listener).not.toHaveBeenCalled();
+
+    runtime.resume();
+    observerFor(observers, 'longtask').emit([{ duration: 50 } as PerformanceEntry]);
+    runtime.stop();
+    observerFor(observers, 'longtask').emit([{ duration: 90 } as PerformanceEntry]);
+    await runtime.start();
+    observerFor(observers.slice(1), 'longtask').emit([
+      { duration: 55 } as PerformanceEntry,
+    ]);
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(runtime.getSnapshot().mainThread.longTasks).toEqual({
+      status: 'available',
+      value: { count: 1, totalDuration: 55, maxDuration: 55 },
+    });
+    runtime.stop();
+    vi.useRealTimers();
+  });
+
+  it('catches snapshots mutating between publications or notifying with a stale reference', async () => {
+    vi.useFakeTimers();
+    const capabilities = detectPerformanceCapabilities(['longtask']);
+    const { observers, registry } = createRegistry();
+    const runtime = createPerformanceRuntime({
+      capabilities,
+      registry,
+      webVitals: createVitals(capabilities),
+    });
+    const beforeStart = runtime.getSnapshot();
+    expect(Object.is(beforeStart, runtime.getSnapshot())).toBe(true);
+    await runtime.start();
+    const beforePublication = runtime.getSnapshot();
+    const listener = vi.fn(() => runtime.getSnapshot());
+    runtime.subscribe(listener);
+    observerFor(observers, 'longtask').emit([{ duration: 45 } as PerformanceEntry]);
+
+    expect(Object.is(beforePublication, runtime.getSnapshot())).toBe(true);
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(listener).toHaveBeenCalledOnce();
+    const published = listener.mock.results[0]?.value;
+    expect(Object.is(beforePublication, published)).toBe(false);
+    expect(published.mainThread.longTasks).toEqual({
+      status: 'available',
+      value: { count: 1, totalDuration: 45, maxDuration: 45 },
+    });
+    runtime.stop();
+    vi.useRealTimers();
+  });
+
+  it('catches reset leaving web vitals, navigation, or resources live', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('PerformanceObserver', {
+      supportedEntryTypes: ['navigation', 'resource'],
+    });
+    const callbacks = new Map<string, (metric: WebVitalReport) => void>();
+    const register = (name: string) => (callback: (metric: WebVitalReport) => void) => {
+      callbacks.set(name, callback);
+    };
+    const capabilities = detectPerformanceCapabilities([
+      'navigation',
+      'largest-contentful-paint',
+    ]);
+    const module: WebVitalsModule = {
+      onTTFB: register('TTFB'),
+      onFCP: register('FCP'),
+      onLCP: register('LCP'),
+      onCLS: register('CLS'),
+      onINP: register('INP'),
+    };
+    const { observers, registry } = createRegistry();
+    const runtime = createPerformanceRuntime({
+      capabilities,
+      registry,
+      webVitals: new WebVitalsStore(capabilities, async () => module),
+    });
+
+    await runtime.start();
+    observerFor(observers, 'navigation').emit([
+      {
+        startTime: 0,
+        requestStart: 2,
+        responseStart: 8,
+        domInteractive: 14,
+        loadEventEnd: 20,
+      } as unknown as PerformanceEntry,
+    ]);
+    observerFor(observers, 'resource').emit([
+      {
+        duration: 6,
+        transferSize: 100,
+        decodedBodySize: 200,
+      } as unknown as PerformanceEntry,
+    ]);
+    callbacks.get('LCP')?.({
+      name: 'LCP',
+      value: 900,
+      delta: 900,
+      rating: 'good',
+      id: 'lcp-reset',
+    });
+    await vi.advanceTimersByTimeAsync(250);
+    runtime.reset();
+
+    expect(runtime.getSnapshot().webVitals.lcp).toEqual({ status: 'waiting' });
+    expect(runtime.getSnapshot().navigation).toEqual({ status: 'waiting' });
+    expect(runtime.getSnapshot().resources).toEqual({
+      resourceCount: 0,
+      totalDuration: 0,
+      transferSize: { status: 'waiting' },
+      decodedBodySize: { status: 'waiting' },
+    });
+    runtime.stop();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 });
 
