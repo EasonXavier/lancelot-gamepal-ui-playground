@@ -1,0 +1,58 @@
+@font-face {
+  font-family: 'LSVIS TD Demo';
+  src: url('/lancelot-gamepal-ui-playground/assets/fonts/lsvis-td-chinese.otf')
+    format('opentype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+:root {
+  color-scheme: dark;
+  --font-brand: 'LSVIS TD Demo', 'Microsoft YaHei UI', sans-serif;
+  --font-ui: 'LSVIS TD Demo', 'Microsoft YaHei UI', sans-serif;
+  --font-mono: 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --color-ink: #090d0d;
+  --color-graphite: #111817;
+  --color-teal-shadow: #142321;
+  --color-text: #f3eee5;
+  --color-text-muted: #a8aca7;
+  --color-accent: #edc390;
+  --color-accent-strong: #ffd7a5;
+  --color-success: #a9dda9;
+  --color-danger: #e8a39b;
+
+  --glass-fill: rgb(18 24 23 / 0.55);
+  --glass-fill-strong: rgb(13 18 18 / 0.75);
+  --glass-border: rgb(235 238 230 / 0.16);
+  --glass-border-selected: rgb(248 207 158 / 0.7);
+  --glass-inner-highlight: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --glass-shadow: 0 18px 50px rgb(0 0 0 / 0.3);
+  --selected-glow: 0 0 18px rgb(238 189 132 / 0.22);
+  --blur-real: 18px;
+  --noise-opacity: 0.045;
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --duration-fast: 140ms;
+  --duration-medium: 280ms;
+  --duration-slow: 700ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --app-height: 100dvh;
+  --hud-z: 40;
+  --panel-z: 60;
+}
