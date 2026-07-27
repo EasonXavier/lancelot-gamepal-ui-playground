@@ -8,7 +8,7 @@
 
 ## Next Step
 
-从 Task 6 的 RED 阶段继续：先为控制面板、HUD 和动效/生命周期写失败测试。Task 5 已通过 PR #1 合并到 `main` 并由 Pages workflow 成功部署；当前门禁为 typecheck、lint、format、48 项测试和生产构建。
+任务已按用户要求暂停，不再继续测试。恢复时从 Task 6.2 的 RED 阶段开始：实现 viewport/visibility、Reduced Motion、单 Canvas 粒子层和触摸视差；不要重做已提交的 Task 6.1。当前 Task 6 分支为 `agent/experiment-controls`，最新实现提交为 `115018a`。
 
 ## Current Phase
 
@@ -44,11 +44,11 @@ Phase 4
 ### Phase 4: 移动 UI、动态与实验控制
 
 - [ ] 将报告序列化接入 Copy JSON、Download JSON 和 Copy Summary
-- [ ] 复刻已确认的主界面与展开控制面板
+- [x] 复刻已确认的主界面与展开控制面板
 - [ ] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
 - [ ] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
 - [ ] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
-- **Status:** in_progress
+- **Status:** paused_after_task_6_1
 
 ### Phase 5: 验证、文档与公开安全
 

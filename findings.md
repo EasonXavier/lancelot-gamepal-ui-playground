@@ -111,11 +111,11 @@
 ## Resume Checkpoint
 
 1. 重读 `task_plan.md`、本文件和 `progress.md`。
-2. 当前位于 Phase 4：Task 5 本地首页检查点已完成；确认工作树与最新提交状态后，从实施计划 Task 6 的 RED 阶段开始。
-3. 先为控制面板、HUD 与动效/生命周期写失败测试；随后才实现 Task 6，不回退到已完成的 Task 3。
-4. 本地 Task 5 检查点已通过 typecheck、lint、format、9 files / 46 tests 和生产 build；浏览器与安全验证完成前不要创建正式版本。
+2. 当前位于 Phase 4 暂停点：Task 6.1 已提交为 `115018a`；确认 `agent/experiment-controls` 工作树后，从详细计划 Task 6.2 的 RED 阶段开始。
+3. 不重做 Task 6.1；尚未完成的独立审查可以在恢复后先补做，然后实现 lifecycle-aware motion layer。
+4. 暂停前 Task 6.1 已通过 focused 12/12、全量 10 files / 54 tests、typecheck、ESLint、Prettier 和 `git diff --check`；浏览器与安全验证完成前不要创建正式版本。
 
-历史发布背景：`d20b849`/`e26b75c` 的 GitHub Pages 推送与部署是真实的 earlier published checkpoint，保留其事实记录；本轮 Task 5 和当前 `agent/performance-observers` 分支只创建本地提交，没有 push、deploy、tag 或 release。
+历史发布背景：Task 5 已通过 PR #1 合并为 `4f42867`，Pages run `30273041434` 成功；当前 `agent/experiment-controls` 的 Task 6 提交仅在本地，尚未 push、deploy、tag 或 release。
 
 恢复检查点复核确认：三个规划文件均包含当前 Phase 4/Task 6 RED 指令；历史 Pages 检查点与当前本地状态已明确区分。
 

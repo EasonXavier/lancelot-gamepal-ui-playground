@@ -172,13 +172,13 @@
 
 ## 5-Question Reboot Check
 
-| Question             | Answer                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| Where am I?          | Phase 4：Task 5 已合并并部署，Task 6 尚未开始                                      |
-| Where am I going?    | Task 6 RED：控制面板、HUD、动效与生命周期测试/实现                                 |
-| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                             |
-| What have I learned? | 见 `findings.md`                                                                   |
-| What have I done?    | PR #1 已合并为 `4f42867`；Pages run `30273041434` 成功，主分支 48 tests 与门禁通过 |
+| Question             | Answer                                                                 |
+| -------------------- | ---------------------------------------------------------------------- |
+| Where am I?          | Phase 4：Task 6.1 已提交，用户要求停止测试并暂停                       |
+| Where am I going?    | 恢复时进入 Task 6.2 RED：动效与生命周期测试/实现                       |
+| What's the goal?     | 建立独立公开的朗世乐移动 UI 性能试验场                                 |
+| What have I learned? | 见 `findings.md`                                                       |
+| What have I done?    | Task 6.1 已提交为 `115018a`；暂停前 10 files / 54 tests 与静态门禁通过 |
 
 ## Task 5 Merge and Pages Deployment: 2026-07-27
 
@@ -199,6 +199,15 @@
 - 新 worktree 基线：typecheck、ESLint、Prettier、9 files / 48 tests 全部通过。
 - Task 6 规格审计未发现阻塞性歧义；控制面板保持非模态，由 `App` 持有运行时设置，粒子上限采用本地常量 160。
 - 已创建 `docs/superpowers/plans/2026-07-27-experiment-controls-motion-hud.md`，拆分为设置面板、动效生命周期、性能 HUD、Benchmark/报告四个 TDD 任务；40 个代码围栏成对且无占位文本。
+
+## Pause Checkpoint: 2026-07-27
+
+- 用户要求保存当前进度并停止测试；已终止正在运行的 Task 6.1 独立审查，未启动 Task 6.2。
+- Task 6.1 RED：2 个存储异常用例和 4 个面板用例按预期失败；实现后 focused 12/12、全量 10 files / 54 tests、typecheck、ESLint、Prettier 与 `git diff --check` 均通过。
+- Task 6.1 实现提交：`115018a3329beb3fe916eae7183ba1ae36a602fc`（`feat: add experiment settings panel`），规划提交：`279f8a85fff966298ec0d8519c37600d441badb1`。
+- 已实现：`App` 持有并持久化设置、拒绝 storage 时安全降级、非模态实验控制区、4/5/5/3/3 互斥选项、四个开关、重置与 `data-glass-mode` 即时切换。
+- 未完成：Task 6.1 独立审查报告；Task 6.2 动效生命周期；Task 6.3 性能 HUD；Task 6.4 Benchmark/本地报告操作；最终浏览器/设备验证与 Task 6 推送部署。
+- 恢复入口：工作树 `C:\Project\lancelot-gamepal-ui-playground\.worktrees\experiment-controls`，分支 `agent/experiment-controls`，先重读三份持续文档和详细 Task 6 计划，然后从 Task 6.2 RED 继续，不重复 Task 6.1 测试。
 
 ---
 
