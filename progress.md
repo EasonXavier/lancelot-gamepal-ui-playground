@@ -253,6 +253,10 @@
 - `b95b592..22b6b69` 定向复审 APPROVED：原 6 个 Important 全部 ADDRESSED，0 个新 Critical/Important；两个原 Minor 保持延期。
 - 本地最新生产预览完成五视口与交互验证：375×812、390×844、393×852、430×932、844×390 均无横向溢出，底栏可见，人物背景和 Pages 子路径正常，控制台 0 error/warn。
 - 浏览器交互验证确认设置切换、HUD 展开、Benchmark 运行锁定、取消恢复与复制成功状态；真实 Safe Area 非零 inset 和微信 WebView UA 尚未真机验证，因此 Phase 5 不标记完成。
+- 已推送 `agent/experiment-controls` 并创建 ready PR #2；GitHub 判定 mergeable，PR 未配置独立检查项，采用本地新鲜门禁和后续 main workflow 作为合并门禁。
+- PR #2 以 merge commit `feced285bac2172f5c8b82c91c4d37fdf0e5526b` 合并到 `main`；未创建 Release 或标签。
+- Pages workflow run `30305196701` 成功：build 31 秒，deploy 9 秒；Checkout、Node、依赖安装、项目验证、Pages 配置、artifact 上传与部署步骤全部通过。
+- 线上缓存破除验证确认新资源 `index-BEsYy-mJ.js` / `index-C3mvqVYK.css`、人物 Pages 子路径、Task 6 实验控制入口和 Canvas 已生效；390×844 外层视口无横向溢出，控制台 0 error/warn。
 
 ---
 

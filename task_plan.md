@@ -8,11 +8,11 @@
 
 ## Next Step
 
-Task 6 整体审查的 6 个 Important 已在 `22b6b69` 清零，136 项测试、生产构建、公开安全扫描和五视口本地浏览器验证均通过。下一步提交验证记录，将 Task 6 分支合并到 `main` 并部署 Pages；不创建 Release 或标签，随后继续 Phase 5 真机与文档工作。
+Task 6 已通过 PR #2 合并为 `feced285`，Pages run `30305196701` 的 build/deploy 均成功，线上新 bundle 与控制入口已核验。下一步继续 Phase 5：补齐 README、指标/设备模板和 fidelity ledger，并在真实 Safe Area 与微信 WebView 上复核；不创建 Release 或标签。
 
 ## Current Phase
 
-Phase 4
+Phase 5
 
 ## Phases
 
@@ -48,7 +48,7 @@ Phase 4
 - [x] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
 - [x] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
 - [x] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
-- **Status:** complete; pending whole-branch review and Phase 5 browser validation
+- **Status:** complete; reviewed, merged and deployed
 
 ### Phase 5: 验证、文档与公开安全
 
@@ -62,11 +62,12 @@ Phase 4
 
 ### Phase 6: 提交、部署与交付证据
 
-> 当前发布状态：PR #1 已于 2026-07-27 合并为 `4f42867`，Pages workflow run `30273041434` 已成功部署 Task 5；没有创建 Release 或标签。
+> 当前发布状态：PR #2 已于 2026-07-28 合并为 `feced285`，Pages workflow run `30305196701` 已成功部署 Task 6；没有创建 Release 或标签。
 
 - [x] 提交并推送 `main`
 - [x] 启用 GitHub Actions Pages 发布源并运行 CI/部署
-- [ ] 验证线上 HTML、CSS、JS、图片、路由、HUD 与报告导出
+- [x] 验证线上 HTML、CSS、JS、图片、路由与 HUD/实验控制入口
+- [ ] 在真实微信 WebView 验证完整 Benchmark 与报告导出
 - [ ] 提供完整的仓库、构建、测试、截图、部署和限制证据
 - **Status:** in_progress
 

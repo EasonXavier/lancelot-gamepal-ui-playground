@@ -56,6 +56,8 @@
 - 本地浏览器实测：Glass/Motion/HUD 设置即时生效；Benchmark 运行时 Motion/粒子/DPR/动态开关与重置被锁定，取消后恢复；复制 JSON 显示 `已复制`。人物背景资源在 Pages 子路径正确加载。
 - Safe Area 使用 `env(safe-area-inset-*)` 并接入页头、内容、底栏、HUD 与控制面板；桌面模拟环境的 inset 为 0，真实非零 inset 和微信 WebView UA 仍需真机复核。微信识别逻辑已有 `MicroMessenger` 单元测试，但不等同于真机证据。
 - 整体审查的两个非阻断 Minor 已延期：Canvas 每帧仍读取尺寸/DPR；HUD hidden 模式仍保留 store 订阅。两项未在最终修复波次中恶化。
+- PR #2 已合并为 `feced285`；Pages run `30305196701` 的 build 31 秒、deploy 9 秒，两个 job 均成功。
+- 线上缓存破除验证加载 `index-BEsYy-mJ.js` 与 `index-C3mvqVYK.css`；Task 6 实验入口、Canvas、人物 Pages 子路径和 `--app-height` 正常，390×844 外层视口无横向溢出，控制台 0 error/warn。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
