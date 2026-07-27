@@ -37,7 +37,7 @@
 
 - [x] **Step 1: Create configuration and scripts**
 
-  Define scripts `dev`, `typecheck`, `lint`, `format:check`, `test`, `test:watch`, `build`, `preview`; pin React/Vite/Vitest-compatible dependencies. The first local checkpoint is `9f26f73`, and the follow-up working build metadata is `0.1.0+20260727.1119.9f26f73`.
+  Define scripts `dev`, `typecheck`, `lint`, `format:check`, `test`, `test:watch`, `build`, `preview`; pin React/Vite/Vitest-compatible dependencies. The first local checkpoint is `9f26f73`; the deployable checkpoint is `d20b849`, with working build metadata `0.1.0+20260727.1309.d20b849`.
 
 - [x] **Step 2: Acquire and sanitize public assets**
 

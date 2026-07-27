@@ -1,7 +1,7 @@
 {
   "name": "lancelot-gamepal-ui-playground",
   "private": true,
-  "version": "0.1.0+20260727.1119.9f26f73",
+  "version": "0.1.0+20260727.1309.d20b849",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -45,7 +45,9 @@
   - `docs/superpowers/plans/2026-07-27-mobile-ui-performance-playground.md`
   - `public/assets/fonts/lsvis-td-chinese.otf`
   - `public/assets/character-source.png`
-  - 工程配置、设计令牌、素材/安全说明、帧性能模块与测试（已创建本地检查点提交 `9f26f73`）
+  - 工程配置、设计令牌、素材/安全说明、帧性能模块与测试（基础提交 `9f26f73`）
+  - 明确标注开发状态的最小 React 入口与 GitHub Pages workflow（可部署提交 `d20b849`）
+  - 在 390×844 本地预览中验证字体、人物素材、玻璃层、构建号、零横向溢出与零控制台错误/警告
 
 ## Test Results
 
@@ -82,7 +84,7 @@
 ## Pause Checkpoint: 2026-07-27
 
 - **Reason:** 用户要求先结束当前会话内任务并更新文档，稍后继续。
-- **Repository:** PUBLIC remote exists; local `main` has checkpoint commit `9f26f73`; no push has been performed.
+- **Repository:** PUBLIC remote exists; local `main` has deployable checkpoint `d20b849`; no push has been performed yet.
 - **Completed:** 独立仓库创建、视觉规格确认、详细实施计划、依赖锁定与安装、素材清理/登记、设计令牌、帧核心 TDD。
 - **Validated:** typecheck passes; lint passes; 2 frame test files / 10 tests pass; npm audit reported 0 vulnerabilities at install time.
 - **Not yet validated:** full application build, preview, mobile/browser QA, GitHub Actions, Pages.
