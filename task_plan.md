@@ -8,7 +8,7 @@
 
 ## Next Step
 
-等待用户选择 Task 5 的执行方式；随后从单一 DOM Glass Surface 的 RED 阶段继续。Task 4 已通过 typecheck、lint、32 项测试和生产构建。
+从 Task 6 的 RED 阶段继续：先为控制面板、HUD 和动效/生命周期写失败测试。Task 5 的首页、共享单一 DOM Glass Surface、服务入口和底栏已完成本地检查点；全量门禁通过 typecheck、lint、format、46 项测试和生产构建。
 
 ## Current Phase
 
@@ -48,7 +48,7 @@ Phase 4
 - [ ] 实现四种互斥 Glass Mode、五档 Motion、粒子和 DPR 策略
 - [ ] 实现触摸光、卡片倾斜/按压、背景视差、页面转场和 Reduced Motion
 - [ ] 实现 HUD、六个 Experimental/Mock 入口和五项底栏导航
-- **Status:** pending
+- **Status:** in_progress
 
 ### Phase 5: 验证、文档与公开安全
 

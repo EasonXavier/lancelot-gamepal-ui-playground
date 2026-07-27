@@ -161,25 +161,27 @@
 - Consumes: `ExperimentSettings`, `GlassMode`.
 - Produces: accessible controls with exact copy and `data-glass-mode`, `data-selected`, `aria-current`, `aria-pressed` state.
 
-- [ ] **Step 1: Write failing UI tests**
+- [x] **Step 1: Write failing UI tests**
 
   Assert brand “朗世乐”; exactly four games; selected 三角洲行动 with icon while unselected games have no logo; six exact service names; five exact bottom items; 44px-class tap targets; each service opens a visible `Experimental / Mock` placeholder.
 
-- [ ] **Step 2: Write failing glass tests**
+- [x] **Step 2: Write failing glass tests**
 
   Render every Glass Mode and verify one DOM subtree with only the mode class changing; base surfaces lack selected-glow class; selected tab receives it.
 
-- [ ] **Step 3: Run RED**
+- [x] **Step 3: Run RED**
 
   Run `npm test -- tests/ui/homeScreen.test.tsx tests/ui/glassSurface.test.tsx`. Expected: FAIL on missing components.
 
-- [ ] **Step 4: Implement the approved composition**
+- [x] **Step 4: Implement the approved composition**
 
   Use a full-viewport character layer, compact HUD area, 50-56px game rail, 12-column variable rectangular service grid, fixed safe-area bottom nav, and code-native SVG line icons.
 
-- [ ] **Step 5: Run GREEN and accessibility assertions**
+- [x] **Step 5: Run GREEN and accessibility assertions**
 
   Rerun both tests. Expected: PASS without duplicate roles or inaccessible icon-only buttons.
+
+  Checkpoint evidence: full bundled-Node gate on 2026-07-27 passed typecheck, ESLint, Prettier, 9 Vitest files / 46 tests, and production Vite build. The generated `dist/index.html` references `/lancelot-gamepal-ui-playground/` assets; copy/mode scans and `git diff --check` also exited 0.
 
 ### Task 6: 控制面板、HUD、动效与粒子（TDD）
 

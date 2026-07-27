@@ -98,6 +98,13 @@
 - 控制面板：大面积底部玻璃抽屉覆盖人物与入口；四种 Blur 实现同时可见但互斥选择；只有选中项发光。
 - 2026-07-27 用户明确选择 Task 5 方案 A：四种 Blur 共用唯一 React/DOM 结构，只切换模式类与表面策略；不采用四套组件或 Canvas 主导界面。
 
+## Task 5 Checkpoint: 2026-07-27
+
+- 首页使用唯一的 React/DOM 组合：`HomeScreen` 组装 `GameRail`、`ServiceGrid`、`BottomNav` 与 `ExperimentalPlaceholder`，四种 Glass mode 不渲染四套页面。
+- `GlassSurface` 始终保留同一子树，仅通过 `glass-surface--real`、`glass-surface--simulated`、`glass-surface--preblur` 或 `glass-surface--off` 切换表面策略；`data-glass-mode` 保持可观察。
+- 基础玻璃只使用中性边框、内高光和阴影；`glass-surface--selected` 是唯一引入 `--selected-glow` 的路径，游戏栏和底栏的选中状态明确使用 `aria-pressed`/`aria-current`。
+- 六个服务入口均可打开可见的 `Experimental / Mock` 对话框；四个游戏和五个底栏项保持要求的精确文案与 44px 级触摸目标。
+
 ## Resume Checkpoint
 
 1. 重读 `task_plan.md`、本文件和 `progress.md`。

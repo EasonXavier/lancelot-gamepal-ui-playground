@@ -79,6 +79,17 @@
   - 创建本地功能检查点 `d7a7ea1`（`feat: add experiment settings and benchmark`），未推送、未部署。
   - 将工作构建号更新为 `0.1.0+20260727.1356.d7a7ea1`，正式版本字段仍保持 `0.1.0`。
 
+### Phase 4: Task 5 home-screen checkpoint
+
+- **Status:** complete checkpoint; Phase 4 remains in progress for Task 6.
+- **Completed:** 2026-07-27 15:45 +08:00
+- Actions and evidence:
+  - 重新从 `d4d5a18` 运行 bundled-Node typecheck、ESLint 和 Prettier；三项均退出 0，Prettier 输出 `All matched files use Prettier code style!`。
+  - 全量 Vitest 退出 0：9 files / 46 tests passed，耗时 1.40s；没有未处理的 React 警告。
+  - 初次沙箱 Vite build 在清理既有 `dist/assets` 时因 `EPERM` 退出 1；未删除或改写任何非 `dist` 目标，随后在 Windows 上下文以相同 bundled-Node Vite 命令重跑并退出 0。
+  - 成功构建 26 modules（74ms），产物为 `dist/index.html`、`dist/assets/index-DHzMAm_G.css`、`dist/assets/index-BIkK-e17.js`、`dist/assets/index-BIkK-e17.js.map`、`dist/assets/character-source.png` 与 `dist/assets/fonts/lsvis-td.woff2`。
+  - `vite.config.ts` 和 `dist/index.html` 均确认 Pages base 为 `/lancelot-gamepal-ui-playground/`；copy/mode scans 与 `git diff --check` 均退出 0。
+
 ## Test Results
 
 | Test                       | Input                                           | Expected               | Actual                                                      | Status |
