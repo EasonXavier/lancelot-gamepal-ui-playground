@@ -88,6 +88,15 @@ export function HomeScreen({
         >
           实验控制
         </button>
+        {benchmarkController.state.status === 'running' && !panelOpen ? (
+          <button
+            className="tap-target home-screen__experiment-toggle"
+            onClick={benchmarkController.cancel}
+            type="button"
+          >
+            取消 Benchmark
+          </button>
+        ) : null}
       </header>
       <div className="home-screen__content">
         <GameRail

@@ -180,4 +180,94 @@ describe('report actions', () => {
     );
     expect(writeText.mock.calls[0]?.[0]).not.toMatch(/: 0(?:\n|$)/);
   });
+
+  it.each([
+    [
+      'credentials, query and fragment',
+      'https://user:password@example.test/lancelot-gamepal-ui-playground/?token=secret#identity',
+      '/lancelot-gamepal-ui-playground/',
+    ],
+    [
+      'an IP host',
+      'https://203.0.113.10/lancelot-gamepal-ui-playground/',
+      '/lancelot-gamepal-ui-playground/',
+    ],
+    ['a token-bearing path', 'https://example.test/token/secret-token', '[redacted]'],
+    [
+      'an identity-bearing path',
+      'https://example.test/users/wechat-user-123',
+      '[redacted]',
+    ],
+    ['a root page with ambient suffixes', 'https://example.test/?token=x#user', '/'],
+  ])('catches %s entering the whitelisted page identifier', async (_, input, want) => {
+    const { dependencies, writeText } = createDependencies();
+    const snapshot = createSnapshot();
+    snapshot.page.url = input;
+    const actions = createReportActions(() => snapshot, dependencies);
+
+    await actions.copyJson();
+
+    const copied = JSON.parse(writeText.mock.calls[0]?.[0] ?? '{}') as {
+      page?: { url?: string };
+    };
+    expect(copied.page?.url).toBe(want);
+  });
+
+  it('revokes the object URL when anchor creation fails before append', () => {
+    const { dependencies, revokeObjectURL } = createDependencies();
+    vi.spyOn(document, 'createElement').mockImplementationOnce(() => {
+      throw new Error('createElement failed');
+    });
+    const actions = createReportActions(createSnapshot, dependencies);
+
+    expect(() => actions.downloadJson()).toThrow('createElement failed');
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:local-report');
+  });
+
+  it('removes the anchor and revokes the object URL when timestamp creation fails', () => {
+    const { dependencies, revokeObjectURL } = createDependencies();
+    const anchor = document.createElement('a');
+    const remove = vi.spyOn(anchor, 'remove');
+    vi.spyOn(document, 'createElement').mockReturnValueOnce(anchor);
+    dependencies.now = () => {
+      throw new Error('clock failed');
+    };
+    const actions = createReportActions(createSnapshot, dependencies);
+
+    expect(() => actions.downloadJson()).toThrow('clock failed');
+    expect(remove).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
+  });
+
+  it('removes the anchor and revokes the object URL when anchor setup fails', () => {
+    const { dependencies, revokeObjectURL } = createDependencies();
+    const anchor = document.createElement('a');
+    const remove = vi.spyOn(anchor, 'remove');
+    Object.defineProperty(anchor, 'download', {
+      configurable: true,
+      set: () => {
+        throw new Error('download setter failed');
+      },
+    });
+    vi.spyOn(document, 'createElement').mockReturnValueOnce(anchor);
+    const actions = createReportActions(createSnapshot, dependencies);
+
+    expect(() => actions.downloadJson()).toThrow('download setter failed');
+    expect(remove).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
+  });
+
+  it('removes the attached anchor and revokes the object URL when click fails', () => {
+    const { click, dependencies, revokeObjectURL } = createDependencies();
+    click.mockImplementationOnce(() => {
+      throw new Error('click failed');
+    });
+    const actions = createReportActions(createSnapshot, dependencies);
+
+    expect(() => actions.downloadJson()).toThrow('click failed');
+    const anchor = click.mock.contexts[0] as HTMLAnchorElement;
+    expect(anchor.isConnected).toBe(false);
+    expect(revokeObjectURL).toHaveBeenCalledOnce();
+  });
 });

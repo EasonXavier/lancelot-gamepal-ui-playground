@@ -39,7 +39,13 @@ export function createReportActions(
   getSnapshot: () => ReportSnapshot,
   dependencies: ReportActionDependencies = defaultDependencies(),
 ): ReportActions {
-  const serializedSnapshot = (): string => serializeReport(getSnapshot());
+  const serializedSnapshot = (): string => {
+    const snapshot = getSnapshot();
+    return serializeReport({
+      ...snapshot,
+      page: { url: sanitizePageIdentifier(snapshot.page.url) },
+    });
+  };
 
   return {
     copyJson(): Promise<void> {
@@ -51,15 +57,16 @@ export function createReportActions(
         type: 'application/json;charset=utf-8',
       });
       const objectUrl = dependencies.url.createObjectURL(blob);
-      const anchor = dependencies.document.createElement('a');
-      anchor.download = `lancelot-ui-report-${fileTimestamp(dependencies.now())}.json`;
-      anchor.href = objectUrl;
+      let anchor: HTMLAnchorElement | null = null;
 
       try {
+        anchor = dependencies.document.createElement('a');
+        anchor.download = `lancelot-ui-report-${fileTimestamp(dependencies.now())}.json`;
+        anchor.href = objectUrl;
         dependencies.document.body.append(anchor);
         anchor.click();
       } finally {
-        anchor.remove();
+        anchor?.remove();
         dependencies.url.revokeObjectURL(objectUrl);
       }
     },
@@ -68,6 +75,17 @@ export function createReportActions(
       return dependencies.clipboard.writeText(formatSummary(getSnapshot()));
     },
   };
+}
+
+const allowedPagePaths = new Set(['/', '/lancelot-gamepal-ui-playground/']);
+
+export function sanitizePageIdentifier(input: string): string {
+  try {
+    const pathname = new URL(input, 'https://local.invalid').pathname;
+    return allowedPagePaths.has(pathname) ? pathname : '[redacted]';
+  } catch {
+    return '[redacted]';
+  }
 }
 
 function formatSummary(snapshot: ReportSnapshot): string {

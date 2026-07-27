@@ -13,6 +13,7 @@ import {
 import { collectEnvironmentInfo } from './performance/environmentInfo';
 import {
   createReportActions,
+  sanitizePageIdentifier,
   type ReportActionDependencies,
 } from './performance/reportActions';
 import type { ReportSnapshot } from './performance/reportExporter';
@@ -162,7 +163,7 @@ function buildReportSnapshot(
 
   return {
     generatedAt: new Date().toISOString(),
-    page: { url: currentPageUrl() },
+    page: { url: sanitizePageIdentifier(window.location.href) },
     environment: {
       userAgent: environment.userAgent,
       isWeChat: environment.isWeChat,
@@ -189,13 +190,6 @@ function buildReportSnapshot(
     },
     benchmark: { completedInForeground },
   };
-}
-
-function currentPageUrl(): string {
-  const pageUrl = new URL(window.location.href);
-  pageUrl.search = '';
-  pageUrl.hash = '';
-  return pageUrl.href;
 }
 
 function loadInitialSettings(): ExperimentSettings {

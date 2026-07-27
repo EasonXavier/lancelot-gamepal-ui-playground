@@ -1,11 +1,26 @@
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  render,
+  renderHook,
+  screen,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../../src/App';
-import { SETTINGS_STORAGE_KEY } from '../../src/experiments/settings';
+import {
+  createDefaultSettings,
+  SETTINGS_STORAGE_KEY,
+} from '../../src/experiments/settings';
+import { useBenchmarkController } from '../../src/hooks/useBenchmarkController';
 import type { BenchmarkClock } from '../../src/performance/benchmarkRunner';
 import type { ReportActionDependencies } from '../../src/performance/reportActions';
+import type {
+  PerformanceRuntime,
+  PerformanceSnapshot,
+} from '../../src/performance/runtime';
 
 class FakeClock implements BenchmarkClock {
   private currentTime = 0;
@@ -40,6 +55,133 @@ class FakeClock implements BenchmarkClock {
     }
     this.currentTime = target;
   }
+}
+
+function createPerformanceSnapshot(fps: number): PerformanceSnapshot {
+  return {
+    frames: {
+      intervals: [16],
+      isRunning: true,
+      needsCalibration: false,
+      metrics: {
+        sampleCount: 1,
+        baselineFrameTime: 16,
+        currentFps: fps,
+        averageFrameTime: 16,
+        p95FrameTime: 16,
+        maxFrameTime: 16,
+        framesOver33: 0,
+        framesOver50: 0,
+        stutterFrameRatio: 0,
+        estimatedDroppedFrames: 0,
+      },
+    },
+    webVitals: {
+      ttfb: { status: 'waiting' },
+      fcp: { status: 'waiting' },
+      lcp: { status: 'waiting' },
+      cls: { status: 'waiting' },
+      inp: { status: 'waiting' },
+    },
+    mainThread: {
+      longTasks: { status: 'waiting' },
+      longAnimationFrames: { status: 'waiting' },
+    },
+    navigation: { status: 'waiting' },
+    resources: {
+      resourceCount: 0,
+      totalDuration: 0,
+      transferSize: { status: 'waiting' },
+      decodedBodySize: { status: 'waiting' },
+    },
+    capabilities: {
+      navigation: { status: 'available' },
+      paint: { status: 'available' },
+      largestContentfulPaint: { status: 'available' },
+      layoutShift: { status: 'available' },
+      eventTiming: { status: 'available' },
+      longTask: { status: 'available' },
+      longAnimationFrame: { status: 'available' },
+    },
+  };
+}
+
+class FakeRuntime implements PerformanceRuntime {
+  private started = false;
+  private running = false;
+  private fps = 60;
+
+  readonly start = vi.fn(async () => {
+    this.started = true;
+    this.running = true;
+  });
+
+  readonly pause = vi.fn(() => {
+    this.running = false;
+  });
+
+  readonly resume = vi.fn(() => {
+    if (this.started) {
+      this.running = true;
+    }
+  });
+
+  readonly stop = vi.fn(() => {
+    this.started = false;
+    this.running = false;
+  });
+
+  readonly reset = vi.fn(() => {
+    this.fps = 60;
+  });
+
+  readonly subscribe = vi.fn(() => () => undefined);
+
+  readonly getSnapshot = vi.fn(() => createPerformanceSnapshot(this.fps));
+
+  tick(): void {
+    if (this.running) {
+      this.fps += 1;
+    }
+  }
+}
+
+function renderBenchmarkController(runtime: PerformanceRuntime, clock: FakeClock) {
+  const settings = {
+    ...createDefaultSettings(),
+    motionLevel: 'off' as const,
+    particleCount: 0 as const,
+    backgroundMotion: false,
+  };
+  return renderHook(() =>
+    useBenchmarkController({
+      clock,
+      effectiveSettings: settings,
+      panelOpen: true,
+      performanceRuntime: runtime,
+      selectedGame: 'delta',
+      visible: true,
+      onPanelOpenChange: vi.fn(),
+      onProfileChange: vi.fn(),
+      onSelectedGameChange: vi.fn(),
+    }),
+  );
+}
+
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve(value: T): void;
+  reject(reason: unknown): void;
+}
+
+function deferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
 }
 
 const originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
@@ -103,6 +245,47 @@ afterEach(() => {
     Object.defineProperty(window, 'scrollY', originalScrollY);
   }
   vi.restoreAllMocks();
+});
+
+describe('benchmark runtime ownership', () => {
+  it('starts an off/Reduced Motion runtime and freezes the completed snapshot after capture', () => {
+    const clock = new FakeClock();
+    const runtime = new FakeRuntime();
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const { result } = renderBenchmarkController(runtime, clock);
+
+    act(() => result.current.start());
+    expect(runtime.start).toHaveBeenCalledOnce();
+    runtime.tick();
+    act(() => clock.advanceBy(30_000));
+
+    expect(runtime.getSnapshot).toHaveBeenCalled();
+    expect(runtime.pause).toHaveBeenCalled();
+    const capturedFps = runtime.getSnapshot().frames.metrics.currentFps;
+    runtime.tick();
+    expect(runtime.getSnapshot().frames.metrics.currentFps).toBe(capturedFps);
+    expect(runtime.pause.mock.invocationCallOrder.at(-1)).toBeGreaterThan(
+      runtime.getSnapshot.mock.invocationCallOrder[0] ?? 0,
+    );
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+  });
+
+  it('pauses unconditionally on cancel and leaves the current snapshot frozen', () => {
+    const clock = new FakeClock();
+    const runtime = new FakeRuntime();
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const { result } = renderBenchmarkController(runtime, clock);
+
+    act(() => result.current.start());
+    runtime.tick();
+    const beforeCancel = runtime.getSnapshot().frames.metrics.currentFps;
+    act(() => result.current.cancel());
+
+    expect(runtime.pause).toHaveBeenCalled();
+    runtime.tick();
+    expect(runtime.getSnapshot().frames.metrics.currentFps).toBe(beforeCancel);
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+  });
 });
 
 describe('experiment actions', () => {
@@ -256,5 +439,170 @@ describe('experiment actions', () => {
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
     await user.click(screen.getByRole('button', { name: '下载 JSON' }));
     expect(screen.getByText('已下载')).toBeVisible();
+  });
+
+  it.each([
+    ['warmup start', 0],
+    ['ambient boundary', 3_000],
+    ['stress boundary', 11_000],
+    ['scroll-transition boundary', 19_000],
+    ['summarize boundary', 27_000],
+  ])('keeps cancel available at the exact %s', async (_, elapsedMs) => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+    act(() => clock.advanceBy(elapsedMs));
+
+    const cancel = screen.getByRole('button', { name: '取消 Benchmark' });
+    expect(cancel).toBeVisible();
+    await user.click(cancel);
+    expect(screen.getByText('cancelled')).toBeVisible();
+  });
+
+  it('treats the exact 30-second boundary as completed rather than cancellable', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+
+    act(() => clock.advanceBy(30_000));
+
+    expect(screen.getByText('completed')).toBeVisible();
+  });
+
+  it.each([
+    ['warmup', 0],
+    ['ambient', 3_000],
+    ['stress', 11_000],
+    ['summarize', 27_000],
+  ])(
+    'prevents a requested particle edit before %s cancellation',
+    async (_, elapsedMs) => {
+      installBrowserBoundaries();
+      const clock = new FakeClock();
+      const user = userEvent.setup();
+      render(<App benchmarkClock={clock} />);
+      await openConfiguredPanel(user);
+      await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+      act(() => clock.advanceBy(elapsedMs));
+      const particles = screen.getByRole('group', { name: '粒子数量' });
+      const attemptedEdit = within(particles).getByRole('radio', { name: '100' });
+
+      expect(attemptedEdit).toBeDisabled();
+      await user.click(attemptedEdit);
+      await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
+
+      expect(within(particles).getByRole('radio', { name: '20' })).toBeChecked();
+      expect(
+        JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+      ).toMatchObject({ settings: { particleCount: 20 } });
+    },
+  );
+
+  it('prevents particle edits through all editable phases and restores after completion', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} />);
+    await openConfiguredPanel(user);
+    await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+
+    for (const advanceMs of [0, 3_000, 8_000]) {
+      act(() => clock.advanceBy(advanceMs));
+      expect(
+        within(screen.getByRole('group', { name: '粒子数量' })).getByRole('radio', {
+          name: '100',
+        }),
+      ).toBeDisabled();
+    }
+    act(() => clock.advanceBy(8_000));
+    expect(screen.queryByRole('group', { name: '粒子数量' })).toBeNull();
+    act(() => clock.advanceBy(8_000));
+    expect(
+      within(screen.getByRole('group', { name: '粒子数量' })).getByRole('radio', {
+        name: '100',
+      }),
+    ).toBeDisabled();
+    act(() => clock.advanceBy(3_000));
+
+    expect(
+      within(screen.getByRole('group', { name: '粒子数量' })).getByRole('radio', {
+        name: '20',
+      }),
+    ).toBeChecked();
+    expect(
+      JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+    ).toMatchObject({ settings: { particleCount: 20 } });
+  });
+
+  it('keeps a later copy success when an earlier copy rejects afterward', async () => {
+    const first = deferred<void>();
+    const second = deferred<void>();
+    const writeText = vi
+      .fn<(text: string) => Promise<void>>()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    const { reportActionDependencies } = installBrowserBoundaries(writeText);
+    const user = userEvent.setup();
+    render(<App reportActionDependencies={reportActionDependencies} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+    await user.click(screen.getByRole('button', { name: '复制摘要' }));
+
+    await act(async () => second.resolve());
+    expect(screen.getByText('已复制')).toBeVisible();
+    await act(async () => first.reject(new Error('older failed')));
+    expect(screen.getByText('已复制')).toBeVisible();
+    expect(screen.queryByText('复制失败')).toBeNull();
+  });
+
+  it('keeps a later copy failure when an earlier copy resolves afterward', async () => {
+    const first = deferred<void>();
+    const second = deferred<void>();
+    const writeText = vi
+      .fn<(text: string) => Promise<void>>()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    const { reportActionDependencies } = installBrowserBoundaries(writeText);
+    const user = userEvent.setup();
+    render(<App reportActionDependencies={reportActionDependencies} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+    await user.click(screen.getByRole('button', { name: '复制摘要' }));
+
+    await act(async () => second.reject(new Error('latest failed')));
+    expect(screen.getByText('复制失败')).toBeVisible();
+    await act(async () => first.resolve());
+    expect(screen.getByText('复制失败')).toBeVisible();
+    expect(screen.queryByText('已复制')).toBeNull();
+  });
+
+  it('keeps download status when an earlier copy settles and cleans up on unmount', async () => {
+    const pending = deferred<void>();
+    const writeText = vi.fn<(text: string) => Promise<void>>(() => pending.promise);
+    const { reportActionDependencies } = installBrowserBoundaries(writeText);
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const user = userEvent.setup();
+    const view = render(<App reportActionDependencies={reportActionDependencies} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+    await user.click(screen.getByRole('button', { name: '下载 JSON' }));
+    expect(screen.getByText('已下载')).toBeVisible();
+
+    await act(async () => pending.reject(new Error('older failed')));
+    expect(screen.getByText('已下载')).toBeVisible();
+
+    const afterUnmount = deferred<void>();
+    writeText.mockImplementationOnce(() => afterUnmount.promise);
+    await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+    view.unmount();
+    await act(async () => afterUnmount.resolve());
+    expect(consoleError).not.toHaveBeenCalled();
   });
 });

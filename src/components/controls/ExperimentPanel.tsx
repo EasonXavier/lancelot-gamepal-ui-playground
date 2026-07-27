@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GlassSurface } from '../glass/GlassSurface';
 import type { BenchmarkController } from '../../hooks/useBenchmarkController';
 import type { ReportActions } from '../../performance/reportActions';
@@ -68,15 +68,17 @@ function RadioGroup<T extends string | number>({
   options,
   value,
   onChange,
+  disabled = false,
 }: {
   legend: string;
   name: string;
   options: RadioOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  disabled?: boolean;
 }) {
   return (
-    <fieldset className="experiment-panel__group">
+    <fieldset className="experiment-panel__group" disabled={disabled}>
       <legend>{legend}</legend>
       <div className="experiment-panel__options">
         {options.map((option) => {
@@ -114,26 +116,44 @@ export function ExperimentPanel({
   onClose,
 }: ExperimentPanelProps) {
   const [actionResult, setActionResult] = useState<string | null>(null);
+  const operationSequence = useRef(0);
+  const mounted = useRef(true);
+
+  useEffect(
+    () => () => {
+      mounted.current = false;
+      operationSequence.current += 1;
+    },
+    [],
+  );
 
   if (!open) {
     return null;
   }
 
   const copy = async (action: () => Promise<void>) => {
+    const operation = ++operationSequence.current;
     try {
       await action();
-      setActionResult('已复制');
+      publishActionResult(operation, '已复制');
     } catch {
-      setActionResult('复制失败');
+      publishActionResult(operation, '复制失败');
     }
   };
 
   const download = () => {
+    const operation = ++operationSequence.current;
     try {
       reportActions.downloadJson();
-      setActionResult('已下载');
+      publishActionResult(operation, '已下载');
     } catch {
-      setActionResult('下载失败');
+      publishActionResult(operation, '下载失败');
+    }
+  };
+
+  const publishActionResult = (operation: number, result: string) => {
+    if (mounted.current && operation === operationSequence.current) {
+      setActionResult(result);
     }
   };
 
@@ -161,6 +181,7 @@ export function ExperimentPanel({
           value={settings.motionLevel}
         />
         <RadioGroup
+          disabled={benchmarkController.state.status === 'running'}
           legend="粒子数量"
           name="particle-count"
           onChange={(particleCount) => onChange({ particleCount })}

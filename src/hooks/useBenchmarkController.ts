@@ -78,13 +78,16 @@ export function useBenchmarkController(
     },
     setSamplingEnabled: (enabled) => {
       const current = optionsRef.current;
-      if (enabled && current.visible) {
-        current.performanceRuntime.resume();
-      } else if (!current.visible || runner.getState().status === 'running') {
-        current.performanceRuntime.pause();
-      } else {
-        current.performanceRuntime.resume();
+      if (enabled) {
+        void current.performanceRuntime.start().catch(() => undefined);
+        if (current.visible) {
+          current.performanceRuntime.resume();
+        } else {
+          current.performanceRuntime.pause();
+        }
+        return;
       }
+      current.performanceRuntime.pause();
     },
     captureResult: () => optionsRef.current.performanceRuntime.getSnapshot(),
     onComplete: () => syncState(),
