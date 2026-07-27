@@ -65,6 +65,105 @@ function observerFor(
 }
 
 describe('PerformanceRuntime', () => {
+  it('keeps exact observer totals without rereading retained history on later publications', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('PerformanceObserver', {
+      supportedEntryTypes: ['longtask', 'long-animation-frame', 'resource'],
+    });
+    const capabilities = detectPerformanceCapabilities([
+      'longtask',
+      'long-animation-frame',
+    ]);
+    const { observers, registry } = createRegistry();
+    const runtime = createPerformanceRuntime({
+      capabilities,
+      registry,
+      webVitals: createVitals(capabilities),
+    });
+    const reads = {
+      longTaskFirstBatch: 0,
+      loafFirstBatch: 0,
+      resourceFirstBatch: 0,
+    };
+    const durationEntries = (
+      count: number,
+      duration: number,
+      key?: keyof typeof reads,
+    ) =>
+      Array.from({ length: count }, () =>
+        Object.defineProperty({}, 'duration', {
+          configurable: true,
+          get: () => {
+            if (key) reads[key] += 1;
+            return duration;
+          },
+        }),
+      ) as PerformanceEntry[];
+    const resourceEntries = (
+      count: number,
+      duration: number,
+      transferSize: number,
+      decodedBodySize: number,
+      trackReads: boolean,
+    ) =>
+      Array.from({ length: count }, () => {
+        const entry = { transferSize, decodedBodySize };
+        return Object.defineProperty(entry, 'duration', {
+          configurable: true,
+          get: () => {
+            if (trackReads) reads.resourceFirstBatch += 1;
+            return duration;
+          },
+        });
+      }) as unknown as PerformanceEntry[];
+
+    await runtime.start();
+    observerFor(observers, 'longtask').emit(
+      durationEntries(400, 2, 'longTaskFirstBatch'),
+    );
+    observerFor(observers, 'long-animation-frame').emit(
+      durationEntries(400, 2, 'loafFirstBatch'),
+    );
+    observerFor(observers, 'resource').emit(resourceEntries(400, 4, 5, 6, true));
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(reads).toEqual({
+      longTaskFirstBatch: 400,
+      loafFirstBatch: 400,
+      resourceFirstBatch: 400,
+    });
+
+    observerFor(observers, 'longtask').emit(durationEntries(400, 3));
+    observerFor(observers, 'long-animation-frame').emit(durationEntries(400, 3));
+    observerFor(observers, 'resource').emit(resourceEntries(400, 7, 8, 9, false));
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(reads).toEqual({
+      longTaskFirstBatch: 400,
+      loafFirstBatch: 400,
+      resourceFirstBatch: 400,
+    });
+    expect(runtime.getSnapshot().mainThread).toEqual({
+      longTasks: {
+        status: 'available',
+        value: { count: 800, totalDuration: 2000, maxDuration: 3 },
+      },
+      longAnimationFrames: {
+        status: 'available',
+        value: { count: 800, totalDuration: 2000, maxDuration: 3 },
+      },
+    });
+    expect(runtime.getSnapshot().resources).toEqual({
+      resourceCount: 800,
+      totalDuration: 4400,
+      transferSize: { status: 'available', value: 5200 },
+      decodedBodySize: { status: 'available', value: 6000 },
+    });
+    runtime.stop();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
   it('catches publishing every observer callback by emitting at most once in 250ms', async () => {
     vi.useFakeTimers();
     const capabilities = detectPerformanceCapabilities(['longtask']);
@@ -392,6 +491,93 @@ describe('PerformanceRuntime', () => {
 });
 
 describe('WebVitalsStore lifecycle', () => {
+  it('registers after a deferred load resolves while stopped and accepts reports on resume', async () => {
+    let resolveModule: ((module: WebVitalsModule) => void) | undefined;
+    const loader = vi.fn(
+      () =>
+        new Promise<WebVitalsModule>((resolve) => {
+          resolveModule = resolve;
+        }),
+    );
+    const callbacks = new Map<string, (metric: WebVitalReport) => void>();
+    const register = (name: string) => (callback: (metric: WebVitalReport) => void) => {
+      callbacks.set(name, callback);
+    };
+    const module: WebVitalsModule = {
+      onTTFB: register('TTFB'),
+      onFCP: register('FCP'),
+      onLCP: register('LCP'),
+      onCLS: register('CLS'),
+      onINP: register('INP'),
+    };
+    const capabilities = detectPerformanceCapabilities(['event']);
+    const store = new WebVitalsStore(capabilities, loader);
+
+    const firstStart = store.start();
+    store.stop();
+    resolveModule?.(module);
+    await firstStart;
+    await store.start();
+    callbacks.get('INP')?.({
+      name: 'INP',
+      value: 140,
+      delta: 140,
+      rating: 'good',
+      id: 'inp-deferred-resume',
+    });
+
+    expect(loader).toHaveBeenCalledOnce();
+    expect(callbacks.size).toBe(5);
+    expect(store.getSnapshot().inp).toEqual({
+      status: 'available',
+      value: {
+        value: 140,
+        delta: 140,
+        rating: 'good',
+        id: 'inp-deferred-resume',
+      },
+    });
+  });
+
+  it('registers exactly once across StrictMode-style replay during a deferred load', async () => {
+    let resolveModule: ((module: WebVitalsModule) => void) | undefined;
+    const loader = vi.fn(
+      () =>
+        new Promise<WebVitalsModule>((resolve) => {
+          resolveModule = resolve;
+        }),
+    );
+    const registrations = {
+      TTFB: vi.fn(),
+      FCP: vi.fn(),
+      LCP: vi.fn(),
+      CLS: vi.fn(),
+      INP: vi.fn(),
+    };
+    const module: WebVitalsModule = {
+      onTTFB: registrations.TTFB,
+      onFCP: registrations.FCP,
+      onLCP: registrations.LCP,
+      onCLS: registrations.CLS,
+      onINP: registrations.INP,
+    };
+    const capabilities = detectPerformanceCapabilities(['event']);
+    const store = new WebVitalsStore(capabilities, loader);
+
+    const firstStart = store.start();
+    store.stop();
+    const replayStart = store.start();
+    store.stop();
+    resolveModule?.(module);
+    await Promise.all([firstStart, replayStart]);
+    await store.start();
+
+    expect(loader).toHaveBeenCalledOnce();
+    Object.values(registrations).forEach((registration) => {
+      expect(registration).toHaveBeenCalledOnce();
+    });
+  });
+
   it('catches a stopped loaded store ignoring reports after StrictMode reactivation', async () => {
     const callbacks = new Map<string, (metric: WebVitalReport) => void>();
     const register = (name: string) => (callback: (metric: WebVitalReport) => void) => {

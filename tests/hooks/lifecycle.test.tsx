@@ -54,9 +54,15 @@ function ReducedMotionHarness() {
   return <output>{reduced ? 'reduced' : 'full'}</output>;
 }
 
-function ParallaxHarness({ enabled = true }: { enabled?: boolean }) {
+function ParallaxHarness({
+  amplitudePx = 12,
+  enabled = true,
+}: {
+  amplitudePx?: number;
+  enabled?: boolean;
+}) {
   const target = useRef<HTMLDivElement>(null);
-  useTouchParallax(target, enabled);
+  useTouchParallax(target, enabled, amplitudePx);
   return <div data-testid="parallax-target" ref={target} />;
 }
 
@@ -180,7 +186,14 @@ describe('motion lifecycle', () => {
       devicePixelRatio: { configurable: true, value: 3 },
     });
 
-    render(<ParticleField count="maximum" dprMode="cap-2" paused={false} />);
+    render(
+      <ParticleField
+        count="maximum"
+        dprMode="cap-2"
+        paused={false}
+        speedMultiplier={1}
+      />,
+    );
 
     expect(screen.getByTestId('particle-field')).toHaveAttribute('width', '200');
     expect(screen.getByTestId('particle-field')).toHaveAttribute('height', '100');
@@ -210,7 +223,7 @@ describe('motion lifecycle', () => {
     } as unknown as CanvasRenderingContext2D);
 
     const { unmount } = render(
-      <ParticleField count={20} dprMode="cap-2" paused={false} />,
+      <ParticleField count={20} dprMode="cap-2" paused={false} speedMultiplier={1} />,
     );
     unmount();
 
@@ -232,13 +245,17 @@ describe('motion lifecycle', () => {
       setTransform: vi.fn(),
     } as unknown as CanvasRenderingContext2D);
 
-    const { rerender } = render(<ParticleField count={20} dprMode="native" paused />);
+    const { rerender } = render(
+      <ParticleField count={20} dprMode="native" paused speedMultiplier={1} />,
+    );
     expect(request).not.toHaveBeenCalled();
 
-    rerender(<ParticleField count={20} dprMode="native" paused={false} />);
+    rerender(
+      <ParticleField count={20} dprMode="native" paused={false} speedMultiplier={1} />,
+    );
     expect(request).toHaveBeenCalledTimes(1);
 
-    rerender(<ParticleField count={20} dprMode="native" paused />);
+    rerender(<ParticleField count={20} dprMode="native" paused speedMultiplier={1} />);
     expect(cancel).toHaveBeenCalledWith(31);
   });
 
@@ -276,8 +293,8 @@ describe('motion lifecycle', () => {
     const queuedFrame = request.mock.calls[0]?.[0];
     if (!queuedFrame) throw new Error('Expected parallax input to queue a frame');
     queuedFrame(16);
-    expect(target.style.getPropertyValue('--parallax-x')).toBe('0.25');
-    expect(target.style.getPropertyValue('--parallax-y')).toBe('-0.25');
+    expect(target.style.getPropertyValue('--parallax-x')).toBe('3');
+    expect(target.style.getPropertyValue('--parallax-y')).toBe('-3');
   });
 
   it('catches StrictMode parallax listener leaks by replaying and removing every input subscription', () => {

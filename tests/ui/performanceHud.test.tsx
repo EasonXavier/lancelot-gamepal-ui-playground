@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { PerformanceHud } from '../../src/components/performance/PerformanceHud';
+import { createPerformanceRuntime } from '../../src/performance/runtime';
 import type {
   PerformanceRuntime,
   PerformanceSnapshot,
@@ -110,6 +111,16 @@ describe('PerformanceHud', () => {
     });
     expect(screen.getByRole('region')).not.toHaveAttribute('aria-live');
     expect(screen.getByRole('region')).not.toHaveClass('glass-surface--selected');
+  });
+
+  it('shows waiting for dropped frames before the runtime has a frame sample', () => {
+    const runtime = createPerformanceRuntime();
+
+    render(<PerformanceHud mode="expanded" runtime={runtime} />);
+
+    const metric = screen.getByText('Dropped frames').closest('div');
+    expect(metric).toHaveTextContent('Dropped frames\u7B49\u5F85');
+    expect(metric).not.toHaveTextContent('Dropped frames0');
   });
 
   it('catches hidden HUD content remaining in the DOM', () => {

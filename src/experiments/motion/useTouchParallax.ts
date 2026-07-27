@@ -3,6 +3,7 @@ import { useEffect, useRef, type RefObject } from 'react';
 export function useTouchParallax(
   target: RefObject<HTMLElement | null>,
   enabled: boolean,
+  amplitudePx: number,
 ): void {
   const frameRef = useRef<number | null>(null);
   const coordinatesRef = useRef({ x: 0, y: 0 });
@@ -30,8 +31,8 @@ export function useTouchParallax(
     const updateCoordinates = (clientX: number, clientY: number) => {
       const bounds = element.getBoundingClientRect();
       coordinatesRef.current = {
-        x: clamp((clientX - bounds.left) / bounds.width - 0.5),
-        y: clamp((clientY - bounds.top) / bounds.height - 0.5),
+        x: clamp((clientX - bounds.left) / bounds.width - 0.5) * amplitudePx,
+        y: clamp((clientY - bounds.top) / bounds.height - 0.5) * amplitudePx,
       };
       scheduleWrite();
     };
@@ -52,7 +53,7 @@ export function useTouchParallax(
       if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
     };
-  }, [enabled, target]);
+  }, [amplitudePx, enabled, target]);
 }
 
 const clamp = (value: number) => Math.max(-0.5, Math.min(0.5, value));

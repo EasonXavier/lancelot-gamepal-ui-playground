@@ -9,7 +9,7 @@ import {
   type BenchmarkProfile,
   type BenchmarkState,
 } from '../performance/benchmarkRunner';
-import type { PerformanceRuntime } from '../performance/runtime';
+import type { PerformanceRuntime, PerformanceSnapshot } from '../performance/runtime';
 
 export interface BenchmarkController {
   state: BenchmarkState;
@@ -26,6 +26,8 @@ interface BenchmarkControllerOptions {
   visible: boolean;
   onPanelOpenChange(open: boolean): void;
   onProfileChange(profile: BenchmarkProfile): void;
+  onResultCapture(snapshot: PerformanceSnapshot, completedInForeground: boolean): void;
+  onResultClear(): void;
   onSelectedGameChange(game: GameId): void;
 }
 
@@ -90,7 +92,13 @@ export function useBenchmarkController(
       current.performanceRuntime.pause();
     },
     captureResult: () => optionsRef.current.performanceRuntime.getSnapshot(),
-    onComplete: () => syncState(),
+    onComplete: (result, completedInForeground) => {
+      optionsRef.current.onResultCapture(
+        result as PerformanceSnapshot,
+        completedInForeground,
+      );
+      syncState();
+    },
   }));
 
   useEffect(() => {
@@ -107,11 +115,20 @@ export function useBenchmarkController(
   }, [runner]);
 
   const start = useCallback(() => {
+    optionsRef.current.onResultClear();
     runner.start(context);
     syncState();
   }, [context, runner, syncState]);
 
   const cancel = useCallback(() => {
+    const currentState = runner.getState();
+    if (currentState.status === 'running') {
+      const current = optionsRef.current;
+      current.onResultCapture(
+        current.performanceRuntime.getSnapshot(),
+        currentState.completedInForeground === true,
+      );
+    }
     runner.cancel();
     syncState();
   }, [runner, syncState]);

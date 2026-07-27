@@ -33,8 +33,8 @@
   background-size: cover;
   filter: saturate(0.74) contrast(1.04);
   transform: translate3d(
-    calc(var(--parallax-x, 0) * 12px),
-    calc(var(--parallax-y, 0) * 12px),
+    calc(var(--parallax-x, 0) * 1px),
+    calc(var(--parallax-y, 0) * 1px),
     0
   );
   transition: transform var(--duration-fast) var(--ease-out);
@@ -101,7 +101,8 @@
 }
 
 .home-screen[data-card-float='true'] .service-card {
-  animation: home-card-float 4.5s var(--ease-out) infinite alternate;
+  animation: home-card-float var(--card-float-duration, 4500ms) var(--ease-out) infinite
+    alternate;
 }
 
 .home-screen .service-card:active {
@@ -114,7 +115,7 @@
   }
 
   to {
-    translate: 0 -3px;
+    translate: 0 calc(-1 * var(--card-float-distance, 3px));
   }
 }
 

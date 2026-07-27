@@ -8,6 +8,7 @@ export interface ParticleFieldProps {
   count: ParticleCount;
   dprMode: DprMode;
   paused: boolean;
+  speedMultiplier: number;
 }
 
 interface Particle {
@@ -25,7 +26,12 @@ interface CanvasSize {
 
 const EMPTY_SIZE: CanvasSize = { width: 0, height: 0, dpr: 0 };
 
-export function ParticleField({ count, dprMode, paused }: ParticleFieldProps) {
+export function ParticleField({
+  count,
+  dprMode,
+  paused,
+  speedMultiplier,
+}: ParticleFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<number | null>(null);
   const sizeRef = useRef<CanvasSize>(EMPTY_SIZE);
@@ -83,7 +89,7 @@ export function ParticleField({ count, dprMode, paused }: ParticleFieldProps) {
       drawingContext.fillStyle = 'rgb(237 195 144 / 0.28)';
 
       particlesRef.current.forEach((particle) => {
-        particle.y -= (particle.speed * elapsed) / 16;
+        particle.y -= (particle.speed * speedMultiplier * elapsed) / 16;
         if (particle.y < -particle.size) particle.y = size.height + particle.size;
         drawingContext.beginPath();
         drawingContext.arc(
@@ -108,7 +114,7 @@ export function ParticleField({ count, dprMode, paused }: ParticleFieldProps) {
       if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
       frameRef.current = null;
     };
-  }, [count, dprMode, paused]);
+  }, [count, dprMode, paused, speedMultiplier]);
 
   return (
     <canvas

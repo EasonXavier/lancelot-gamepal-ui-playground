@@ -111,6 +111,7 @@ class FakeRuntime implements PerformanceRuntime {
   private started = false;
   private running = false;
   private fps = 60;
+  private snapshot = createPerformanceSnapshot(this.fps);
 
   readonly start = vi.fn(async () => {
     this.started = true;
@@ -134,15 +135,17 @@ class FakeRuntime implements PerformanceRuntime {
 
   readonly reset = vi.fn(() => {
     this.fps = 60;
+    this.snapshot = createPerformanceSnapshot(this.fps);
   });
 
   readonly subscribe = vi.fn(() => () => undefined);
 
-  readonly getSnapshot = vi.fn(() => createPerformanceSnapshot(this.fps));
+  readonly getSnapshot = vi.fn(() => this.snapshot);
 
   tick(): void {
     if (this.running) {
       this.fps += 1;
+      this.snapshot = createPerformanceSnapshot(this.fps);
     }
   }
 }
@@ -164,6 +167,8 @@ function renderBenchmarkController(runtime: PerformanceRuntime, clock: FakeClock
       visible: true,
       onPanelOpenChange: vi.fn(),
       onProfileChange: vi.fn(),
+      onResultCapture: vi.fn(),
+      onResultClear: vi.fn(),
       onSelectedGameChange: vi.fn(),
     }),
   );
@@ -229,6 +234,24 @@ async function openConfiguredPanel(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: '实验控制' }));
   const particles = screen.getByRole('group', { name: '粒子数量' });
   await user.click(within(particles).getByRole('radio', { name: '20' }));
+}
+
+async function configureNonDefaultWorkload(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> {
+  await user.click(
+    within(screen.getByRole('group', { name: '动态等级' })).getByRole('radio', {
+      name: '低',
+    }),
+  );
+  await user.click(
+    within(screen.getByRole('group', { name: '像素密度' })).getByRole('radio', {
+      name: '上限 1.5x',
+    }),
+  );
+  for (const label of ['背景动态', '触摸视差', '卡片浮动']) {
+    await user.click(screen.getByRole('checkbox', { name: label }));
+  }
 }
 
 afterEach(() => {
@@ -589,6 +612,75 @@ describe('experiment actions', () => {
     ).toMatchObject({ settings: { particleCount: 20 } });
   });
 
+  it.each([
+    ['warmup cancellation', 0, 'cancel'],
+    ['ambient cancellation', 3_000, 'cancel'],
+    ['stress cancellation', 11_000, 'cancel'],
+    ['summarize cancellation', 27_000, 'cancel'],
+    ['summarize completion', 27_000, 'complete'],
+  ] as const)(
+    'locks every motion workload mutation through %s',
+    async (_, elapsedMs, outcome) => {
+      installBrowserBoundaries();
+      const clock = new FakeClock();
+      const user = userEvent.setup();
+      render(<App benchmarkClock={clock} />);
+      await openConfiguredPanel(user);
+      await configureNonDefaultWorkload(user);
+      await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+      act(() => clock.advanceBy(elapsedMs));
+
+      const attemptedControls = [
+        within(screen.getByRole('group', { name: '动态等级' })).getByRole('radio', {
+          name: '最大',
+        }),
+        within(screen.getByRole('group', { name: '粒子数量' })).getByRole('radio', {
+          name: '100',
+        }),
+        within(screen.getByRole('group', { name: '像素密度' })).getByRole('radio', {
+          name: '原生',
+        }),
+        screen.getByRole('checkbox', { name: '背景动态' }),
+        screen.getByRole('checkbox', { name: '触摸视差' }),
+        screen.getByRole('checkbox', { name: '卡片浮动' }),
+        screen.getByRole('checkbox', { name: '模拟减少动态' }),
+        screen.getByRole('button', { name: '重置设置' }),
+      ];
+
+      for (const control of attemptedControls) {
+        expect(control).toBeDisabled();
+        await user.click(control);
+      }
+      expect(screen.getByRole('button', { name: '取消 Benchmark' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: '复制 JSON' })).toBeEnabled();
+
+      if (outcome === 'cancel') {
+        await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
+      } else {
+        act(() => clock.advanceBy(3_000));
+      }
+
+      expect(
+        screen.getByText(outcome === 'cancel' ? 'cancelled' : 'completed'),
+      ).toBeVisible();
+      expect(screen.getByRole('main')).toHaveAttribute('data-motion-level', 'low');
+      expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', '20');
+      expect(
+        JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}'),
+      ).toMatchObject({
+        settings: {
+          motionLevel: 'low',
+          particleCount: 20,
+          backgroundMotion: false,
+          touchParallax: false,
+          cardFloat: false,
+          reducedMotionSimulation: false,
+          dprMode: 'cap-1.5',
+        },
+      });
+    },
+  );
+
   it('publishes copy success after StrictMode replays the mount effect', async () => {
     const writeText = vi.fn<(text: string) => Promise<void>>(async () => undefined);
     const { reportActionDependencies } = installBrowserBoundaries(writeText);
@@ -603,6 +695,67 @@ describe('experiment actions', () => {
 
     expect(screen.getByText('已复制')).toBeVisible();
   });
+
+  it.each([
+    ['completed', 30_000, false],
+    ['cancelled', 11_000, true],
+  ] as const)(
+    'keeps %s JSON and summary byte-stable while the live runtime resumes',
+    async (_, elapsedMs, cancel) => {
+      const { reportActionDependencies, writeText } = installBrowserBoundaries();
+      const clock = new FakeClock();
+      const runtime = new FakeRuntime();
+      const user = userEvent.setup();
+      render(
+        <App
+          benchmarkClock={clock}
+          performanceRuntime={runtime}
+          reportActionDependencies={reportActionDependencies}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: '实验控制' }));
+      await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+      runtime.tick();
+      act(() => clock.advanceBy(elapsedMs));
+      if (cancel) {
+        await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
+      }
+
+      await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+      await user.click(screen.getByRole('button', { name: '复制摘要' }));
+      const capturedJson = writeText.mock.calls[0]?.[0];
+      const capturedSummary = writeText.mock.calls[1]?.[0];
+      if (!capturedJson || !capturedSummary) {
+        throw new Error('Expected both captured report formats');
+      }
+      const capturedFps = (
+        JSON.parse(capturedJson) as {
+          performance: { frames: { averageFps: number | null } };
+        }
+      ).performance.frames.averageFps;
+
+      const motion = screen.getByRole('group', { name: '动态等级' });
+      await user.click(within(motion).getByRole('radio', { name: '关闭' }));
+      await user.click(within(motion).getByRole('radio', { name: '高' }));
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        value: 'hidden',
+      });
+      act(() => document.dispatchEvent(new Event('visibilitychange')));
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        value: 'visible',
+      });
+      act(() => document.dispatchEvent(new Event('visibilitychange')));
+      runtime.tick();
+      expect(runtime.getSnapshot().frames.metrics.currentFps).not.toBe(capturedFps);
+
+      await user.click(screen.getByRole('button', { name: '复制 JSON' }));
+      await user.click(screen.getByRole('button', { name: '复制摘要' }));
+      expect(writeText.mock.calls[2]?.[0]).toBe(capturedJson);
+      expect(writeText.mock.calls[3]?.[0]).toBe(capturedSummary);
+    },
+  );
 
   it('keeps a later copy success when an earlier copy rejects afterward', async () => {
     const first = deferred<void>();

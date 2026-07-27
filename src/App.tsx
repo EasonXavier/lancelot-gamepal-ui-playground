@@ -17,7 +17,7 @@ import {
   type ReportActionDependencies,
 } from './performance/reportActions';
 import type { ReportSnapshot } from './performance/reportExporter';
-import type { PerformanceRuntime } from './performance/runtime';
+import type { PerformanceRuntime, PerformanceSnapshot } from './performance/runtime';
 import {
   createDefaultSettings,
   loadSettings,
@@ -30,6 +30,7 @@ import {
 
 export interface AppProps {
   benchmarkClock?: BenchmarkClock;
+  performanceRuntime?: PerformanceRuntime;
   reportActionDependencies?: ReportActionDependencies;
 }
 
@@ -41,12 +42,15 @@ const browserBenchmarkClock: BenchmarkClock = {
 
 export function App({
   benchmarkClock = browserBenchmarkClock,
+  performanceRuntime: performanceRuntimeOverride,
   reportActionDependencies,
 }: AppProps) {
   const [settings, setSettings] = useState(loadInitialSettings);
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<GameId>('delta');
   const [benchmarkProfile, setBenchmarkProfile] = useState<BenchmarkProfile>('idle');
+  const [benchmarkReportSnapshot, setBenchmarkReportSnapshot] =
+    useState<ReportSnapshot | null>(null);
   const systemReducedMotion = useReducedMotion();
   const visible = useVisibility();
   const effectiveSettings = resolveEffectiveSettings(settings, systemReducedMotion);
@@ -59,7 +63,23 @@ export function App({
   );
   const performanceRuntime = usePerformanceRuntime(
     visible && displayedSettings.motionLevel !== 'off',
+    performanceRuntimeOverride,
   );
+  const captureBenchmarkReport = useCallback(
+    (snapshot: PerformanceSnapshot, completedInForeground: boolean) => {
+      setBenchmarkReportSnapshot(
+        buildReportSnapshot(
+          effectiveSettings,
+          performanceRuntime,
+          completedInForeground,
+          systemReducedMotion,
+          snapshot,
+        ),
+      );
+    },
+    [effectiveSettings, performanceRuntime, systemReducedMotion],
+  );
+  const clearBenchmarkReport = useCallback(() => setBenchmarkReportSnapshot(null), []);
   const benchmarkController = useBenchmarkController({
     clock: benchmarkClock,
     effectiveSettings,
@@ -69,10 +89,13 @@ export function App({
     visible,
     onPanelOpenChange: setPanelOpen,
     onProfileChange: setBenchmarkProfile,
+    onResultCapture: captureBenchmarkReport,
+    onResultClear: clearBenchmarkReport,
     onSelectedGameChange: setSelectedGame,
   });
   const getReportSnapshot = useCallback(
     () =>
+      benchmarkReportSnapshot ??
       buildReportSnapshot(
         displayedSettings,
         performanceRuntime,
@@ -81,6 +104,7 @@ export function App({
       ),
     [
       benchmarkController.state.completedInForeground,
+      benchmarkReportSnapshot,
       displayedSettings,
       performanceRuntime,
       systemReducedMotion,
@@ -101,6 +125,7 @@ export function App({
   }, []);
 
   const reset = useCallback(() => {
+    setBenchmarkReportSnapshot(null);
     setSettings((current) => {
       const next = resetSettings(current);
       persistSettings(next);
@@ -154,11 +179,12 @@ function buildReportSnapshot(
   runtime: PerformanceRuntime,
   completedInForeground: boolean | null,
   systemReducedMotion: boolean,
+  capturedPerformanceSnapshot?: PerformanceSnapshot,
 ): ReportSnapshot {
   const environment = collectEnvironmentInfo({
     prefersReducedMotion: systemReducedMotion,
   });
-  const performanceSnapshot = runtime.getSnapshot();
+  const performanceSnapshot = capturedPerformanceSnapshot ?? runtime.getSnapshot();
   const { metrics } = performanceSnapshot.frames;
 
   return {

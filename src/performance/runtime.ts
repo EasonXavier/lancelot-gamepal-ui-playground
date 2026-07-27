@@ -2,16 +2,18 @@ import { FrameSampler } from './frameSampler';
 import {
   PerformanceObserverRegistry,
   detectPerformanceCapabilities,
-  summarizeMainThreadEntries,
 } from './mainThreadMetrics';
 import {
   summarizeNavigationTiming,
   type NavigationTimingInput,
 } from './navigationMetrics';
-import { summarizeResourceEntries, type ResourceTimingInput } from './resourceMetrics';
+import type { ResourceTimingInput } from './resourceMetrics';
 import type {
+  Availability,
+  DurationSummary,
   FrameSamplerSnapshot,
   MainThreadSnapshot,
+  Measurement,
   NavigationSnapshot,
   PerformanceCapabilities,
   ResourceSnapshot,
@@ -48,6 +50,118 @@ export interface PerformanceRuntimeOptions {
 
 const emptyNavigation = undefined;
 
+interface ResourceAggregate {
+  resourceCount: number;
+  totalDuration: number;
+  transferSizeTotal: number;
+  transferSizeMeasurable: boolean;
+  decodedBodySizeTotal: number;
+  decodedBodySizeMeasurable: boolean;
+}
+
+const createDurationSummary = (): DurationSummary => ({
+  count: 0,
+  totalDuration: 0,
+  maxDuration: 0,
+});
+
+const accumulateDurations = (
+  current: DurationSummary,
+  entries: readonly PerformanceEntry[],
+): DurationSummary => {
+  let { count, totalDuration, maxDuration } = current;
+  for (const entry of entries) {
+    const duration = entry.duration;
+    if (!Number.isFinite(duration) || duration < 0) {
+      continue;
+    }
+    count += 1;
+    totalDuration += duration;
+    maxDuration = Math.max(maxDuration, duration);
+  }
+  return { count, totalDuration, maxDuration };
+};
+
+const durationMeasurement = (
+  summary: DurationSummary,
+  availability: Availability,
+): Measurement<DurationSummary> =>
+  availability.status === 'available'
+    ? { status: 'available', value: summary }
+    : { status: availability.status };
+
+const createResourceAggregate = (): ResourceAggregate => ({
+  resourceCount: 0,
+  totalDuration: 0,
+  transferSizeTotal: 0,
+  transferSizeMeasurable: true,
+  decodedBodySizeTotal: 0,
+  decodedBodySizeMeasurable: true,
+});
+
+const accumulateResources = (
+  current: ResourceAggregate,
+  entries: readonly ResourceTimingInput[],
+): ResourceAggregate => {
+  const next = { ...current };
+  for (const entry of entries) {
+    next.resourceCount += 1;
+    const duration = entry.duration;
+    next.totalDuration += Number.isFinite(duration) ? Math.max(0, duration) : 0;
+
+    const transferSize = entry.transferSize;
+    if (
+      transferSize === undefined ||
+      !Number.isFinite(transferSize) ||
+      transferSize <= 0
+    ) {
+      next.transferSizeMeasurable = false;
+    } else {
+      next.transferSizeTotal += transferSize;
+    }
+
+    const decodedBodySize = entry.decodedBodySize;
+    if (
+      decodedBodySize === undefined ||
+      !Number.isFinite(decodedBodySize) ||
+      decodedBodySize <= 0
+    ) {
+      next.decodedBodySizeMeasurable = false;
+    } else {
+      next.decodedBodySizeTotal += decodedBodySize;
+    }
+  }
+  return next;
+};
+
+const sizeMeasurement = (
+  entryCount: number,
+  measurable: boolean,
+  total: number,
+): Measurement<number> => {
+  if (entryCount === 0) {
+    return { status: 'waiting' };
+  }
+  return measurable
+    ? { status: 'available', value: total }
+    : { status: 'not-measurable' };
+};
+
+const resourceSnapshot = (aggregate: ResourceAggregate): ResourceSnapshot => ({
+  resourceCount: aggregate.resourceCount,
+  totalDuration: aggregate.totalDuration,
+  transferSize: sizeMeasurement(
+    aggregate.resourceCount,
+    aggregate.transferSizeMeasurable,
+    aggregate.transferSizeTotal,
+  ),
+  decodedBodySize: sizeMeasurement(
+    aggregate.resourceCount,
+    aggregate.decodedBodySizeMeasurable,
+    aggregate.decodedBodySizeTotal,
+  ),
+});
+
 function browserEntries(type: string): readonly PerformanceEntry[] {
   const getEntriesByType = globalThis.performance?.getEntriesByType;
   return getEntriesByType
@@ -74,25 +188,27 @@ export function createPerformanceRuntime(
   let startPromise: Promise<void> | null = null;
   let started = false;
   let paused = false;
-  let longTasks: PerformanceEntry[] = [];
-  let longAnimationFrames: PerformanceEntry[] = [];
+  let longTasks = createDurationSummary();
+  let longAnimationFrames = createDurationSummary();
   let navigationEntry: NavigationTimingInput | undefined = emptyNavigation;
-  let resourceEntries: ResourceTimingInput[] = [];
+  let resources = createResourceAggregate();
 
   const refreshSnapshot = (): void => {
     snapshot = {
       frames: sampler.getSnapshot(),
       webVitals: webVitals.getSnapshot(),
-      mainThread: summarizeMainThreadEntries(
-        longTasks,
-        longAnimationFrames,
-        capabilities,
-      ),
+      mainThread: {
+        longTasks: durationMeasurement(longTasks, capabilities.longTask),
+        longAnimationFrames: durationMeasurement(
+          longAnimationFrames,
+          capabilities.longAnimationFrame,
+        ),
+      },
       navigation: summarizeNavigationTiming(
         navigationEntry,
         capabilities.navigation.status === 'available',
       ),
-      resources: summarizeResourceEntries(resourceEntries),
+      resources: resourceSnapshot(resources),
       capabilities,
     };
   };
@@ -153,13 +269,13 @@ export function createPerformanceRuntime(
   const connectObservers = (): void => {
     if (capabilities.longTask.status === 'available') {
       observe('longtask', (entries) => {
-        longTasks = [...longTasks, ...entries];
+        longTasks = accumulateDurations(longTasks, entries);
         schedulePublication();
       });
     }
     if (capabilities.longAnimationFrame.status === 'available') {
       observe('long-animation-frame', (entries) => {
-        longAnimationFrames = [...longAnimationFrames, ...entries];
+        longAnimationFrames = accumulateDurations(longAnimationFrames, entries);
         schedulePublication();
       });
     }
@@ -172,10 +288,10 @@ export function createPerformanceRuntime(
     }
     if (supportsResourceObserver()) {
       observe('resource', (entries) => {
-        resourceEntries = [
-          ...resourceEntries,
-          ...(entries as unknown as ResourceTimingInput[]),
-        ];
+        resources = accumulateResources(
+          resources,
+          entries as unknown as ResourceTimingInput[],
+        );
         schedulePublication();
       });
     }
@@ -203,14 +319,15 @@ export function createPerformanceRuntime(
       }
       started = true;
       paused = false;
-      longTasks = [];
-      longAnimationFrames = [];
+      longTasks = createDurationSummary();
+      longAnimationFrames = createDurationSummary();
       navigationEntry = emptyNavigation;
-      resourceEntries = [];
+      resources = createResourceAggregate();
       if (!supportsResourceObserver()) {
-        resourceEntries = getEntriesByType(
-          'resource',
-        ) as unknown as ResourceTimingInput[];
+        resources = accumulateResources(
+          resources,
+          getEntriesByType('resource') as unknown as ResourceTimingInput[],
+        );
       }
       sampler.start();
       connectFrames();
@@ -259,10 +376,10 @@ export function createPerformanceRuntime(
 
     reset(): void {
       cancelPublication();
-      longTasks = [];
-      longAnimationFrames = [];
+      longTasks = createDurationSummary();
+      longAnimationFrames = createDurationSummary();
       navigationEntry = emptyNavigation;
-      resourceEntries = [];
+      resources = createResourceAggregate();
       sampler.reset();
       webVitals.reset();
       cancelPublication();

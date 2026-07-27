@@ -118,6 +118,7 @@ export function ExperimentPanel({
   const [actionResult, setActionResult] = useState<string | null>(null);
   const operationSequence = useRef(0);
   const mounted = useRef(true);
+  const workloadLocked = benchmarkController.state.status === 'running';
 
   useEffect(() => {
     mounted.current = true;
@@ -174,6 +175,7 @@ export function ExperimentPanel({
           value={settings.glassMode}
         />
         <RadioGroup
+          disabled={workloadLocked}
           legend="动态等级"
           name="motion-level"
           onChange={(motionLevel) => onChange({ motionLevel })}
@@ -181,7 +183,7 @@ export function ExperimentPanel({
           value={settings.motionLevel}
         />
         <RadioGroup
-          disabled={benchmarkController.state.status === 'running'}
+          disabled={workloadLocked}
           legend="粒子数量"
           name="particle-count"
           onChange={(particleCount) => onChange({ particleCount })}
@@ -189,6 +191,7 @@ export function ExperimentPanel({
           value={settings.particleCount}
         />
         <RadioGroup
+          disabled={workloadLocked}
           legend="像素密度"
           name="dpr-mode"
           onChange={(dprMode) => onChange({ dprMode })}
@@ -205,21 +208,25 @@ export function ExperimentPanel({
         <div className="experiment-panel__toggles">
           <Toggle
             checked={settings.backgroundMotion}
+            disabled={workloadLocked}
             label="背景动态"
             onChange={(backgroundMotion) => onChange({ backgroundMotion })}
           />
           <Toggle
             checked={settings.touchParallax}
+            disabled={workloadLocked}
             label="触摸视差"
             onChange={(touchParallax) => onChange({ touchParallax })}
           />
           <Toggle
             checked={settings.cardFloat}
+            disabled={workloadLocked}
             label="卡片浮动"
             onChange={(cardFloat) => onChange({ cardFloat })}
           />
           <Toggle
             checked={settings.reducedMotionSimulation}
+            disabled={workloadLocked}
             label="模拟减少动态"
             onChange={(reducedMotionSimulation) =>
               onChange({ reducedMotionSimulation })
@@ -269,7 +276,7 @@ export function ExperimentPanel({
         </section>
         <button
           className="tap-target experiment-panel__reset"
-          disabled={benchmarkController.state.status === 'running'}
+          disabled={workloadLocked}
           onClick={onReset}
           type="button"
         >
@@ -282,10 +289,12 @@ export function ExperimentPanel({
 
 function Toggle({
   checked,
+  disabled = false,
   label,
   onChange,
 }: {
   checked: boolean;
+  disabled?: boolean;
   label: string;
   onChange: (checked: boolean) => void;
 }) {
@@ -293,6 +302,7 @@ function Toggle({
     <label className="experiment-panel__toggle">
       <input
         checked={checked}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
         type="checkbox"
       />

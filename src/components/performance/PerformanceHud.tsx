@@ -53,7 +53,12 @@ export function PerformanceHud({ mode, runtime }: PerformanceHudProps) {
   ];
   const expandedMetrics = [
     ['Max frame', frameValue(frames.metrics.maxFrameTime)],
-    ['Dropped frames', String(frames.metrics.estimatedDroppedFrames)],
+    [
+      'Dropped frames',
+      frames.metrics.sampleCount === 0
+        ? statusLabel.waiting
+        : String(frames.metrics.estimatedDroppedFrames),
+    ],
     ['LCP', vitalValue(webVitals.lcp)],
     ['CLS', vitalValue(webVitals.cls, 3)],
     ['INP', vitalValue(webVitals.inp)],

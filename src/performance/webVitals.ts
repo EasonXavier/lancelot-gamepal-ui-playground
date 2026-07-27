@@ -108,9 +108,6 @@ export class WebVitalsStore {
   private async loadAndRegister(): Promise<void> {
     try {
       const module = await this.loader();
-      if (!this.active) {
-        return;
-      }
       module.onTTFB(this.onReport);
       module.onFCP(this.onReport);
       module.onLCP(this.onReport);

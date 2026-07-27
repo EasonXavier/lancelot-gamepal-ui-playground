@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { ExperimentalPlaceholder } from '../../components/controls/ExperimentalPlaceholder';
 import { ExperimentPanel } from '../../components/controls/ExperimentPanel';
 import { ServiceGrid, type ServiceName } from '../../components/controls/ServiceGrid';
@@ -6,6 +6,7 @@ import { BottomNav, type BottomNavId } from '../../components/navigation/BottomN
 import { PerformanceHud } from '../../components/performance/PerformanceHud';
 import { GameRail, type GameId } from '../../components/navigation/GameRail';
 import { ParticleField } from '../motion/ParticleField';
+import { MOTION_PROFILES } from '../motion/motionProfiles';
 import { useTouchParallax } from '../motion/useTouchParallax';
 import type { ExperimentSettings } from '../settings';
 import type { BenchmarkController } from '../../hooks/useBenchmarkController';
@@ -47,27 +48,38 @@ export function HomeScreen({
   const [activeService, setActiveService] = useState<ServiceName | null>(null);
   const screenRef = useRef<HTMLElement>(null);
   const mode = settings.glassMode;
+  const motionProfile = MOTION_PROFILES[effectiveSettings.motionLevel];
+  const motionEnabled = effectiveSettings.motionLevel !== 'off';
   const particlePaused =
-    !visible ||
-    !effectiveSettings.backgroundMotion ||
-    effectiveSettings.motionLevel === 'off';
+    !visible || !effectiveSettings.backgroundMotion || !motionEnabled;
 
-  useTouchParallax(screenRef, effectiveSettings.touchParallax);
+  useTouchParallax(
+    screenRef,
+    effectiveSettings.touchParallax && motionEnabled,
+    motionProfile.parallaxAmplitudePx,
+  );
 
   return (
     <main
       className="home-screen"
-      data-card-float={effectiveSettings.cardFloat}
+      data-card-float={effectiveSettings.cardFloat && motionEnabled}
       data-glass-mode={mode}
       data-motion-level={effectiveSettings.motionLevel}
       data-particle-count={String(effectiveSettings.particleCount)}
       ref={screenRef}
+      style={
+        {
+          '--card-float-distance': `${motionProfile.cardFloatDistancePx}px`,
+          '--card-float-duration': `${motionProfile.cardFloatDurationMs}ms`,
+        } as CSSProperties
+      }
     >
       {effectiveSettings.particleCount !== 0 ? (
         <ParticleField
           count={effectiveSettings.particleCount}
           dprMode={effectiveSettings.dprMode}
           paused={particlePaused}
+          speedMultiplier={motionProfile.particleSpeedMultiplier}
         />
       ) : null}
       <div
