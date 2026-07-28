@@ -8,7 +8,7 @@
 
 ## Next Step
 
-Task 7 的 README、指标说明、设备模板、fidelity ledger 与桌面浏览器验证已完成独立审查。下一步提交并部署本轮文档检查点；真实非零 Safe Area、iOS/Android 微信 WebView 与完整真机 Benchmark/报告导出仍需按设备模板复核；不创建 Release 或标签。
+Task 7 文档已通过 PR #4 合并为 `59b2d78`，Pages run `30320699031` 的 build/deploy 均成功，线上应用已复核。下一步只剩真实非零 Safe Area、iOS/Android 微信 WebView 与完整真机 Benchmark/报告导出；按设备模板记录，不创建 Release 或标签。
 
 ## Current Phase
 
@@ -64,6 +64,8 @@ Phase 5
 
 > 当前发布状态：PR #2 已于 2026-07-28 合并为 `feced285`，Pages workflow run `30305196701` 已成功部署 Task 6；没有创建 Release 或标签。
 
+> Phase 5 文档状态：PR #4 已于 2026-07-28 合并为 `59b2d78`，Pages workflow run `30320699031` 的 build/deploy 均成功；真实设备验证仍未完成。
+
 - [x] 提交并推送 `main`
 - [x] 启用 GitHub Actions Pages 发布源并运行 CI/部署
 - [x] 验证线上 HTML、CSS、JS、图片、路由与 HUD/实验控制入口
@@ -108,3 +110,4 @@ Phase 5
 - 高频采样不得每帧更新 React state；HUD 最多每秒更新四次。
 - 每次重大决策前重读本文件；每个阶段结束后更新状态与进度。
 - **Current published checkpoint（2026-07-27）：** PR #1 将 Task 3–5 的性能核心、设置/Benchmark 与首页提交合并为 `4f42867`；Pages run `30273041434` 的 build/deploy 均成功，线上已确认新 JS/CSS、朗世乐品牌、原生 modal、人物与 WOFF2 子路径。没有创建 Release 或版本标签；Task 6/7 仍未完成。
+- **Current published checkpoint（2026-07-28）：** PR #4 将 Task 7 文档与桌面验证证据合并为 `59b2d78`；Pages run `30320699031` 的 build 35 秒、deploy 10 秒且均成功。公开页面仍加载 `index-BEsYy-mJ.js` / `index-C3mvqVYK.css`、朗世乐品牌、人物和实验控制，390×844 外层视口无横向溢出且控制台 0 error/warn。真实设备项仍 pending-device，没有创建 Release 或标签。
