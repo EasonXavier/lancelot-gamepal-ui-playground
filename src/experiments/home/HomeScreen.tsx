@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ExperimentalPlaceholder } from '../../components/controls/ExperimentalPlaceholder';
 import { ExperimentPanel } from '../../components/controls/ExperimentPanel';
 import { ServiceGrid, type ServiceName } from '../../components/controls/ServiceGrid';
@@ -47,11 +47,23 @@ export function HomeScreen({
   const [selectedNav, setSelectedNav] = useState<BottomNavId>('home');
   const [activeService, setActiveService] = useState<ServiceName | null>(null);
   const screenRef = useRef<HTMLElement>(null);
-  const mode = settings.glassMode;
+  const experimentToggleRef = useRef<HTMLButtonElement>(null);
+  const externalCancelRef = useRef<HTMLButtonElement>(null);
+  const mode = effectiveSettings.glassMode;
   const motionProfile = MOTION_PROFILES[effectiveSettings.motionLevel];
   const motionEnabled = effectiveSettings.motionLevel !== 'off';
   const particlePaused =
     !visible || !effectiveSettings.backgroundMotion || !motionEnabled;
+  const suiteActive =
+    benchmarkController.suiteState.status === 'settling' ||
+    benchmarkController.suiteState.status === 'running' ||
+    benchmarkController.suiteState.status === 'waiting-for-visibility';
+
+  useEffect(() => {
+    if (benchmarkController.workloadLocked && !panelOpen) {
+      externalCancelRef.current?.focus({ preventScroll: true });
+    }
+  }, [benchmarkController.workloadLocked, panelOpen]);
 
   useTouchParallax(
     screenRef,
@@ -95,18 +107,23 @@ export function HomeScreen({
         <button
           aria-expanded={panelOpen}
           className="tap-target home-screen__experiment-toggle"
+          disabled={benchmarkController.workloadLocked}
           onClick={() => onPanelOpenChange(!panelOpen)}
+          ref={experimentToggleRef}
           type="button"
         >
           实验控制
         </button>
-        {benchmarkController.state.status === 'running' && !panelOpen ? (
+        {benchmarkController.workloadLocked && !panelOpen ? (
           <button
             className="tap-target home-screen__experiment-toggle"
-            onClick={benchmarkController.cancel}
+            onClick={
+              suiteActive ? benchmarkController.cancelSuite : benchmarkController.cancel
+            }
+            ref={externalCancelRef}
             type="button"
           >
-            取消 Benchmark
+            {suiteActive ? '取消全部' : '取消 Benchmark'}
           </button>
         ) : null}
       </header>
@@ -119,7 +136,12 @@ export function HomeScreen({
         <ServiceGrid mode={mode} onSelect={setActiveService} />
       </div>
       <BottomNav mode={mode} onSelect={setSelectedNav} selectedItem={selectedNav} />
-      <PerformanceHud mode={effectiveSettings.hudMode} runtime={performanceRuntime} />
+      <PerformanceHud
+        mode={effectiveSettings.hudMode}
+        onModeChange={(hudMode) => onSettingsChange({ hudMode })}
+        runtime={performanceRuntime}
+        workloadLocked={benchmarkController.workloadLocked}
+      />
       {activeService ? (
         <ExperimentalPlaceholder
           onClose={() => setActiveService(null)}
@@ -128,10 +150,12 @@ export function HomeScreen({
       ) : null}
       <ExperimentPanel
         benchmarkController={benchmarkController}
+        effectiveGlassMode={mode}
         onChange={onSettingsChange}
         onClose={() => onPanelOpenChange(false)}
         onReset={onSettingsReset}
         open={panelOpen}
+        openerRef={experimentToggleRef}
         reportActions={reportActions}
         settings={settings}
       />

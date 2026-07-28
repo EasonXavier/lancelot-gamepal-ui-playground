@@ -147,6 +147,8 @@
 | 2026-07-28 04:49 +08:00 | 最终 Vite 构建在清理 worktree `dist/assets` 时被沙箱拒绝                                          | 1       | 确认 52 modules 已转换且失败仅在输出清理；在授权上下文重跑相同构建，140ms 成功                                                                |
 | 2026-07-28 04:50 +08:00 | 初始绝对路径扫描把 diff 元数据中的 `src/experiments/home/` 误判为 Unix `/home/`                   | 1       | 输出匹配行确认均为 Git header；将扫描限定到新增内容和带用户名层级的绝对路径后重跑，17 files 全部 0 匹配                                       |
 | 2026-07-28 04:55 +08:00 | PowerShell `Start-Process` 因沙箱同时注入 `Path`/`PATH` 而发生环境字典冲突                        | 2       | 不修改系统环境；改用隐藏、无窗口的最小环境 `ProcessStartInfo` 启动本地预览，HTTP 200 后完成浏览器验证并终止进程                               |
+| 2026-07-29 14:12 +08:00 | Prettier 无法在 linked worktree 回写三份已修改 Markdown，返回 `EPERM`                             | 1       | 源码与测试无需格式变化；在授权上下文仅机械格式化 `performance-metrics`、设备模板和 UI ledger，随后继续完整格式检查                            |
+| 2026-07-29 14:16 +08:00 | PowerShell 把 stale-text 扫描正则中的反引号解释为转义，报字符串缺少结束引号                       | 1       | 将正则改为单引号并把全量测试、diff check 与 stale-text 扫描拆开执行；不重复原命令                                                             |
 
 ## Task 5 Design Gate: 2026-07-27
 
@@ -274,6 +276,30 @@
 - Pages workflow run `30320699031` 成功：build 35 秒、deploy 10 秒；workflow 内 npm ci、lint/test/build、artifact 上传与部署均通过。
 - 线上缓存破除验证确认品牌、实验控制、人物 Pages 子路径与既有 JS/CSS bundle 正常；390×844 外层视口无横向溢出，`--app-height` 正确，控制台 0 error/warn。
 - 本轮结束边界：Task 7 文档和桌面证据已发布；真实非零 Safe Area、iOS/Android 微信 WebView、完整真机 Benchmark/导出仍 pending-device；没有 Release 或标签。
+
+## Phase 7 Start: 2026-07-29
+
+- 用户批准紧凑布局与四模式 Baseline Suite 实施计划，并授权完成 PR 合并、Pages 部署和线上复核；不创建 Release 或标签。
+- 从 `origin/main@b7b421b85ac6d36825bad5765ba73ceeaf54bdbf` 创建独立工作树 `.worktrees/layout-baseline-suite` 与分支 `codex/layout-baseline-suite`；旧主工作树及 Phase 5 草稿工作树未修改。
+- 新工作树复用项目现有 `node_modules` junction；未下载、升级或全局安装依赖。
+- 新鲜基线为 17 files / 136 tests passed，耗时 19.61 秒。
+- 已固化专项实施计划 `docs/superpowers/plans/2026-07-29-layout-baseline-suite.md`；下一步按 SDD/TDD 从 Task 1 RED 开始。
+
+## Phase 7 Task 1–4 local checkpoint: 2026-07-29
+
+- Task 1 `BaselineSuiteRunner` 已提交为 `9963846`，修复 settle 采样边界为 `9b9c809`；独立审查 clean。
+- Task 2 schema v2 控制器/报告已提交为 `505850c`，修复卸载设置与 Reduced Motion 冻结为 `89d8ed7`；独立审查 clean。
+- Task 3 紧凑布局、HUD 与模态抽屉已提交为 `bae93f7`，两轮布局/焦点修复为 `de07213`、`eb2aa74`；独立审查 clean。
+- Task 4 已更新 README、性能指标、真机模板与 fidelity ledger，明确四模式固定顺序、3+30 秒、名义 132 秒（假时钟精确 `132000ms`，浏览器实际值可略高）、schema v2、前台比较资格、后台/旋转终止、一次真机 Suite、固定顺序热偏差与 pending-device 边界。
+- 新增完整 App→controller→report 集成断言；focused 为 1 file / 4 tests passed，并确认 4 个 ordered runs 均为 30 秒、完整前台且可比较。
+- 本地静态门禁：TypeScript 退出 0（1.8s）、ESLint 退出 0（1.7s）、Prettier 全部文件通过；全量 Vitest 为 20 files / 179 tests passed（6.48s）。
+- 生产构建首次在清理 linked worktree 的 `dist/assets` 时被沙箱以 EPERM 拒绝；最终同一 typecheck + Vite build 在授权上下文重跑，53 modules transformed、151ms，产出 `index-BrBFbAci.css`、`index-CI60FQOQ.js` 与 `web-vitals-BxxX5THq.js`。
+- `git diff --check` 退出 0。相对 `b7b421b` 的 3,673 条新增行扫描结果：生产/文档敏感凭据 0、绝对用户路径 0、tracked `.env` 0、变更素材文件 0；唯一 secret-pattern 命中是测试夹具字面量 `run-secret-token`，已人工确认不是真实凭据。
+- 中断计数缺口已按 TDD 修复：runner 新增累计 `interruptions` 与 `interruptionsByMode`，连续计数仍独立驱动同模式第三次失败；控制器终止报告与 UI 均改读累计值。RED 为 4 个预期失败；GREEN 为 focused 5 files / 75 tests、全量 20 files / 182 tests，TypeScript、ESLint、Prettier 与生产构建均通过。
+- 主代理已完成五视口生产预览：全部无横向溢出、服务区不与底栏重叠，抽屉保持视口内且中部独立滚动；390×844 完整桌面 Suite 得到四个固定顺序结果，复制 JSON 显示成功，但浏览器隔离剪贴板未返回页面写入内容，字段结构继续由集成测试证明。
+- 报告链路补齐逐模式中断图：RED 为导出器、控制器与 App 共 4 个预期失败；GREEN 为 4 files / 37 tests。`BenchmarkReportTerminal`、App 快照与 schema v2 现均保留固定四键 `interruptionsByMode`，单模式全为 0，累计 `interruptions` 保持兼容。
+- 当前 HEAD 的新鲜门禁为 TypeScript、ESLint、Prettier 全部退出 0，Vitest 20 files / 185 tests passed；Vite 首次因预览后的 `dist/assets` 沙箱 EPERM 失败，停止预览后仍需在授权上下文重建，最终 53 modules / 144ms 成功。
+- 仍待主代理完成：最终整体审查、PR/Pages 和线上复核。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
 
 ---
 

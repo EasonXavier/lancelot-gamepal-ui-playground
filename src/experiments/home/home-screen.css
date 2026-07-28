@@ -1,4 +1,7 @@
 .home-screen {
+  --home-header-block: calc(var(--safe-top) + 54px);
+  --home-content-reserve: calc(172px + clamp(154px, 25.9dvh, 238px));
+
   position: relative;
   min-height: var(--app-height);
   overflow-x: clip;
@@ -46,7 +49,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: calc(var(--safe-top) + 18px) calc(var(--safe-right) + 18px) 0
+  padding: calc(var(--safe-top) + 10px) calc(var(--safe-right) + 18px) 0
     calc(var(--safe-left) + 18px);
   letter-spacing: 0.08em;
 }
@@ -72,9 +75,20 @@
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 12px;
-  padding: clamp(180px, 39vh, 360px) calc(var(--safe-right) + 14px)
-    calc(88px + var(--safe-bottom)) calc(var(--safe-left) + 14px);
+  gap: 10px;
+  padding: clamp(
+      0px,
+      min(
+        calc(42dvh - var(--home-header-block)),
+        calc(
+          var(--app-height) - var(--home-header-block) - var(--safe-bottom) -
+            var(--home-content-reserve)
+        )
+      ),
+      338px
+    )
+    calc(var(--safe-right) + 14px) calc(88px + var(--safe-bottom))
+    calc(var(--safe-left) + 14px);
 }
 
 .home-screen .game-rail {
@@ -92,7 +106,7 @@
 }
 
 .home-screen .service-grid {
-  gap: 9px;
+  gap: 7px;
 }
 
 .home-screen .service-card {
@@ -137,6 +151,17 @@
   font-size: 12px;
 }
 
+@media (max-height: 560px) {
+  .home-screen {
+    --home-content-reserve: 220px;
+  }
+
+  .home-screen__content,
+  .home-screen .service-grid {
+    gap: 6px;
+  }
+}
+
 @media (min-width: 720px) {
   .home-screen__header {
     padding-right: max(5vw, calc(var(--safe-right) + 28px));
@@ -146,7 +171,6 @@
   .home-screen__content {
     width: min(720px, 100%);
     margin-inline: auto;
-    padding-top: clamp(220px, 43vh, 420px);
     padding-right: max(24px, var(--safe-right));
     padding-left: max(24px, var(--safe-left));
   }

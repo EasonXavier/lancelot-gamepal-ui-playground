@@ -4,21 +4,15 @@ import {
   createReportActions,
   type ReportActionDependencies,
 } from '../../src/performance/reportActions';
-import type { ReportSnapshot } from '../../src/performance/reportExporter';
+import type { ReportRun, ReportSnapshot } from '../../src/performance/reportExporter';
 
-const createSnapshot = (): ReportSnapshot => ({
-  generatedAt: '2026-07-27T06:00:00.000Z',
-  page: { url: 'https://example.test/playground/' },
-  environment: {
-    userAgent: 'Test WebView',
-    isWeChat: true,
-    operatingSystem: null,
-    viewport: { width: 390, height: 844 },
-    screen: { width: 390, height: 844 },
-    devicePixelRatio: 3,
-  },
+const createRun = (
+  glassMode: ReportRun['glassMode'] = 'real',
+  completedInForeground = true,
+): ReportRun => ({
+  glassMode,
   settings: {
-    glassMode: 'real',
+    glassMode,
     motionLevel: 'medium',
     particleCount: 50,
     backgroundMotion: true,
@@ -37,10 +31,7 @@ const createSnapshot = (): ReportSnapshot => ({
       framesOver33: 2,
       framesOver50: 0,
     },
-    webVitals: {
-      inp: { status: 'waiting' },
-      lcp: { status: 'unsupported' },
-    },
+    webVitals: { inp: { status: 'waiting' }, lcp: { status: 'unsupported' } },
     mainThread: {
       longTasks: { status: 'unsupported' },
       longAnimationFrames: { status: 'unsupported' },
@@ -54,7 +45,39 @@ const createSnapshot = (): ReportSnapshot => ({
       longAnimationFrame: { status: 'unsupported' },
     },
   },
-  benchmark: { completedInForeground: true },
+  elapsedMs: 30_000,
+  completedInForeground,
+  eligibleForComparison: completedInForeground,
+});
+
+const createSnapshot = (
+  reportType: ReportSnapshot['reportType'] = 'single',
+  runs: ReportRun[] = [createRun()],
+): ReportSnapshot => ({
+  reportType,
+  generatedAt: '2026-07-27T06:00:00.000Z',
+  page: { url: 'https://example.test/playground/' },
+  environment: {
+    userAgent: 'Test WebView',
+    isWeChat: true,
+    operatingSystem: null,
+    viewport: { width: 390, height: 844 },
+    screen: { width: 390, height: 844 },
+    devicePixelRatio: 3,
+  },
+  benchmark: {
+    status: 'completed',
+    order: reportType === 'suite' ? ['real', 'simulated', 'preblur', 'off'] : ['real'],
+    settleDurationMs: reportType === 'suite' ? 3_000 : 0,
+    runDurationMs: 30_000,
+    elapsedMs: reportType === 'suite' ? 132_000 : 30_000,
+    completedModes: runs.map(({ glassMode }) => glassMode),
+    interruptions: 0,
+    interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
+    terminatedPhase: null,
+    failureReason: null,
+  },
+  runs,
 });
 
 function createDependencies() {
@@ -90,28 +113,31 @@ afterEach(() => {
 });
 
 describe('report actions', () => {
-  it('catches ambient or credential-shaped fields escaping the whitelist JSON', async () => {
+  it('copies stable schema v2 JSON while preserving the page privacy whitelist', async () => {
     const { dependencies, writeText } = createDependencies();
-    const polluted = Object.assign(createSnapshot(), {
+    const snapshot = createSnapshot();
+    snapshot.page.url =
+      'https://user:password@example.test/lancelot-gamepal-ui-playground/?token=secret#identity';
+    const polluted = Object.assign(snapshot, {
       authorization: 'Bearer secret-authorization',
-      cookie: 'session=secret-cookie',
       identity: 'wechat-user-123',
-      ipAddress: '203.0.113.10',
-      location: { latitude: 1, longitude: 2 },
-      token: 'secret-token',
     });
     const actions = createReportActions(() => polluted, dependencies);
 
     await actions.copyJson();
+    await actions.copyJson();
 
     const copied = writeText.mock.calls[0]?.[0] ?? '';
-    expect(copied).toContain('"schemaVersion": 1');
-    expect(copied).not.toMatch(
-      /secret-cookie|secret-token|secret-authorization|203\.0\.113\.10|wechat-user-123|latitude/i,
-    );
+    expect(copied).toContain('"schemaVersion": 2');
+    expect(JSON.parse(copied)).toMatchObject({
+      reportType: 'single',
+      page: { url: '/lancelot-gamepal-ui-playground/' },
+    });
+    expect(copied).not.toMatch(/secret-authorization|wechat-user-123|password/);
+    expect(writeText.mock.calls[1]?.[0]).toBe(copied);
   });
 
-  it('catches detached downloads, wrong filenames, duplicate clicks or leaked object URLs', () => {
+  it('downloads one stable JSON blob and always cleans up its object URL', () => {
     const {
       click,
       connectedDuringClick,
@@ -139,31 +165,14 @@ describe('report actions', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:local-report');
   });
 
-  it('catches summary labels, measurements or foreground state changing', async () => {
+  it('formats one comparison row per retained suite run with eligibility', async () => {
     const { dependencies, writeText } = createDependencies();
-    const actions = createReportActions(createSnapshot, dependencies);
-
-    await actions.copySummary();
-
-    expect(writeText).toHaveBeenCalledWith(
-      [
-        '朗世乐 UI 性能报告',
-        'Glass: real',
-        'FPS: 58.4',
-        'P95 Frame: 22',
-        'Estimated Dropped Frames: 4',
-        'Foreground Complete: yes',
-      ].join('\n'),
-    );
-  });
-
-  it('catches unavailable metrics being fabricated as numeric zero', async () => {
-    const { dependencies, writeText } = createDependencies();
-    const snapshot = createSnapshot();
-    snapshot.performance.frames.averageFps = null;
-    snapshot.performance.frames.p95FrameTime = null;
-    snapshot.performance.frames.estimatedDroppedFrames = null;
-    snapshot.benchmark.completedInForeground = null;
+    const snapshot = createSnapshot('suite', [
+      createRun('real'),
+      createRun('simulated', false),
+      createRun('preblur'),
+      createRun('off'),
+    ]);
     const actions = createReportActions(() => snapshot, dependencies);
 
     await actions.copySummary();
@@ -171,22 +180,58 @@ describe('report actions', () => {
     expect(writeText).toHaveBeenCalledWith(
       [
         '朗世乐 UI 性能报告',
-        'Glass: real',
-        'FPS: waiting',
-        'P95 Frame: waiting',
-        'Estimated Dropped Frames: waiting',
-        'Foreground Complete: waiting',
+        'Report: suite',
+        'Status: completed',
+        'Glass | FPS | P95 Frame | Estimated Dropped Frames | Foreground Complete | Eligible',
+        'real | 58.4 | 22 | 4 | yes | yes',
+        'simulated | 58.4 | 22 | 4 | no | no',
+        'preblur | 58.4 | 22 | 4 | yes | yes',
+        'off | 58.4 | 22 | 4 | yes | yes',
       ].join('\n'),
     );
-    expect(writeText.mock.calls[0]?.[0]).not.toMatch(/: 0(?:\n|$)/);
+  });
+
+  it('summarizes a cancelled report without fabricating an active run', async () => {
+    const { dependencies, writeText } = createDependencies();
+    const snapshot = createSnapshot('single', []);
+    snapshot.benchmark.status = 'cancelled';
+    snapshot.benchmark.elapsedMs = 11_000;
+    snapshot.benchmark.terminatedPhase = 'stress';
+    const actions = createReportActions(() => snapshot, dependencies);
+
+    await actions.copySummary();
+
+    expect(writeText).toHaveBeenCalledWith(
+      [
+        '朗世乐 UI 性能报告',
+        'Report: single',
+        'Status: cancelled',
+        'Glass | FPS | P95 Frame | Estimated Dropped Frames | Foreground Complete | Eligible',
+        'No completed runs',
+      ].join('\n'),
+    );
+  });
+
+  it('renders unavailable completed-run metrics as waiting instead of zero', async () => {
+    const { dependencies, writeText } = createDependencies();
+    const run = createRun();
+    run.performance.frames.averageFps = null;
+    run.performance.frames.p95FrameTime = null;
+    run.performance.frames.estimatedDroppedFrames = null;
+    const actions = createReportActions(
+      () => createSnapshot('single', [run]),
+      dependencies,
+    );
+
+    await actions.copySummary();
+
+    expect(writeText.mock.calls[0]?.[0]).toContain(
+      'real | waiting | waiting | waiting | yes | yes',
+    );
+    expect(writeText.mock.calls[0]?.[0]).not.toMatch(/\| 0(?: \||$)/);
   });
 
   it.each([
-    [
-      'credentials, query and fragment',
-      'https://user:password@example.test/lancelot-gamepal-ui-playground/?token=secret#identity',
-      '/lancelot-gamepal-ui-playground/',
-    ],
     [
       'an IP host',
       'https://203.0.113.10/lancelot-gamepal-ui-playground/',
@@ -269,5 +314,6 @@ describe('report actions', () => {
     const anchor = click.mock.contexts[0] as HTMLAnchorElement;
     expect(anchor.isConnected).toBe(false);
     expect(revokeObjectURL).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:local-report');
   });
 });

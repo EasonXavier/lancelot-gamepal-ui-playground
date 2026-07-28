@@ -2,6 +2,8 @@
 
 # Findings & Decisions
 
+- 2026-07-29 中断计数缺口已修复：`BaselineSuiteState.interruptions` 保留整个 Suite 的累计中断数，`interruptionsByMode` 保留四个模式各自的计数，`consecutiveInterruptions` 只用于当前模式连续第三次中断的失败判定。成功跨越模式边界只重置连续计数，不再清空 UI 或报告所需的累计历史。
+
 ## Requirements
 
 - 独立公开仓库：`EasonXavier/lancelot-gamepal-ui-playground`，默认分支 `main`，独立 GitHub Pages。
@@ -18,6 +20,17 @@
 - Benchmark 固定总长 30 秒：预热 3 秒、静止动态 8 秒、动态压力 8 秒、滚动和转场 8 秒、结果整理 3 秒；进入后台的数据必须排除并把结果标为未完整保持前台。
 
 ## Research Findings
+
+- 2026-07-29 线上 390×844 审计确认当前首页约 919px 高，最后一张服务卡与固定底栏重叠；`padding-top: clamp(180px, 39vh, 360px)` 造成过大顶部空区，展开 HUD 与人物主视觉竞争。
+- 当前窄屏实验面板把全部选项强制成单列，整体约 1856px 高；用户已采用约 82dvh 的模态底部抽屉、两列分段选项、固定 Baseline 卡和中部独立滚动。
+- 用户已确认四模式固定顺序 `real → simulated → preblur → off`，每模式采样前额外稳定 3 秒并完整运行现有 30 秒，名义计划总长 132 秒；假时钟边界精确为 `132000ms`，浏览器实际 `elapsedMs` 可因调度略高。
+- 用户已确认独立 `BaselineSuiteRunner`、冻结当前非 Glass 配置、后台重试、同模式第三次中断失败、旋转即失败、活动 run 取消后完全丢弃，以及统一 schema v2 `runs[]`。
+- 单模式与套件取消都不得导出部分性能指标；套件已完成 run 保留。真实设备与微信 WebView 证据在实际导出前继续为 pending-device。
+- Task 1–3 已实现并通过独立审查：Suite 的每个模式先禁用采样稳定 3 秒，再运行独立 30 秒 Benchmark；单/批互斥、临时 Glass override、模态抽屉、HUD 胶囊和流动高度 reserve 均有自动化覆盖。
+- schema v2 顶层固定为 `schemaVersion`、`reportType`、`generatedAt`、白名单 page/environment、`benchmark` 和 `runs[]`；完整 Suite 的 4 项必须按 `real → simulated → preblur → off`，每项为 30 秒且前台完整才有比较资格。
+- Task 4 新增 App 控制器到报告的完整集成断言，以假时钟推进到精确 `132000ms` 计划边界，并确认四个 ordered runs 均为 `completedInForeground: true`、`eligibleForComparison: true`。
+- Task 4 发现的中断计数缺口已在 Task 5 前修复：累计 `interruptions` 与逐模式 `interruptionsByMode` 会跨成功模式边界保留，`consecutiveInterruptions` 仅用于当前模式第三次连续中断失败。
+- 主代理已在生产预览完成 375×812、390×844、393×852、430×932、844×390 五视口检查：无横向溢出、服务区与底栏无重叠、抽屉不越界且中部独立滚动，控制台无 warning/error；390×844 完成一次名义 132 秒桌面 Suite。复制 UI 成功，但隔离浏览器未开放剪贴板读取，schema v2 字段由自动化测试验证。桌面结果不替代真实 Safe Area、微信 WebView 或真机性能证据。
 
 - 2026-07-27 现场检查确认目标 GitHub 仓库原先不存在，随后已创建为 PUBLIC。
 - 当前仓库根目录为 `C:/Project/lancelot-gamepal-ui-playground`，分支为 `main`，唯一远程为目标仓库 `origin`。

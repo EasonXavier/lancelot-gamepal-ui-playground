@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 import { PerformanceHud } from '../../src/components/performance/PerformanceHud';
 import { createPerformanceRuntime } from '../../src/performance/runtime';
@@ -84,16 +85,79 @@ function runtimeWith(snapshot: PerformanceSnapshot): PerformanceRuntime {
 
 describe('PerformanceHud', () => {
   it('catches compact HUD regressions by showing only FPS and P95', () => {
-    render(<PerformanceHud mode="compact" runtime={runtimeWith(baseSnapshot)} />);
+    render(
+      <PerformanceHud
+        mode="compact"
+        onModeChange={vi.fn()}
+        runtime={runtimeWith(baseSnapshot)}
+        workloadLocked={false}
+      />,
+    );
 
-    expect(screen.getByText('FPS')).toBeVisible();
-    expect(screen.getByText('P95')).toBeVisible();
+    const hud = screen.getByRole('button', { name: 'Performance HUD' });
+    expect(hud).toHaveAttribute('aria-expanded', 'false');
+    expect(hud).toHaveTextContent('FPS60');
+    expect(hud).toHaveTextContent('P9517');
     expect(screen.queryByText('Max frame')).not.toBeInTheDocument();
     expect(screen.queryByText('LCP')).not.toBeInTheDocument();
   });
 
+  it('changes compact and expanded modes through the settings callback', async () => {
+    const user = userEvent.setup();
+    const onModeChange = vi.fn();
+    const view = render(
+      <PerformanceHud
+        mode="compact"
+        onModeChange={onModeChange}
+        runtime={runtimeWith(baseSnapshot)}
+        workloadLocked={false}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Performance HUD' }));
+    expect(onModeChange).toHaveBeenLastCalledWith('expanded');
+
+    view.rerender(
+      <PerformanceHud
+        mode="expanded"
+        onModeChange={onModeChange}
+        runtime={runtimeWith(baseSnapshot)}
+        workloadLocked={false}
+      />,
+    );
+    const expanded = screen.getByRole('button', { name: 'Performance HUD' });
+    expect(expanded).toHaveAttribute('aria-expanded', 'true');
+    await user.click(expanded);
+    expect(onModeChange).toHaveBeenLastCalledWith('compact');
+  });
+
+  it('prevents HUD mode changes while a workload owns the settings', async () => {
+    const user = userEvent.setup();
+    const onModeChange = vi.fn();
+    render(
+      <PerformanceHud
+        mode="compact"
+        onModeChange={onModeChange}
+        runtime={runtimeWith(baseSnapshot)}
+        workloadLocked
+      />,
+    );
+
+    const hud = screen.getByRole('button', { name: 'Performance HUD' });
+    expect(hud).toBeDisabled();
+    await user.click(hud);
+    expect(onModeChange).not.toHaveBeenCalled();
+  });
+
   it('catches expanded HUD omissions and selected-glow accessibility regressions', () => {
-    render(<PerformanceHud mode="expanded" runtime={runtimeWith(baseSnapshot)} />);
+    render(
+      <PerformanceHud
+        mode="expanded"
+        onModeChange={vi.fn()}
+        runtime={runtimeWith(baseSnapshot)}
+        workloadLocked={false}
+      />,
+    );
 
     [
       'FPS',
@@ -109,14 +173,24 @@ describe('PerformanceHud', () => {
     ].forEach((label) => {
       expect(screen.getByText(label)).toBeVisible();
     });
-    expect(screen.getByRole('region')).not.toHaveAttribute('aria-live');
-    expect(screen.getByRole('region')).not.toHaveClass('glass-surface--selected');
+    expect(
+      screen
+        .getByRole('button', { name: 'Performance HUD' })
+        .querySelector('.glass-surface--selected'),
+    ).toBeNull();
   });
 
   it('shows waiting for dropped frames before the runtime has a frame sample', () => {
     const runtime = createPerformanceRuntime();
 
-    render(<PerformanceHud mode="expanded" runtime={runtime} />);
+    render(
+      <PerformanceHud
+        mode="expanded"
+        onModeChange={vi.fn()}
+        runtime={runtime}
+        workloadLocked={false}
+      />,
+    );
 
     const metric = screen.getByText('Dropped frames').closest('div');
     expect(metric).toHaveTextContent('Dropped frames\u7B49\u5F85');
@@ -125,7 +199,12 @@ describe('PerformanceHud', () => {
 
   it('catches hidden HUD content remaining in the DOM', () => {
     const { container } = render(
-      <PerformanceHud mode="hidden" runtime={runtimeWith(baseSnapshot)} />,
+      <PerformanceHud
+        mode="hidden"
+        onModeChange={vi.fn()}
+        runtime={runtimeWith(baseSnapshot)}
+        workloadLocked={false}
+      />,
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -139,7 +218,14 @@ describe('PerformanceHud', () => {
       ...baseSnapshot,
       webVitals: { ...baseSnapshot.webVitals, lcp: { status } },
     };
-    render(<PerformanceHud mode="expanded" runtime={runtimeWith(snapshot)} />);
+    render(
+      <PerformanceHud
+        mode="expanded"
+        onModeChange={vi.fn()}
+        runtime={runtimeWith(snapshot)}
+        workloadLocked={false}
+      />,
+    );
 
     expect(screen.getByText(label)).toBeVisible();
     expect(screen.queryByText(/^0(?:\.0+)?$/)).not.toBeInTheDocument();

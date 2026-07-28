@@ -1,7 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { GameId } from './components/navigation/GameRail';
 import { HomeScreen } from './experiments/home/HomeScreen';
-import { useBenchmarkController } from './hooks/useBenchmarkController';
+import {
+  useBenchmarkController,
+  type BenchmarkReportTerminal,
+  type BenchmarkReportType,
+  type BenchmarkResultCapture,
+} from './hooks/useBenchmarkController';
 import { useReducedMotion } from './hooks/useReducedMotion';
 import { useViewportHeight } from './hooks/useViewportHeight';
 import { useVisibility } from './hooks/useVisibility';
@@ -10,14 +15,19 @@ import {
   type BenchmarkClock,
   type BenchmarkProfile,
 } from './performance/benchmarkRunner';
+import { BASELINE_MODE_ORDER } from './performance/baselineSuiteRunner';
 import { collectEnvironmentInfo } from './performance/environmentInfo';
 import {
   createReportActions,
   sanitizePageIdentifier,
   type ReportActionDependencies,
 } from './performance/reportActions';
-import type { ReportSnapshot } from './performance/reportExporter';
-import type { PerformanceRuntime, PerformanceSnapshot } from './performance/runtime';
+import type {
+  ReportRun,
+  ReportSnapshot,
+  ReportStatus,
+} from './performance/reportExporter';
+import type { PerformanceRuntime } from './performance/runtime';
 import {
   createDefaultSettings,
   loadSettings,
@@ -49,37 +59,86 @@ export function App({
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<GameId>('delta');
   const [benchmarkProfile, setBenchmarkProfile] = useState<BenchmarkProfile>('idle');
-  const [benchmarkReportSnapshot, setBenchmarkReportSnapshot] =
-    useState<ReportSnapshot | null>(null);
+  const [benchmarkSettingsOverride, setBenchmarkSettingsOverride] =
+    useState<ExperimentSettings | null>(null);
+  const [benchmarkReducedMotionOverride, setBenchmarkReducedMotionOverride] = useState<
+    boolean | null
+  >(null);
   const systemReducedMotion = useReducedMotion();
   const visible = useVisibility();
-  const effectiveSettings = resolveEffectiveSettings(settings, systemReducedMotion);
-  const reducedMotionEffective =
+  const effectiveSettings = useMemo(
+    () => resolveEffectiveSettings(settings, systemReducedMotion),
+    [settings, systemReducedMotion],
+  );
+  const benchmarkEffectiveSettings = benchmarkSettingsOverride ?? effectiveSettings;
+  const liveReducedMotionEffective =
     systemReducedMotion || settings.reducedMotionSimulation;
-  const displayedSettings = applyBenchmarkProfile(
-    effectiveSettings,
-    benchmarkProfile,
-    reducedMotionEffective,
+  const reducedMotionEffective =
+    benchmarkReducedMotionOverride ?? liveReducedMotionEffective;
+  const displayedSettings = useMemo(
+    () =>
+      applyBenchmarkProfile(
+        benchmarkEffectiveSettings,
+        benchmarkProfile,
+        reducedMotionEffective,
+      ),
+    [benchmarkEffectiveSettings, benchmarkProfile, reducedMotionEffective],
   );
   const performanceRuntime = usePerformanceRuntime(
     visible && displayedSettings.motionLevel !== 'off',
     performanceRuntimeOverride,
   );
-  const captureBenchmarkReport = useCallback(
-    (snapshot: PerformanceSnapshot, completedInForeground: boolean) => {
+  const [benchmarkReportSnapshot, setBenchmarkReportSnapshot] =
+    useState<ReportSnapshot>(() =>
+      buildReportSnapshot('single', displayedSettings, systemReducedMotion, 'idle'),
+    );
+  const startBenchmarkReport = useCallback(
+    (reportType: BenchmarkReportType, settingsAtStart: ExperimentSettings) => {
+      setBenchmarkReducedMotionOverride(liveReducedMotionEffective);
       setBenchmarkReportSnapshot(
         buildReportSnapshot(
-          effectiveSettings,
-          performanceRuntime,
-          completedInForeground,
+          reportType,
+          settingsAtStart,
           systemReducedMotion,
-          snapshot,
+          'running',
         ),
       );
     },
-    [effectiveSettings, performanceRuntime, systemReducedMotion],
+    [liveReducedMotionEffective, systemReducedMotion],
   );
-  const clearBenchmarkReport = useCallback(() => setBenchmarkReportSnapshot(null), []);
+  const captureBenchmarkReport = useCallback((capture: BenchmarkResultCapture) => {
+    setBenchmarkReportSnapshot((current) => {
+      if (current.reportType !== capture.reportType) return current;
+      const run = buildReportRun(capture);
+      return {
+        ...current,
+        benchmark: {
+          ...current.benchmark,
+          completedModes: [...current.benchmark.completedModes, run.glassMode],
+        },
+        runs: [...current.runs, run],
+      };
+    });
+  }, []);
+  const finishBenchmarkReport = useCallback((terminal: BenchmarkReportTerminal) => {
+    setBenchmarkReducedMotionOverride(null);
+    setBenchmarkReportSnapshot((current) => {
+      if (current.reportType !== terminal.reportType) return current;
+      return {
+        ...current,
+        benchmark: {
+          ...current.benchmark,
+          status: terminal.status,
+          elapsedMs: terminal.elapsedMs,
+          completedModes: [...terminal.completedModes],
+          interruptions: terminal.interruptions,
+          interruptionsByMode: { ...terminal.interruptionsByMode },
+          terminatedPhase: terminal.terminatedPhase,
+          failureReason: terminal.failureReason,
+        },
+      };
+    });
+  }, []);
   const benchmarkController = useBenchmarkController({
     clock: benchmarkClock,
     effectiveSettings,
@@ -87,29 +146,23 @@ export function App({
     performanceRuntime,
     selectedGame,
     visible,
+    onEffectiveSettingsOverrideChange: setBenchmarkSettingsOverride,
     onPanelOpenChange: setPanelOpen,
     onProfileChange: setBenchmarkProfile,
+    onReportStart: startBenchmarkReport,
+    onReportTerminal: finishBenchmarkReport,
     onResultCapture: captureBenchmarkReport,
-    onResultClear: clearBenchmarkReport,
     onSelectedGameChange: setSelectedGame,
   });
-  const getReportSnapshot = useCallback(
-    () =>
-      benchmarkReportSnapshot ??
-      buildReportSnapshot(
-        displayedSettings,
-        performanceRuntime,
-        benchmarkController.state.completedInForeground,
-        systemReducedMotion,
-      ),
-    [
-      benchmarkController.state.completedInForeground,
-      benchmarkReportSnapshot,
-      displayedSettings,
-      performanceRuntime,
-      systemReducedMotion,
-    ],
-  );
+  const getReportSnapshot = useCallback(() => {
+    if (benchmarkReportSnapshot.benchmark.status !== 'idle') {
+      return benchmarkReportSnapshot;
+    }
+    return {
+      ...buildReportSnapshot('single', displayedSettings, systemReducedMotion, 'idle'),
+      generatedAt: benchmarkReportSnapshot.generatedAt,
+    };
+  }, [benchmarkReportSnapshot, displayedSettings, systemReducedMotion]);
   const reportActions = useMemo(
     () => createReportActions(getReportSnapshot, reportActionDependencies),
     [getReportSnapshot, reportActionDependencies],
@@ -125,13 +178,20 @@ export function App({
   }, []);
 
   const reset = useCallback(() => {
-    setBenchmarkReportSnapshot(null);
+    setBenchmarkReportSnapshot(
+      buildReportSnapshot(
+        'single',
+        createDefaultSettings(),
+        systemReducedMotion,
+        'idle',
+      ),
+    );
     setSettings((current) => {
       const next = resetSettings(current);
       persistSettings(next);
       return next;
     });
-  }, []);
+  }, [systemReducedMotion]);
 
   return (
     <HomeScreen
@@ -175,19 +235,16 @@ function applyBenchmarkProfile(
 }
 
 function buildReportSnapshot(
+  reportType: BenchmarkReportType,
   effectiveSettings: ExperimentSettings,
-  runtime: PerformanceRuntime,
-  completedInForeground: boolean | null,
   systemReducedMotion: boolean,
-  capturedPerformanceSnapshot?: PerformanceSnapshot,
+  status: ReportStatus,
 ): ReportSnapshot {
   const environment = collectEnvironmentInfo({
     prefersReducedMotion: systemReducedMotion,
   });
-  const performanceSnapshot = capturedPerformanceSnapshot ?? runtime.getSnapshot();
-  const { metrics } = performanceSnapshot.frames;
-
   return {
+    reportType,
     generatedAt: new Date().toISOString(),
     page: { url: sanitizePageIdentifier(window.location.href) },
     environment: {
@@ -198,7 +255,30 @@ function buildReportSnapshot(
       screen: { width: window.screen.width, height: window.screen.height },
       devicePixelRatio: environment.devicePixelRatio,
     },
-    settings: effectiveSettings,
+    benchmark: {
+      status,
+      order:
+        reportType === 'suite'
+          ? [...BASELINE_MODE_ORDER]
+          : [effectiveSettings.glassMode],
+      settleDurationMs: reportType === 'suite' ? 3_000 : 0,
+      runDurationMs: 30_000,
+      elapsedMs: 0,
+      completedModes: [],
+      interruptions: 0,
+      interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
+      terminatedPhase: null,
+      failureReason: null,
+    },
+    runs: [],
+  };
+}
+
+function buildReportRun(capture: BenchmarkResultCapture): ReportRun {
+  const { metrics } = capture.performance.frames;
+  return {
+    glassMode: capture.settings.glassMode,
+    settings: { ...capture.settings },
     performance: {
       frames: {
         averageFps: metrics.currentFps,
@@ -209,13 +289,27 @@ function buildReportSnapshot(
         framesOver33: metrics.framesOver33,
         framesOver50: metrics.framesOver50,
       },
-      webVitals: performanceSnapshot.webVitals,
-      mainThread: performanceSnapshot.mainThread,
-      resources: performanceSnapshot.resources,
-      capabilities: performanceSnapshot.capabilities,
+      webVitals: cloneReportValue(capture.performance.webVitals),
+      mainThread: cloneReportValue(capture.performance.mainThread),
+      resources: cloneReportValue(capture.performance.resources),
+      capabilities: cloneReportValue(capture.performance.capabilities),
     },
-    benchmark: { completedInForeground },
+    elapsedMs: capture.elapsedMs,
+    completedInForeground: capture.completedInForeground,
+    eligibleForComparison: capture.eligibleForComparison,
   };
+}
+
+function cloneReportValue<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneReportValue(item)) as T;
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, cloneReportValue(item)]),
+    ) as T;
+  }
+  return value;
 }
 
 function loadInitialSettings(): ExperimentSettings {
