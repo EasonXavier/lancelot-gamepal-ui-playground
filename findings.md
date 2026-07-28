@@ -29,8 +29,8 @@
 - Task 1–3 已实现并通过独立审查：Suite 的每个模式先禁用采样稳定 3 秒，再运行独立 30 秒 Benchmark；单/批互斥、临时 Glass override、模态抽屉、HUD 胶囊和流动高度 reserve 均有自动化覆盖。
 - schema v2 顶层固定为 `schemaVersion`、`reportType`、`generatedAt`、白名单 page/environment、`benchmark` 和 `runs[]`；完整 Suite 的 4 项必须按 `real → simulated → preblur → off`，每项为 30 秒且前台完整才有比较资格。
 - Task 4 新增 App 控制器到报告的完整集成断言，以假时钟推进精确 132 秒，并确认四个 ordered runs 均为 `completedInForeground: true`、`eligibleForComparison: true`。
-- 当前 `BaselineSuiteState` 只保存 `consecutiveInterruptions`，成功完成一个模式时会重置为 0；终端报告的 `benchmark.interruptions` 因此无法保留此前模式的累计/逐模式中断数。这与批准计划的“每模式记录中断次数/公开中断计数”存在缺口，必须在 Task 5 整体审查前由主代理修正并补测试。
-- 当前紧凑版的五视口生产预览与完整 132 秒桌面 Suite 尚未在 Task 4 文档代理内执行；这些由主代理浏览器验收负责，且无论桌面结果如何都不能替代真实 Safe Area、微信 WebView 或真机性能证据。
+- Task 4 发现的中断计数缺口已在 Task 5 前修复：累计 `interruptions` 与逐模式 `interruptionsByMode` 会跨成功模式边界保留，`consecutiveInterruptions` 仅用于当前模式第三次连续中断失败。
+- 主代理已在生产预览完成 375×812、390×844、393×852、430×932、844×390 五视口检查，并完成一次 132 秒桌面 Suite；桌面结果不替代真实 Safe Area、微信 WebView 或真机性能证据。
 
 - 2026-07-27 现场检查确认目标 GitHub 仓库原先不存在，随后已创建为 PUBLIC。
 - 当前仓库根目录为 `C:/Project/lancelot-gamepal-ui-playground`，分支为 `main`，唯一远程为目标仓库 `origin`。

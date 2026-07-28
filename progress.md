@@ -294,7 +294,9 @@
 - 生产构建首次在清理 linked worktree 的 `dist/assets` 时被沙箱以 EPERM 拒绝；最终同一 typecheck + Vite build 在授权上下文重跑，53 modules transformed、151ms，产出 `index-BrBFbAci.css`、`index-CI60FQOQ.js` 与 `web-vitals-BxxX5THq.js`。
 - `git diff --check` 退出 0。相对 `b7b421b` 的 3,673 条新增行扫描结果：生产/文档敏感凭据 0、绝对用户路径 0、tracked `.env` 0、变更素材文件 0；唯一 secret-pattern 命中是测试夹具字面量 `run-secret-token`，已人工确认不是真实凭据。
 - 中断计数缺口已按 TDD 修复：runner 新增累计 `interruptions` 与 `interruptionsByMode`，连续计数仍独立驱动同模式第三次失败；控制器终止报告与 UI 均改读累计值。RED 为 4 个预期失败；GREEN 为 focused 5 files / 75 tests、全量 20 files / 182 tests，TypeScript、ESLint、Prettier 与生产构建均通过。
-- 仍待主代理完成：当前紧凑版五视口生产预览、390×844 完整 132 秒桌面 Suite/导出、最终整体审查、PR/Pages 和线上复核。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
+- 主代理已完成五视口生产预览：全部无横向溢出、服务区不与底栏重叠，抽屉保持视口内且中部独立滚动；390×844 完整桌面 Suite 得到四个固定顺序结果，复制 JSON 显示成功，但浏览器隔离剪贴板未返回页面写入内容，字段结构继续由集成测试证明。
+- 当前 HEAD 的新鲜门禁为 TypeScript、ESLint、Prettier 全部退出 0，Vitest 20 files / 182 tests passed；Vite 首次因预览后的 `dist/assets` 沙箱 EPERM 失败，停止预览后仍需在授权上下文重建，最终 53 modules / 144ms 成功。
+- 仍待主代理完成：最终整体审查、PR/Pages 和线上复核。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
 
 ---
 
