@@ -1,4 +1,7 @@
 .home-screen {
+  --home-header-block: calc(var(--safe-top) + 54px);
+  --home-content-reserve: 326px;
+
   position: relative;
   min-height: var(--app-height);
   overflow-x: clip;
@@ -74,9 +77,15 @@
   display: grid;
   gap: 10px;
   padding: clamp(
-      24px,
-      min(42dvh, calc(var(--app-height) - var(--safe-bottom) - 326px)),
-      392px
+      0px,
+      min(
+        calc(42dvh - var(--home-header-block)),
+        calc(
+          var(--app-height) - var(--home-header-block) - var(--safe-bottom) -
+            var(--home-content-reserve)
+        )
+      ),
+      338px
     )
     calc(var(--safe-right) + 14px) calc(88px + var(--safe-bottom))
     calc(var(--safe-left) + 14px);
@@ -140,6 +149,17 @@
 .home-screen .bottom-nav__item {
   border-radius: var(--radius-sm);
   font-size: 12px;
+}
+
+@media (max-height: 560px) {
+  .home-screen {
+    --home-content-reserve: 220px;
+  }
+
+  .home-screen__content,
+  .home-screen .service-grid {
+    gap: 6px;
+  }
 }
 
 @media (min-width: 720px) {

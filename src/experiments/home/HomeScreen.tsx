@@ -47,6 +47,7 @@ export function HomeScreen({
   const [selectedNav, setSelectedNav] = useState<BottomNavId>('home');
   const [activeService, setActiveService] = useState<ServiceName | null>(null);
   const screenRef = useRef<HTMLElement>(null);
+  const experimentToggleRef = useRef<HTMLButtonElement>(null);
   const mode = settings.glassMode;
   const motionProfile = MOTION_PROFILES[effectiveSettings.motionLevel];
   const motionEnabled = effectiveSettings.motionLevel !== 'off';
@@ -101,6 +102,7 @@ export function HomeScreen({
           className="tap-target home-screen__experiment-toggle"
           disabled={benchmarkController.workloadLocked}
           onClick={() => onPanelOpenChange(!panelOpen)}
+          ref={experimentToggleRef}
           type="button"
         >
           实验控制
@@ -144,6 +146,7 @@ export function HomeScreen({
         onClose={() => onPanelOpenChange(false)}
         onReset={onSettingsReset}
         open={panelOpen}
+        openerRef={experimentToggleRef}
         reportActions={reportActions}
         settings={settings}
       />

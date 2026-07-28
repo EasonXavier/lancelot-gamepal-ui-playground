@@ -1,8 +1,82 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { createRef } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
-import { SETTINGS_STORAGE_KEY } from '../../src/experiments/settings';
+import { ExperimentPanel } from '../../src/components/controls/ExperimentPanel';
+import {
+  createDefaultSettings,
+  SETTINGS_STORAGE_KEY,
+} from '../../src/experiments/settings';
+import type { BenchmarkController } from '../../src/hooks/useBenchmarkController';
+import type { ReportActions } from '../../src/performance/reportActions';
+
+const idleBenchmarkState: BenchmarkController['state'] = {
+  status: 'idle',
+  phase: null,
+  elapsedMs: 0,
+  completedInForeground: null,
+};
+
+const reportActions: ReportActions = {
+  copyJson: async () => undefined,
+  downloadJson: () => undefined,
+  copySummary: async () => undefined,
+};
+
+function renderCompletedSuiteResult(estimatedDroppedFrames?: number) {
+  const openerRef = createRef<HTMLButtonElement>();
+  const benchmarkController: BenchmarkController = {
+    state: idleBenchmarkState,
+    suiteState: {
+      status: 'completed',
+      mode: null,
+      modeIndex: null,
+      elapsedMs: 132_000,
+      consecutiveInterruptions: 0,
+      failureReason: null,
+      runs: [
+        {
+          mode: 'real',
+          result: {
+            frames: {
+              metrics: {
+                sampleCount: 1,
+                currentFps: 60,
+                p95FrameTime: 16,
+                estimatedDroppedFrames,
+              },
+            },
+          },
+          completedInForeground: true,
+        },
+      ],
+    },
+    workloadLocked: false,
+    start: vi.fn(),
+    cancel: vi.fn(),
+    startSuite: vi.fn(),
+    cancelSuite: vi.fn(),
+  };
+
+  render(
+    <>
+      <button ref={openerRef} type="button">
+        实验控制
+      </button>
+      <ExperimentPanel
+        benchmarkController={benchmarkController}
+        onChange={vi.fn()}
+        onClose={vi.fn()}
+        onReset={vi.fn()}
+        open
+        openerRef={openerRef}
+        reportActions={reportActions}
+        settings={createDefaultSettings()}
+      />
+    </>,
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -122,6 +196,48 @@ describe('ExperimentPanel', () => {
     expect(screen.queryByRole('dialog', { name: '实验控制' })).toBeNull();
     expect(opener).toHaveFocus();
   });
+
+  it('keeps fixed regions outside the only scrolling settings body', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+
+    const dialog = screen.getByRole('dialog', { name: '实验控制' });
+    const [header, suite, body, footer] = [...dialog.children];
+    expect(header).toHaveClass('experiment-panel__heading');
+    expect(suite).toHaveClass('experiment-panel__suite');
+    expect(body).toHaveClass('experiment-panel__body');
+    expect(footer).toHaveClass('experiment-panel__footer');
+    expect(body).toContainElement(screen.getByRole('group', { name: '玻璃方式' }));
+    expect(header).not.toContainElement(
+      screen.getByRole('group', { name: '玻璃方式' }),
+    );
+    expect(suite).not.toContainElement(screen.getByRole('group', { name: '玻璃方式' }));
+    expect(footer).not.toContainElement(
+      screen.getByRole('group', { name: '玻璃方式' }),
+    );
+  });
+
+  it.each([
+    ['missing', undefined],
+    ['nonfinite', Number.POSITIVE_INFINITY],
+  ] as const)(
+    'shows waiting instead of fabricating zero for a %s dropped-frame estimate',
+    (_, estimatedDroppedFrames) => {
+      renderCompletedSuiteResult(estimatedDroppedFrames);
+
+      const row = within(screen.getByRole('table', { name: '套件结果' })).getByRole(
+        'row',
+        { name: /真实模糊/ },
+      );
+      expect(
+        within(row)
+          .getAllByRole('cell')
+          .map((cell) => cell.textContent),
+      ).toEqual(['60', '16', '等待']);
+      expect(row).not.toHaveTextContent('真实模糊60160');
+    },
+  );
 
   it('resets defaults and persists the exact next state', async () => {
     const user = userEvent.setup();

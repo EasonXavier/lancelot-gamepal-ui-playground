@@ -28,6 +28,7 @@ import './experiment-panel.css';
 export interface ExperimentPanelProps {
   benchmarkController: BenchmarkController;
   open: boolean;
+  openerRef: RefObject<HTMLElement | null>;
   reportActions: ReportActions;
   settings: ExperimentSettings;
   onChange: (patch: Partial<ExperimentSettings>) => void;
@@ -104,22 +105,21 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   );
 }
 
-function useModalFocus(open: boolean, dialogRef: RefObject<HTMLElement | null>) {
-  const previousFocus = useRef<HTMLElement | null>(null);
-
+function useModalFocus(
+  open: boolean,
+  dialogRef: RefObject<HTMLElement | null>,
+  openerRef: RefObject<HTMLElement | null>,
+) {
   useEffect(() => {
     if (!open) return;
-    previousFocus.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const opener = openerRef.current;
     const dialog = dialogRef.current;
     (dialog ? getFocusableElements(dialog)[0] : null)?.focus();
 
     return () => {
-      const target = previousFocus.current;
-      previousFocus.current = null;
-      if (target?.isConnected) target.focus();
+      if (opener?.isConnected) opener.focus();
     };
-  }, [dialogRef, open]);
+  }, [dialogRef, open, openerRef]);
 }
 
 function RadioGroup<T extends string | number>({
@@ -169,6 +169,7 @@ function RadioGroup<T extends string | number>({
 export function ExperimentPanel({
   benchmarkController,
   open,
+  openerRef,
   reportActions,
   settings,
   onChange,
@@ -182,7 +183,7 @@ export function ExperimentPanel({
   const headingId = useId();
   const workloadLocked = benchmarkController.workloadLocked;
 
-  useModalFocus(open, dialogRef);
+  useModalFocus(open, dialogRef, openerRef);
 
   useEffect(() => {
     mounted.current = true;
@@ -193,7 +194,7 @@ export function ExperimentPanel({
   }, []);
 
   useEffect(() => {
-    if (!open || !workloadLocked) return;
+    if (!open) return;
     const active = document.activeElement;
     if (active instanceof HTMLElement && active.matches(':disabled')) {
       const dialog = dialogRef.current;
@@ -527,7 +528,7 @@ function SuiteResultTable({ state }: { state: BaselineSuiteState }) {
 interface SuiteFrameMetrics {
   currentFps: number | null;
   p95FrameTime: number | null;
-  estimatedDroppedFrames: number;
+  estimatedDroppedFrames: number | null;
   sampleCount: number;
 }
 
@@ -538,7 +539,7 @@ function readFrameMetrics(result: unknown): SuiteFrameMetrics | null {
   return {
     currentFps: numberOrNull(metrics.currentFps),
     p95FrameTime: numberOrNull(metrics.p95FrameTime),
-    estimatedDroppedFrames: numberOrZero(metrics.estimatedDroppedFrames),
+    estimatedDroppedFrames: numberOrNull(metrics.estimatedDroppedFrames),
     sampleCount: numberOrZero(metrics.sampleCount),
   };
 }

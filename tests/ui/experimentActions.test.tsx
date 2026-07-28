@@ -315,6 +315,32 @@ describe('benchmark runtime ownership', () => {
 });
 
 describe('experiment actions', () => {
+  it.each([
+    ['completion', 30_000, false],
+    ['cancellation', 11_000, true],
+  ] as const)(
+    'restores stable modal focus after benchmark %s',
+    async (_, elapsedMs, cancel) => {
+      installBrowserBoundaries();
+      const clock = new FakeClock();
+      const user = userEvent.setup();
+      render(<App benchmarkClock={clock} />);
+      const opener = screen.getByRole('button', { name: '实验控制' });
+      await user.click(opener);
+      await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+
+      act(() => clock.advanceBy(elapsedMs));
+      if (cancel) {
+        await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
+      }
+
+      const close = screen.getByRole('button', { name: '关闭' });
+      expect(close).toHaveFocus();
+      await user.click(close);
+      expect(opener).toHaveFocus();
+    },
+  );
+
   it('keeps user dismissal locked while benchmark-controlled close and reopen still work', async () => {
     installBrowserBoundaries();
     const clock = new FakeClock();
