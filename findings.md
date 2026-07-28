@@ -58,6 +58,16 @@
 - 整体审查的两个非阻断 Minor 已延期：Canvas 每帧仍读取尺寸/DPR；HUD hidden 模式仍保留 store 订阅。两项未在最终修复波次中恶化。
 - PR #2 已合并为 `feced285`；Pages run `30305196701` 的 build 31 秒、deploy 9 秒，两个 job 均成功。
 - 线上缓存破除验证加载 `index-BEsYy-mJ.js` 与 `index-C3mvqVYK.css`；Task 6 实验入口、Canvas、人物 Pages 子路径和 `--app-height` 正常，390×844 外层视口无横向溢出，控制台 0 error/warn。
+- Phase 5 新独立工作树基线为 17 files / 136 tests，TypeScript 与 Vitest 均通过；依赖复用主工作树现有 `node_modules` junction，没有安装或升级依赖。
+- Phase 5 本地浏览器首轮复核：页面标题与品牌正确、内容非空、无框架错误覆盖，`viewport-fit=cover` 与 `--app-height: 844px` 生效，控制台 0 error/warn；当前浏览器的 390px 外层覆盖实际报告 375px 内容宽度，因此不能把它当作真实 390px CSS viewport 证据。
+- 本地交互复核确认 `Preblur Layer` 会把共享页面切到 `data-glass-mode="preblur"`；Benchmark 运行时 Motion、粒子、DPR、动态开关与重置被锁定，取消后状态变为 `cancelled` 且控制恢复，HUD 模式仍可调整。
+- 当前截图继续符合已确认方向：人物下半身被玻璃服务卡遮挡，普通玻璃边缘无发光，选中游戏与首页导航使用单一暖色强调；真实非零 Safe Area 与微信 WebView 仍需真机证据。
+- Phase 5 重新跑完五个指定外层视口：375×812、390×844、393×852、430×932、844×390 的 `innerWidth`/`innerHeight` 均等于请求值；所有视口 `scrollWidth === clientWidth`、底栏可见且贴合视口底部、`--app-height` 等于实际高度。
+- 390×844 展开控制面板的页面与面板本身均无横向溢出（document/body 为 375/375，panel 为 349/349）；截图底部出现的灰色横条属于应用内浏览器外层控件，不是页面滚动条。人物视差层可超出主容器约 4px，但由页面裁剪且未扩大 document scroll width。
+- Phase 5 视觉对照未发现需要本轮改代码的 material mismatch：品牌/控制在顶部、四项细长游戏栏、六块不等宽高服务卡和五项底栏符合线框；深色半透明、人物主体、玻璃覆盖人物下半身与单一暖色选中光符合风格参考；游戏陪玩信息架构取代电商商品卡属于已确认的有意偏离。
+- 视觉复核的剩余证据缺口是物理刘海/圆角下的非零 Safe Area、微信字体和合成差异、真机触摸与完整 30 秒报告导出；这些不能由桌面截图替代。
+- Task 7 文档初审发现取消报告仍可能带 `completedInForeground: true`，且 schema 1 不导出 Benchmark `status`/`elapsedMs`；文档已改为必须同时保留 UI `completed`、未取消和完整前台三类证据，取消报告不得进入正式比较。
+- Task 7 文档已按真实实现补充 3/8/8/8/3 阶段、压力覆盖、Reduced Motion 例外、整窗聚合/no per-phase 与 `settings.*` 基线边界；定向复审 APPROVED，0 个新 Critical/Important。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
