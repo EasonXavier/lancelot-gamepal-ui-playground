@@ -270,6 +270,10 @@
 - 审查修复明确：取消报告即使 `completedInForeground: true` 也不可用于正式比较；正式结果必须有 UI `completed`、未取消和完整前台证据。阶段文档现与 3/8/8/8/3 实际负载、Reduced Motion 和整窗聚合语义一致。
 - 审查修复后的控制器最终门禁全部通过：TypeScript、ESLint、Prettier、17 files / 136 tests、52 modules production build 与 `git diff --check` 均退出 0；授权构建解决了仅由沙箱 `dist` 创建权限导致的 EPERM。
 - 真实非零 Safe Area 和微信 WebView 仍必须由真机填写设备模板，不把桌面模拟或单元测试冒充真机证据；本轮不创建 Release 或标签。
+- Phase 5 文档提交 `d13e54e` 经 ready PR #4 合并到 `main` 为 `59b2d789f5389ac2bf07098c0a172624ea3e9499`。
+- Pages workflow run `30320699031` 成功：build 35 秒、deploy 10 秒；workflow 内 npm ci、lint/test/build、artifact 上传与部署均通过。
+- 线上缓存破除验证确认品牌、实验控制、人物 Pages 子路径与既有 JS/CSS bundle 正常；390×844 外层视口无横向溢出，`--app-height` 正确，控制台 0 error/warn。
+- 本轮结束边界：Task 7 文档和桌面证据已发布；真实非零 Safe Area、iOS/Android 微信 WebView、完整真机 Benchmark/导出仍 pending-device；没有 Release 或标签。
 
 ---
 

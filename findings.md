@@ -68,6 +68,8 @@
 - 视觉复核的剩余证据缺口是物理刘海/圆角下的非零 Safe Area、微信字体和合成差异、真机触摸与完整 30 秒报告导出；这些不能由桌面截图替代。
 - Task 7 文档初审发现取消报告仍可能带 `completedInForeground: true`，且 schema 1 不导出 Benchmark `status`/`elapsedMs`；文档已改为必须同时保留 UI `completed`、未取消和完整前台三类证据，取消报告不得进入正式比较。
 - Task 7 文档已按真实实现补充 3/8/8/8/3 阶段、压力覆盖、Reduced Motion 例外、整窗聚合/no per-phase 与 `settings.*` 基线边界；定向复审 APPROVED，0 个新 Critical/Important。
+- PR #4 已合并为 `59b2d789f5389ac2bf07098c0a172624ea3e9499`；Pages run `30320699031` 成功，build 35 秒、deploy 10 秒。
+- 线上缓存破除检查继续加载 `index-BEsYy-mJ.js` / `index-C3mvqVYK.css` 与人物 Pages 子路径；390×844 外层视口 `scrollWidth === clientWidth`、`--app-height: 844px`，品牌/实验控制可见，控制台 0 error/warn。
 - 提交前公开扫描结果：无本机绝对路径、无凭据值模式、无 `.env` 文件、`package-lock.json` 无本地路径引用。
 - 实施计划自检未发现 `TBD`、`TODO` 或未定义占位语；核心类型名称在任务间保持一致。
 
