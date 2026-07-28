@@ -1,6 +1,6 @@
 .home-screen {
   --home-header-block: calc(var(--safe-top) + 54px);
-  --home-content-reserve: 326px;
+  --home-content-reserve: calc(172px + clamp(154px, 25.9dvh, 238px));
 
   position: relative;
   min-height: var(--app-height);

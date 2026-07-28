@@ -1,5 +1,9 @@
+/// <reference types="node" />
+
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BottomNav } from '../../src/components/navigation/BottomNav';
@@ -11,8 +15,31 @@ import {
 import { ExperimentalPlaceholder } from '../../src/components/controls/ExperimentalPlaceholder';
 import { App } from '../../src/App';
 
+const homeScreenStyles = readFileSync(
+  resolve(process.cwd(), 'src/experiments/home/home-screen.css'),
+  'utf8',
+);
+
 const originalShowModal = HTMLDialogElement.prototype.showModal;
 const originalClose = HTMLDialogElement.prototype.close;
+
+function homeContentReserveAt(viewportHeight: number): number {
+  const definition = homeScreenStyles.match(/--home-content-reserve:\s*([^;]+);/)?.[1];
+  if (!definition) throw new Error('Missing --home-content-reserve');
+
+  const normalized = definition.replaceAll(/\s/g, '');
+  const fixed = normalized.match(/^(\d+(?:\.\d+)?)px$/);
+  if (fixed) return Number(fixed[1]);
+
+  const derived = normalized.match(
+    /^calc\((\d+(?:\.\d+)?)px\+clamp\((\d+(?:\.\d+)?)px,(\d+(?:\.\d+)?)dvh,(\d+(?:\.\d+)?)px\)\)$/,
+  );
+  if (!derived) throw new Error(`Unsupported reserve expression: ${definition}`);
+
+  const [, base, minimum, viewportPercentage, maximum] = derived;
+  const fluidRows = (Number(viewportPercentage) / 100) * viewportHeight;
+  return Number(base) + Math.min(Number(maximum), Math.max(Number(minimum), fluidRows));
+}
 
 function installDialogApi() {
   const showModal = vi.fn(function (this: HTMLDialogElement) {
@@ -162,6 +189,19 @@ describe('home controls', () => {
 });
 
 describe('HomeScreen', () => {
+  it.each([
+    [600, 327.4],
+    [620, 332.58],
+    [630, 335.17],
+  ])(
+    'reserves the full seven-row service stack at %ipx height',
+    (viewportHeight, requiredReserve) => {
+      expect(homeContentReserveAt(viewportHeight)).toBeGreaterThanOrEqual(
+        requiredReserve,
+      );
+    },
+  );
+
   it('renders the approved 朗世乐 composition without checkpoint copy', () => {
     render(<App />);
     expect(screen.getByRole('banner')).toHaveTextContent('朗世乐');
