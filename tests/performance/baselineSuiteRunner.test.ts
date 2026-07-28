@@ -59,7 +59,14 @@ class FakeBaselineSuiteContext implements BaselineSuiteContext {
   readonly completions: GlassMode[] = [];
   restoreCount = 0;
   profile: BenchmarkProfile = 'idle';
-  samplingEnabled = false;
+  samplingEnabled: boolean;
+
+  constructor(
+    initialSamplingEnabled = false,
+    private readonly resumeSamplingOnComplete = false,
+  ) {
+    this.samplingEnabled = initialSamplingEnabled;
+  }
 
   setGlassMode = (mode: GlassMode): void => {
     this.mode = mode;
@@ -96,6 +103,12 @@ class FakeBaselineSuiteContext implements BaselineSuiteContext {
 
   onComplete = (): void => {
     this.completions.push(this.mode);
+    if (
+      this.resumeSamplingOnComplete &&
+      this.completions.length < BASELINE_MODE_ORDER.length
+    ) {
+      this.samplingEnabled = true;
+    }
   };
 }
 
@@ -194,6 +207,65 @@ describe('BaselineSuiteRunner', () => {
     expect(context.metricResets).toEqual(['real', 'simulated', 'preblur', 'off']);
     expect(context.captures).toEqual(['real', 'simulated', 'preblur', 'off']);
     expect(context.completions).toEqual(['real', 'simulated', 'preblur', 'off']);
+  });
+
+  it('keeps sampling disabled through every exact settle boundary', () => {
+    const clock = new FakeClock();
+    const context = new FakeBaselineSuiteContext(true, true);
+    const runner = new BaselineSuiteRunner(clock);
+    const boundaries = [
+      { mode: 'real', modeIndex: 0, nextMode: 'simulated' },
+      { mode: 'simulated', modeIndex: 1, nextMode: 'preblur' },
+      { mode: 'preblur', modeIndex: 2, nextMode: 'off' },
+      { mode: 'off', modeIndex: 3, nextMode: null },
+    ] as const;
+
+    runner.start(context);
+
+    for (const boundary of boundaries) {
+      expect(runner.getState()).toMatchObject({
+        status: 'settling',
+        mode: boundary.mode,
+        modeIndex: boundary.modeIndex,
+      });
+      expect(context.samplingEnabled).toBe(false);
+
+      clock.advanceBy(2_999);
+      expect(runner.getState()).toMatchObject({
+        status: 'settling',
+        mode: boundary.mode,
+      });
+      expect(context.samplingEnabled).toBe(false);
+
+      clock.advanceBy(1);
+      expect(runner.getState()).toMatchObject({
+        status: 'running',
+        mode: boundary.mode,
+      });
+      expect(context.samplingEnabled).toBe(true);
+
+      clock.advanceBy(29_999);
+      expect(runner.getState()).toMatchObject({
+        status: 'running',
+        mode: boundary.mode,
+      });
+      expect(context.samplingEnabled).toBe(true);
+
+      clock.advanceBy(1);
+      if (boundary.nextMode === null) {
+        expect(runner.getState()).toMatchObject({
+          status: 'completed',
+          mode: null,
+          elapsedMs: 132_000,
+        });
+      } else {
+        expect(runner.getState()).toMatchObject({
+          status: 'settling',
+          mode: boundary.nextMode,
+        });
+      }
+      expect(context.samplingEnabled).toBe(false);
+    }
   });
 
   it.each([

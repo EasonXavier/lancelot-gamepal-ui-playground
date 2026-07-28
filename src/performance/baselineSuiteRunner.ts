@@ -153,6 +153,7 @@ export class BaselineSuiteRunner {
       mode,
       modeIndex: this.modeIndex,
     };
+    context.setSamplingEnabled(false);
     context.setGlassMode(mode);
     this.settleTimerId = this.clock.setTimeout(this.startBenchmark, SETTLE_DURATION_MS);
   }
