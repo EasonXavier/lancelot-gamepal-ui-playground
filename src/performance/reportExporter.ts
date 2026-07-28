@@ -69,6 +69,7 @@ export interface ReportSnapshot {
     elapsedMs: number;
     completedModes: GlassMode[];
     interruptions: number;
+    interruptionsByMode: Record<GlassMode, number>;
     terminatedPhase:
       BenchmarkPhase | 'settling' | 'running' | 'waiting-for-visibility' | null;
     failureReason: BaselineSuiteFailureReason | null;
@@ -161,6 +162,12 @@ export function serializeReport(snapshot: ReportSnapshot): string {
       elapsedMs: snapshot.benchmark.elapsedMs,
       completedModes: [...snapshot.benchmark.completedModes],
       interruptions: snapshot.benchmark.interruptions,
+      interruptionsByMode: {
+        real: snapshot.benchmark.interruptionsByMode.real,
+        simulated: snapshot.benchmark.interruptionsByMode.simulated,
+        preblur: snapshot.benchmark.interruptionsByMode.preblur,
+        off: snapshot.benchmark.interruptionsByMode.off,
+      },
       terminatedPhase: snapshot.benchmark.terminatedPhase,
       failureReason: snapshot.benchmark.failureReason,
     },

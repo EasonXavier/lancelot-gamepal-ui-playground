@@ -59,46 +59,47 @@
 
 ## 5. 微信 WebView 行为
 
-| 检查项                               | 结果                      | 证据/备注                             |
-| ------------------------------------ | ------------------------- | ------------------------------------- |
-| 报告 `environment.isWeChat === true` | `pass/fail/pending`       |                                       |
-| 页面首次加载与刷新                   | `pass/fail/pending`       |                                       |
-| 人物、字体、Canvas 与玻璃资源加载    | `pass/fail/pending`       |                                       |
-| 触摸按钮与滚动无误触                 | `pass/fail/pending`       |                                       |
-| 触摸视差可用/降级合理                | `pass/fail/pending`       |                                       |
-| 前台运行完整 132 秒 Baseline Suite   | `pass/fail/pending`       | 四个模式各 3 秒稳定 + 30 秒 Benchmark |
-| UI 与 JSON 终态均为 `completed`      | `pass/fail/pending`       | 必填截图/录屏编号                     |
-| 四个 `runs[]` 均为完整前台可比较项   | `pass/fail/pending`       | 两个布尔字段都应为 `true`             |
-| 确认本轮未点击“取消全部”             | `pass/fail/pending`       | 必填人工记录                          |
-| 切后台后活动 run 作废                | `pass/fail/pending`       | 已完成 run 应保留                     |
-| 回前台后从该模式 3 秒稳定阶段重开始  | `pass/fail/pending`       | 不沿用被中断样本                      |
-| 同模式连续第三次后台中断后失败       | `pass/fail/pending`       | `visibility-interruption-limit`       |
-| Suite 期间旋转立即失败并丢弃活动 run | `pass/fail/pending`       | 已完成 run 应保留                     |
-| 复制 JSON                            | `pass/fail/pending`       | 微信权限/提示                         |
-| 下载 JSON                            | `pass/fail/pending`       | 微信可能限制下载，记录实际行为        |
-| 复制摘要                             | `pass/fail/pending`       |                                       |
-| 控制台错误（如可取得）               | `0` / `TODO` / `不可取得` |                                       |
+| 检查项                               | 结果                      | 证据/备注                         |
+| ------------------------------------ | ------------------------- | --------------------------------- |
+| 报告 `environment.isWeChat === true` | `pass/fail/pending`       |                                   |
+| 页面首次加载与刷新                   | `pass/fail/pending`       |                                   |
+| 人物、字体、Canvas 与玻璃资源加载    | `pass/fail/pending`       |                                   |
+| 触摸按钮与滚动无误触                 | `pass/fail/pending`       |                                   |
+| 触摸视差可用/降级合理                | `pass/fail/pending`       |                                   |
+| 前台运行完整 Baseline Suite          | `pass/fail/pending`       | 名义 132 秒；保持前台直至 UI 完成 |
+| UI 与 JSON 终态均为 `completed`      | `pass/fail/pending`       | 必填截图/录屏编号                 |
+| 四个 `runs[]` 均为完整前台可比较项   | `pass/fail/pending`       | 两个布尔字段都应为 `true`         |
+| 确认本轮未点击“取消全部”             | `pass/fail/pending`       | 必填人工记录                      |
+| 切后台后活动 run 作废                | `pass/fail/pending`       | 已完成 run 应保留                 |
+| 回前台后从该模式 3 秒稳定阶段重开始  | `pass/fail/pending`       | 不沿用被中断样本                  |
+| 同模式连续第三次后台中断后失败       | `pass/fail/pending`       | `visibility-interruption-limit`   |
+| Suite 期间旋转立即失败并丢弃活动 run | `pass/fail/pending`       | 已完成 run 应保留                 |
+| 复制 JSON                            | `pass/fail/pending`       | 微信权限/提示                     |
+| 下载 JSON                            | `pass/fail/pending`       | 微信可能限制下载，记录实际行为    |
+| 复制摘要                             | `pass/fail/pending`       |                                   |
+| 控制台错误（如可取得）               | `0` / `TODO` / `不可取得` |                                   |
 
 ## 6. 四模式 Baseline Suite
 
-固定 Motion、粒子、DPR 和动态开关，点击一次“四模式 Baseline Suite”。实现会冻结这些设置，只临时覆盖 Glass，并固定按 `real → simulated → preblur → off` 执行。一次无中断测试的精确总时长为
-`4 × (3 秒稳定 + 30 秒 Benchmark) = 132 秒`。
+固定 Motion、粒子、DPR 和动态开关，点击一次“四模式 Baseline Suite”。实现会冻结这些设置，只临时覆盖 Glass，并固定按 `real → simulated → preblur → off` 执行。计划时长为
+`4 × (3 秒稳定 + 30 秒 Benchmark) = 132 秒`。这是名义时长；浏览器定时器与调度可能使实际 `benchmark.elapsedMs` 略高，测试时应保持前台直至 UI 显示完成。
 
 ### Suite 记录
 
-| 字段                           | 填写值                                   |
-| ------------------------------ | ---------------------------------------- |
-| 报告文件                       | `TODO`                                   |
-| `benchmark.status`             | `TODO`；正式 baseline 必须为 `completed` |
-| `benchmark.order`              | `real, simulated, preblur, off`          |
-| `benchmark.elapsedMs`          | `TODO`；无中断完成应为 `132000`          |
-| `benchmark.completedModes`     | `TODO`                                   |
-| `benchmark.interruptions`      | `TODO`                                   |
-| `benchmark.terminatedPhase`    | `TODO`                                   |
-| `benchmark.failureReason`      | `TODO`                                   |
-| UI 状态/录屏编号               | `TODO`                                   |
-| 开始/结束设备主观温度          | `TODO` / `TODO`                          |
-| 是否观察到后序模式热衰减可能性 | `是` / `否` / `无法判断`                 |
+| 字段                            | 填写值                                   |
+| ------------------------------- | ---------------------------------------- |
+| 报告文件                        | `TODO`                                   |
+| `benchmark.status`              | `TODO`；正式 baseline 必须为 `completed` |
+| `benchmark.order`               | `real, simulated, preblur, off`          |
+| `benchmark.elapsedMs`           | `TODO`；记录实际值，可略高于 `132000`    |
+| `benchmark.completedModes`      | `TODO`                                   |
+| `benchmark.interruptions`       | `TODO`                                   |
+| `benchmark.interruptionsByMode` | `TODO`；记录固定四模式数值图             |
+| `benchmark.terminatedPhase`     | `TODO`                                   |
+| `benchmark.failureReason`       | `TODO`                                   |
+| UI 状态/录屏编号                | `TODO`                                   |
+| 开始/结束设备主观温度           | `TODO` / `TODO`                          |
+| 是否观察到后序模式热衰减可能性  | `是` / `否` / `无法判断`                 |
 
 ### 四行 baseline
 

@@ -36,6 +36,7 @@ export interface BenchmarkReportTerminal {
   elapsedMs: number;
   completedModes: GlassMode[];
   interruptions: number;
+  interruptionsByMode: Readonly<Record<GlassMode, number>>;
   terminatedPhase:
     BenchmarkPhase | 'settling' | 'running' | 'waiting-for-visibility' | null;
   failureReason: BaselineSuiteFailureReason | null;
@@ -135,6 +136,7 @@ export function useBenchmarkController(
         elapsedMs: currentState.elapsedMs,
         completedModes: currentState.runs.map(({ mode }) => mode),
         interruptions: currentState.interruptions,
+        interruptionsByMode: { ...currentState.interruptionsByMode },
         terminatedPhase,
         failureReason: currentState.failureReason,
       });
@@ -216,6 +218,7 @@ export function useBenchmarkController(
           elapsedMs: currentState.elapsedMs,
           completedModes: [settings.glassMode],
           interruptions: 0,
+          interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
           terminatedPhase: null,
           failureReason: null,
         });
@@ -330,6 +333,7 @@ export function useBenchmarkController(
         elapsedMs: runner.getState().elapsedMs,
         completedModes: [],
         interruptions: 0,
+        interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
         terminatedPhase: currentState.phase,
         failureReason: null,
       });

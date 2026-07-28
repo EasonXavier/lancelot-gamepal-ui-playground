@@ -27,6 +27,7 @@ import './experiment-panel.css';
 
 export interface ExperimentPanelProps {
   benchmarkController: BenchmarkController;
+  effectiveGlassMode: GlassMode;
   open: boolean;
   openerRef: RefObject<HTMLElement | null>;
   reportActions: ReportActions;
@@ -168,6 +169,7 @@ function RadioGroup<T extends string | number>({
 
 export function ExperimentPanel({
   benchmarkController,
+  effectiveGlassMode,
   open,
   openerRef,
   reportActions,
@@ -268,7 +270,7 @@ export function ExperimentPanel({
       data-testid="experiment-panel-scrim"
       onClick={handleScrimClick}
     >
-      <GlassSurface className="experiment-panel" mode={settings.glassMode}>
+      <GlassSurface className="experiment-panel" mode={effectiveGlassMode}>
         <aside
           aria-labelledby={headingId}
           aria-modal="true"

@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ExperimentalPlaceholder } from '../../components/controls/ExperimentalPlaceholder';
 import { ExperimentPanel } from '../../components/controls/ExperimentPanel';
 import { ServiceGrid, type ServiceName } from '../../components/controls/ServiceGrid';
@@ -48,7 +48,8 @@ export function HomeScreen({
   const [activeService, setActiveService] = useState<ServiceName | null>(null);
   const screenRef = useRef<HTMLElement>(null);
   const experimentToggleRef = useRef<HTMLButtonElement>(null);
-  const mode = settings.glassMode;
+  const externalCancelRef = useRef<HTMLButtonElement>(null);
+  const mode = effectiveSettings.glassMode;
   const motionProfile = MOTION_PROFILES[effectiveSettings.motionLevel];
   const motionEnabled = effectiveSettings.motionLevel !== 'off';
   const particlePaused =
@@ -57,6 +58,12 @@ export function HomeScreen({
     benchmarkController.suiteState.status === 'settling' ||
     benchmarkController.suiteState.status === 'running' ||
     benchmarkController.suiteState.status === 'waiting-for-visibility';
+
+  useEffect(() => {
+    if (benchmarkController.workloadLocked && !panelOpen) {
+      externalCancelRef.current?.focus();
+    }
+  }, [benchmarkController.workloadLocked, panelOpen]);
 
   useTouchParallax(
     screenRef,
@@ -113,6 +120,7 @@ export function HomeScreen({
             onClick={
               suiteActive ? benchmarkController.cancelSuite : benchmarkController.cancel
             }
+            ref={externalCancelRef}
             type="button"
           >
             {suiteActive ? '取消全部' : '取消 Benchmark'}
@@ -142,6 +150,7 @@ export function HomeScreen({
       ) : null}
       <ExperimentPanel
         benchmarkController={benchmarkController}
+        effectiveGlassMode={mode}
         onChange={onSettingsChange}
         onClose={() => onPanelOpenChange(false)}
         onReset={onSettingsReset}

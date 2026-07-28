@@ -68,6 +68,7 @@ function renderCompletedSuiteResult(estimatedDroppedFrames?: number) {
       </button>
       <ExperimentPanel
         benchmarkController={benchmarkController}
+        effectiveGlassMode="real"
         onChange={vi.fn()}
         onClose={vi.fn()}
         onReset={vi.fn()}

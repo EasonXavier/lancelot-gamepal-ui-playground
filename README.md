@@ -56,7 +56,7 @@ Pages workflow 会在 `main` 推送时运行 `npm ci`，再执行 lint、测试�
 
 1. 打开右上角“实验控制”。控制区是约 `82dvh` 的模态底部抽屉；闲置时可用 Escape 或遮罩关闭。
 2. 先固定设备、方向、网络与 Glass 之外的设置。Glass、动态、粒子、DPR 与 HUD 设置保存在当前浏览器的 `localStorage`，可用“重置设置”恢复默认值。
-3. 推荐点击“四模式 Baseline Suite”。它固定按 `Real Blur → Simulated → Preblur → Blur Off` 执行；每个模式先稳定 3 秒，再完整运行现有 30 秒 Benchmark，总计精确 132 秒。四次临时 Glass 覆盖不会写入 `localStorage`。
+3. 推荐点击“四模式 Baseline Suite”。它固定按 `Real Blur → Simulated → Preblur → Blur Off` 执行；每个模式先稳定 3 秒，再完整运行现有 30 秒 Benchmark，名义计划时长为 132 秒。浏览器定时器和主线程调度可能使实际 `benchmark.elapsedMs` 略高于 `132000`；四次临时 Glass 覆盖不会写入 `localStorage`。
 4. 如只需检查当前 Glass，也可运行单模式 30 秒 Benchmark。单模式与 Suite 互斥；运行期间会锁定所有会改变负载的设置，复制、下载和取消仍可用。
 5. 等待状态进入 `completed` 后，再使用“复制 JSON”“下载 JSON”或“复制摘要”保存 schema v2 报告。报告只在浏览器内存中生成，新测试会替换旧报告，不会上传或建立历史数据库。
 
@@ -64,7 +64,7 @@ Benchmark 的固定阶段为：`warmup` 3 秒、`ambient` 8 秒、`stress` 8 秒
 
 ## 已验证与当前局限
 
-自动化测试覆盖 Suite 的固定顺序、132 秒边界、取消/后台/旋转终止、报告结构、焦点循环和运行锁定。合并前的桌面生产预览门禁还会检查 375×812、390×844、393×852、430×932、844×390，以及一次完整 132 秒 Suite。即使这些桌面门禁通过，也只代表桌面浏览器模拟环境。
+自动化测试以假时钟覆盖 Suite 的固定顺序与精确 `132000ms` 计划边界，并覆盖取消/后台/旋转终止、报告结构、焦点循环和运行锁定。当前分支的桌面生产预览已检查 375×812、390×844、393×852、430×932、844×390：无横向溢出、服务区与底栏无重叠、抽屉保持视口内且可独立滚动，控制台无 warning/error；390×844 还完成了一次名义 132 秒 Suite。复制 UI 显示成功，但隔离浏览器未开放页面写入的剪贴板内容，因此 JSON 字段继续以自动化序列化测试为证。以上仍只代表桌面浏览器环境。
 
 以下项目仍为 **pending**，不能由桌面设备模拟器代替：
 
@@ -74,7 +74,7 @@ Benchmark 的固定阶段为：`warmup` 3 秒、`ambient` 8 秒、`stress` 8 秒
 
 浏览器对 Performance API 的支持并不一致。HUD/JSON 中的 `waiting`、`unsupported`、`not-measurable` 是有效状态，不应当当作数值 `0`。最终结论必须附设备与环境记录，并优先比较同设备、同浏览器版本、同方向和同网络条件下的多次运行。
 
-schema v2 将单模式与 Suite 统一为顶层 `benchmark` 和 `runs[]`。每个可比较 run 必须是完整 30 秒、`completedInForeground: true` 且 `eligibleForComparison: true`；Suite 的最终横向比较只接受四个完整前台 run。取消或失败会丢弃活动 run，但可保留此前完整完成的 run；这些报告的终态、完成模式、中断次数、终止阶段和失败原因都在 `benchmark` 中明确记录。
+schema v2 将单模式与 Suite 统一为顶层 `benchmark` 和 `runs[]`。每个可比较 run 必须是完整 30 秒、`completedInForeground: true` 且 `eligibleForComparison: true`；Suite 的最终横向比较只接受四个完整前台 run。取消或失败会丢弃活动 run，但可保留此前完整完成的 run；报告同时记录累计 `benchmark.interruptions` 与固定四键的 `benchmark.interruptionsByMode`，并保留终态、完成模式、终止阶段和失败原因。单模式报告的逐模式中断图固定全为 0。
 
 固定 Suite 顺序方便一次真机操作得到四模式 baseline，但后运行模式可能受设备热衰减影响。当前真机验收允许一次完整 Suite；需要严格统计时，应在设备冷却到相近状态后重复完整 Suite，并报告原始结果与离散程度，而不是将固定顺序解释为无偏随机实验。
 

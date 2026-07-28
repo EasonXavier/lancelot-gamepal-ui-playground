@@ -302,6 +302,7 @@ describe('suite benchmark controller ownership', () => {
       reportType: 'suite',
       status: 'completed',
       interruptions: 2,
+      interruptionsByMode: { real: 1, simulated: 1, preblur: 0, off: 0 },
       completedModes: ['real', 'simulated', 'preblur', 'off'],
     });
   });

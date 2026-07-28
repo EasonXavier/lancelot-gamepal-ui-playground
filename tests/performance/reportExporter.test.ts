@@ -76,6 +76,7 @@ const createSnapshot = (
     elapsedMs: reportType === 'suite' ? 132_000 : 30_000,
     completedModes: runs.map(({ glassMode }) => glassMode),
     interruptions: 0,
+    interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
     terminatedPhase: null,
     failureReason: null,
   },
@@ -167,14 +168,38 @@ describe('serializeReport', () => {
       createRun('off'),
     ]);
     snapshot.benchmark.interruptions = 2;
+    snapshot.benchmark.interruptionsByMode = {
+      real: 1,
+      simulated: 1,
+      preblur: 0,
+      off: 0,
+    };
 
     const report = JSON.parse(serializeReport(snapshot)) as {
-      benchmark: { status: string; interruptions: number };
+      benchmark: {
+        status: string;
+        interruptions: number;
+        interruptionsByMode: Record<string, number>;
+      };
     };
 
     expect(report.benchmark).toMatchObject({
       status: 'completed',
       interruptions: 2,
+      interruptionsByMode: { real: 1, simulated: 1, preblur: 0, off: 0 },
+    });
+  });
+
+  it('serializes an all-zero per-mode interruption map for single reports', () => {
+    const report = JSON.parse(serializeReport(createSnapshot())) as {
+      benchmark: { interruptionsByMode: Record<string, number> };
+    };
+
+    expect(report.benchmark.interruptionsByMode).toEqual({
+      real: 0,
+      simulated: 0,
+      preblur: 0,
+      off: 0,
     });
   });
 

@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
 import {
   createDefaultSettings,
+  saveSettings,
   SETTINGS_STORAGE_KEY,
 } from '../../src/experiments/settings';
 import { useBenchmarkController } from '../../src/hooks/useBenchmarkController';
@@ -363,6 +364,70 @@ describe('experiment actions', () => {
 
     await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
     expect(screen.getByRole('button', { name: '关闭' })).toBeEnabled();
+  });
+
+  it('moves focus to the external cancel target when a suite phase closes the locked modal', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} performanceRuntime={new FakeRuntime()} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '开始全部' }));
+
+    act(() => clock.advanceBy(22_000));
+
+    expect(screen.queryByRole('dialog', { name: '实验控制' })).toBeNull();
+    expect(screen.getByRole('button', { name: '取消全部' })).toHaveFocus();
+  });
+
+  it('renders every suite-labelled glass mode through the real HomeScreen without persisting overrides', async () => {
+    installBrowserBoundaries();
+    const stored = { ...createDefaultSettings(), glassMode: 'preblur' as const };
+    saveSettings(localStorage, stored);
+    const before = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} performanceRuntime={new FakeRuntime()} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '开始全部' }));
+
+    const expectedModes = [
+      ['real', '真实模糊'],
+      ['simulated', '模拟玻璃'],
+      ['preblur', '预模糊层'],
+      ['off', '关闭模糊'],
+    ] as const;
+
+    for (const [index, [mode, label]] of expectedModes.entries()) {
+      expect(screen.getByText(`${label} · 准备`)).toBeVisible();
+      expect(screen.getByRole('main')).toHaveAttribute('data-glass-mode', mode);
+      const renderedSurfaces = document.querySelectorAll<HTMLElement>(
+        [
+          '.game-rail .glass-surface[data-glass-mode]',
+          '.service-grid .glass-surface[data-glass-mode]',
+          '.bottom-nav .glass-surface[data-glass-mode]',
+          '.experiment-panel[data-glass-mode]',
+        ].join(','),
+      );
+      expect(renderedSurfaces.length).toBeGreaterThan(0);
+      for (const surface of renderedSurfaces) {
+        expect(surface).toHaveAttribute('data-glass-mode', mode);
+      }
+      expect(
+        within(screen.getByRole('group', { name: '玻璃方式' })).getByRole('radio', {
+          name: '预模糊层',
+        }),
+      ).toBeChecked();
+      expect(localStorage.getItem(SETTINGS_STORAGE_KEY)).toBe(before);
+
+      if (index < expectedModes.length - 1) {
+        act(() => clock.advanceBy(33_000));
+      }
+    }
+
+    await user.click(screen.getByRole('button', { name: '取消全部' }));
+    expect(screen.getByRole('main')).toHaveAttribute('data-glass-mode', 'preblur');
+    expect(localStorage.getItem(SETTINGS_STORAGE_KEY)).toBe(before);
   });
 
   it('shows four-mode suite progress, interruptions and the focused result columns', async () => {

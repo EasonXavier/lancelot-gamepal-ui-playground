@@ -73,6 +73,7 @@ const createSnapshot = (
     elapsedMs: reportType === 'suite' ? 132_000 : 30_000,
     completedModes: runs.map(({ glassMode }) => glassMode),
     interruptions: 0,
+    interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
     terminatedPhase: null,
     failureReason: null,
   },

@@ -24,41 +24,41 @@
 
 ## 当前实现对照
 
-| 维度         | 当前实现                                                             | 状态               | 证据/下一步                                                                        |
-| ------------ | -------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------------- |
-| 品牌与文案   | 页头与文档标题使用“朗世乐”                                           | `implemented`      | `HomeScreen`、`index.html`                                                         |
-| 色彩与材质   | 深色背景、青绿色环境、暖色 selected token、玻璃噪点/内高光           | `implemented`      | tokens 与 Glass CSS；截图继续观察实际对比度                                        |
-| 人物构图     | 人物为单独背景层，内容玻璃覆盖下半部                                 | `implemented`      | 紧凑版保留复杂玻璃遮挡；等待本分支五视口生产预览复核，真机裁切仍 pending           |
-| 四种玻璃     | Real Blur、Simulated Glass、Preblur Layer、Blur Off 使用同一组件结构 | `implemented`      | 切换仅改变 mode/data 属性；需真机采样比较                                          |
-| 发光层级     | 普通 Glass 无 selected glow，选中项才附加强调                        | `browser-verified` | 本轮确认普通边缘不发光，选中游戏/首页使用暖色强调；各真机色彩仍 pending            |
-| 游戏栏       | 四项细长横栏约位于 42% 视口高度，只有选中项渲染近似三角图标          | `implemented`      | 自动化覆盖交互；等待本分支五视口生产预览复核                                       |
-| 服务网格     | 六项采用 wide/compact/tall/medium 等不同跨列与高度，并为底栏留出空间 | `implemented`      | 流动高度 reserve 已覆盖中间高度回归；等待生产预览确认与底栏无重叠                  |
-| 底栏         | 首页、挑选、订单、消息、我的；固定在 Safe Area 上方，当前项突出      | `implemented`      | 等待本分支五视口与横屏生产预览复核                                                 |
-| 实验抽屉     | 约 82dvh 模态底部抽屉，固定标题/操作区、中间独立滚动                 | `implemented`      | 自动化覆盖焦点进入/循环/恢复、Escape/遮罩规则与运行锁定；等待生产预览复核          |
-| 动态层       | 单 Canvas 粒子、背景动态、触摸视差、卡片浮动、Reduced Motion         | `implemented`      | 桌面交互已验证；微信触摸/后台策略 pending                                          |
-| HUD          | 默认单行胶囊，点击切换 compact/expanded，hidden 可从设置恢复         | `implemented`      | 自动化覆盖 `aria-expanded` 与键盘操作；浏览器 API 支持差异需逐设备记录             |
-| Baseline     | 独立 Runner 固定四模式、3+30 秒、四段进度、取消与三项结果比较        | `implemented`      | 自动化覆盖 132 秒、终止语义与 schema v2；等待完整桌面 Suite 和真机导出             |
-| 响应式       | 紧凑布局为五个目标视口提供动态高度 reserve                           | `implemented`      | 旧版已有桌面证据；当前分支仍需重新完成 375×812、390×844、393×852、430×932、844×390 |
-| Safe Area    | CSS 通过 `env(safe-area-inset-*)` 接入页头、内容、底栏、HUD 与面板   | `pending-device`   | 桌面 inset 为 0；需刘海/Home Indicator 真机截图                                    |
-| 微信 WebView | `MicroMessenger` UA 检测和单元测试已存在                             | `pending-device`   | 需真实 iOS/Android 微信验证加载、前后台与导出                                      |
+| 维度         | 当前实现                                                             | 状态               | 证据/下一步                                                                     |
+| ------------ | -------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------- |
+| 品牌与文案   | 页头与文档标题使用“朗世乐”                                           | `implemented`      | `HomeScreen`、`index.html`                                                      |
+| 色彩与材质   | 深色背景、青绿色环境、暖色 selected token、玻璃噪点/内高光           | `implemented`      | tokens 与 Glass CSS；截图继续观察实际对比度                                     |
+| 人物构图     | 人物为单独背景层，内容玻璃覆盖下半部                                 | `browser-verified` | 五视口生产预览保留复杂玻璃遮挡；真机裁切仍 pending                              |
+| 四种玻璃     | Real Blur、Simulated Glass、Preblur Layer、Blur Off 使用同一组件结构 | `implemented`      | 切换仅改变 mode/data 属性；需真机采样比较                                       |
+| 发光层级     | 普通 Glass 无 selected glow，选中项才附加强调                        | `browser-verified` | 本轮确认普通边缘不发光，选中游戏/首页使用暖色强调；各真机色彩仍 pending         |
+| 游戏栏       | 四项细长横栏约位于 42% 视口高度，只有选中项渲染近似三角图标          | `browser-verified` | 自动化覆盖交互；五视口生产预览确认紧凑位置与可用性                              |
+| 服务网格     | 六项采用 wide/compact/tall/medium 等不同跨列与高度，并为底栏留出空间 | `browser-verified` | 五视口生产预览确认服务区与固定底栏无重叠                                        |
+| 底栏         | 首页、挑选、订单、消息、我的；固定在 Safe Area 上方，当前项突出      | `browser-verified` | 五视口与横屏生产预览确认可见且无页面溢出                                        |
+| 实验抽屉     | 约 82dvh 模态底部抽屉，固定标题/操作区、中间独立滚动                 | `browser-verified` | 自动化覆盖焦点规则；生产预览确认抽屉未超过视口且中部可独立滚动                  |
+| 动态层       | 单 Canvas 粒子、背景动态、触摸视差、卡片浮动、Reduced Motion         | `implemented`      | 桌面交互已验证；微信触摸/后台策略 pending                                       |
+| HUD          | 默认单行胶囊，点击切换 compact/expanded，hidden 可从设置恢复         | `implemented`      | 自动化覆盖 `aria-expanded` 与键盘操作；浏览器 API 支持差异需逐设备记录          |
+| Baseline     | 独立 Runner 固定四模式、3+30 秒、四段进度、取消与三项结果比较        | `browser-verified` | 390×844 完成一次名义 132 秒桌面 Suite；schema v2 字段由自动化测试验证，真机待验 |
+| 响应式       | 紧凑布局为五个目标视口提供动态高度 reserve                           | `browser-verified` | 当前分支已完成 375×812、390×844、393×852、430×932、844×390                      |
+| Safe Area    | CSS 通过 `env(safe-area-inset-*)` 接入页头、内容、底栏、HUD 与面板   | `pending-device`   | 桌面 inset 为 0；需刘海/Home Indicator 真机截图                                 |
+| 微信 WebView | `MicroMessenger` UA 检测和单元测试已存在                             | `pending-device`   | 需真实 iOS/Android 微信验证加载、前后台与导出                                   |
 
 ## 截图验收 Ledger
 
-既有发布版曾完成五视口与线上 390×844 验证，但紧凑布局已改变首页高度、服务 reserve、HUD 和实验抽屉，旧截图不能替代当前分支复核。当前分支的自动化证据已经具备；生产预览五视口和完整 132 秒桌面 Suite 由合并前门禁补充。仓库目前没有把真实设备截图作为完成证据。
+当前分支已在生产预览重新完成五视口与 390×844 名义 132 秒桌面 Suite。五个视口均无横向溢出、服务区与底栏无重叠，抽屉保持视口内并可独立滚动，控制台无 warning/error。复制 UI 显示成功，但隔离浏览器剪贴板未返回页面写入内容；schema v2 字段由自动化测试验证。仓库仍没有把桌面模拟当作真实设备证据。
 
-| 场景                       | 环境/视口            | 状态             | 所需证据                      | 验收重点                                                                       |
-| -------------------------- | -------------------- | ---------------- | ----------------------------- | ------------------------------------------------------------------------------ |
-| 首页默认态                 | 桌面生产预览 390×844 | `implemented`    | 当前分支待补临时截图/检查记录 | 人物下半身遮挡、普通玻璃无发光、选中项暖色强调、细长游戏栏、异形服务入口与底栏 |
-| 实验抽屉展开               | 桌面生产预览 390×844 | `implemented`    | 当前分支待补临时截图/检查记录 | 82dvh 内部滚动、人物遮挡、焦点可见、底部操作区和 Safe Area                     |
-| 窄屏首页                   | 375×812              | `implemented`    | 当前分支待复核                | 无横向溢出、服务与底栏无重叠                                                   |
-| 中等竖屏                   | 393×852              | `implemented`    | 当前分支待复核                | 服务网格节奏与文字不拥挤                                                       |
-| 宽竖屏                     | 430×932              | `implemented`    | 当前分支待复核                | 内容不过度拉伸、人物仍为焦点                                                   |
-| 横屏/旋转                  | 844×390              | `implemented`    | 当前分支待复核                | 高度变量恢复、控制入口、抽屉和底栏可用                                         |
-| 完整桌面 Baseline Suite    | 桌面生产预览 390×844 | `implemented`    | 待补 132 秒导出与状态记录     | 固定顺序、四个完整 run、三项比较、无控制台错误；只能作为桌面证据               |
-| iPhone 非零 Safe Area      | 真实 Safari/微信     | `pending-device` | 竖屏与横屏截图、设备模板      | 顶部切口、底部 Home Indicator、旋转                                            |
-| Android 异形屏             | 真实 Chrome/微信     | `pending-device` | 竖屏与横屏截图、设备模板      | inset、状态栏、手势区、下载行为                                                |
-| iOS 微信完整 Benchmark     | 真实微信 WebView     | `pending-device` | JSON、截图/录屏、设备模板     | `isWeChat`、前后台标记、复制/下载、性能状态                                    |
-| Android 微信完整 Benchmark | 真实微信 WebView     | `pending-device` | JSON、截图/录屏、设备模板     | 同上，并记录内核/版本差异                                                      |
+| 场景                       | 环境/视口            | 状态               | 所需证据                  | 验收重点                                                                           |
+| -------------------------- | -------------------- | ------------------ | ------------------------- | ---------------------------------------------------------------------------------- |
+| 首页默认态                 | 桌面生产预览 390×844 | `browser-verified` | 当前分支检查记录          | 人物下半身遮挡、普通玻璃无发光、选中项暖色强调、细长游戏栏、异形服务入口与底栏     |
+| 实验抽屉展开               | 桌面生产预览 390×844 | `browser-verified` | 当前分支检查记录          | 82dvh 内部滚动、人物遮挡、焦点可见、底部操作区和 Safe Area                         |
+| 窄屏首页                   | 375×812              | `browser-verified` | 当前分支检查记录          | 无横向溢出、服务与底栏无重叠                                                       |
+| 中等竖屏                   | 393×852              | `browser-verified` | 当前分支检查记录          | 服务网格节奏与文字不拥挤                                                           |
+| 宽竖屏                     | 430×932              | `browser-verified` | 当前分支检查记录          | 内容不过度拉伸、人物仍为焦点                                                       |
+| 横屏/旋转                  | 844×390              | `browser-verified` | 当前分支检查记录          | 高度变量恢复、控制入口、抽屉和底栏可用                                             |
+| 完整桌面 Baseline Suite    | 桌面生产预览 390×844 | `browser-verified` | UI 完成与复制成功记录     | 名义 132 秒、固定顺序、四个完整 run、三项比较、无控制台错误；JSON 字段由自动化验证 |
+| iPhone 非零 Safe Area      | 真实 Safari/微信     | `pending-device`   | 竖屏与横屏截图、设备模板  | 顶部切口、底部 Home Indicator、旋转                                                |
+| Android 异形屏             | 真实 Chrome/微信     | `pending-device`   | 竖屏与横屏截图、设备模板  | inset、状态栏、手势区、下载行为                                                    |
+| iOS 微信完整 Benchmark     | 真实微信 WebView     | `pending-device`   | JSON、截图/录屏、设备模板 | `isWeChat`、前后台标记、复制/下载、性能状态                                        |
+| Android 微信完整 Benchmark | 真实微信 WebView     | `pending-device`   | JSON、截图/录屏、设备模板 | 同上，并记录内核/版本差异                                                          |
 
 ## 参考图与当前实现对照
 
@@ -78,7 +78,7 @@
 4. 检查普通玻璃无边缘发光，当前游戏、底栏和实验选项的暖色焦点清晰但不过曝。
 5. 检查人物上半身清晰，下半身被多层玻璃遮挡且文字仍有足够可读性。
 6. 验证触摸、滚动、前后台切换、Reduced Motion 与服务占位层关闭。Suite 切后台会作废活动 run 并从该模式稳定阶段重启；同模式连续第三次后台中断会失败。
-7. 固定 Glass 之外的设置，点击一次 Baseline Suite 并保持前台 132 秒。确认 UI/JSON 都为 `completed`，四个 `runs[]` 按 `real → simulated → preblur → off` 排列且均可比较，再导出 schema v2。
+7. 固定 Glass 之外的设置，点击一次 Baseline Suite，并在名义 132 秒计划时长之外继续保持前台直至完成。确认 UI/JSON 都为 `completed`，四个 `runs[]` 按 `real → simulated → preblur → off` 排列且均可比较，再导出 schema v2。
 8. 另起一次 Suite 验证旋转失败语义时，不得把该失败报告用于 baseline；应确认失败原因为 `orientation-change`、活动 run 被丢弃、此前完成 run 被保留。
 9. 按[设备模板](./device-test-template.md)保存报告和完成证据，并明确固定顺序的热衰减偏差。严格统计可在冷却后重复完整 Suite，但本轮验收允许一次完整 Suite。
 10. 对比截图时至少覆盖：文案、布局、字体、色彩、玻璃/选中发光、人物裁切、响应式和动态。
@@ -88,7 +88,7 @@
 视觉与真机阶段只有在以下条件同时满足后才能标记完成：
 
 - 至少一台具有非零 Safe Area 的真实设备完成竖屏、横屏与旋转验证。
-- iOS 或 Android 的真实微信 WebView 至少完成一次前台 132 秒 Suite，取得 schema v2 的四个完整可比较 run，并完成一次前后台切换验证和报告操作记录；若只覆盖一个平台，另一平台继续标记 pending。
+- iOS 或 Android 的真实微信 WebView 至少完成一次前台 Suite（名义计划 132 秒，实际保持到完成），取得 schema v2 的四个完整可比较 run，并完成一次前后台切换验证和报告操作记录；若只覆盖一个平台，另一平台继续标记 pending。
 - 每个关键截图都有匿名设备代号、日期、方向、页面 build 与对应 ledger 行。
 - 所有失败项都有复现步骤；所有不可测指标保留真实状态，不用 0 或主观估计替代。
 - 结论明确区分代码/自动化证据、桌面浏览器证据与真机证据。

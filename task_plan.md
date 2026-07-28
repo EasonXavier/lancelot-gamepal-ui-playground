@@ -78,7 +78,7 @@ Phase 7
 - [x] 修正首页、HUD、实验抽屉与 Safe Area 布局
 - [x] 以 TDD 实现独立 `BaselineSuiteRunner` 和恢复/失败语义
 - [x] 将单模式与批量报告统一升级为 schema v2 `runs[]`
-- [ ] 更新文档并完成五视口、完整 132 秒桌面 Suite 与全量门禁（文档与本地门禁已完成；浏览器验收待主代理）
+- [x] 更新文档并完成五视口、名义 132 秒桌面 Suite 与全量门禁
 - [ ] 审查、PR 合并、Pages 部署与线上复核
 - **Status:** in_progress
 

@@ -12,7 +12,7 @@
 
 - Work only in the standalone repository and the `codex/layout-baseline-suite` branch based on `origin/main@b7b421b`.
 - Preserve `LSVIS TD.woff2`, the character asset, shared React/DOM Glass surfaces, Pages base path, and selected-only glow rule.
-- Fixed suite order is `real`, `simulated`, `preblur`, `off`; each mode settles for 3,000ms and then runs the existing 30,000ms benchmark, for 132,000ms total without interruptions.
+- Fixed suite order is `real`, `simulated`, `preblur`, `off`; each mode settles for 3,000ms and then runs the existing 30,000ms benchmark, for a nominal 132,000ms timer plan without interruptions. Fake-clock tests complete at exactly that boundary, while browser elapsed time may be higher because callbacks can run late.
 - Freeze all non-Glass effective settings at suite start; temporary Glass overrides must never be persisted.
 - Cancelled active runs never enter `runs[]`. Completed suite runs survive later cancellation or failure.
 - No backend, telemetry, report history, new runtime dependency, formal Release, or Git tag.

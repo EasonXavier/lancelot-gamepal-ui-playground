@@ -178,6 +178,7 @@ describe('App suite settings ownership', () => {
         status: string;
         elapsedMs: number;
         completedModes: string[];
+        interruptionsByMode: Record<string, number>;
       };
       runs: Array<{
         glassMode: string;
@@ -195,6 +196,7 @@ describe('App suite settings ownership', () => {
         status: 'completed',
         elapsedMs: 132_000,
         completedModes: expectedOrder,
+        interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
       },
     });
     expect(report.runs.map(({ glassMode }) => glassMode)).toEqual(expectedOrder);
