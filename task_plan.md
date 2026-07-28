@@ -8,7 +8,7 @@
 
 ## Next Step
 
-Task 6 已通过 PR #2 合并为 `feced285`，Pages run `30305196701` 的 build/deploy 均成功，线上新 bundle 与控制入口已核验。下一步继续 Phase 5：补齐 README、指标/设备模板和 fidelity ledger，并在真实 Safe Area 与微信 WebView 上复核；不创建 Release 或标签。
+Task 7 的 README、指标说明、设备模板、fidelity ledger 与桌面浏览器验证已完成独立审查。下一步提交并部署本轮文档检查点；真实非零 Safe Area、iOS/Android 微信 WebView 与完整真机 Benchmark/报告导出仍需按设备模板复核；不创建 Release 或标签。
 
 ## Current Phase
 
@@ -55,8 +55,8 @@ Phase 5
 - [x] 通过 typecheck、lint、test、build 和 preview
 - [x] 验证五个指定视口、横屏/旋转和无横向溢出
 - [ ] 在真实 Safe Area 与微信 UA/WebView 上复核
-- [ ] 对照视觉概念完成截图、fidelity ledger 和性能功能检查
-- [ ] 完成 README、指标说明、设备模板、SECURITY 与素材来源
+- [x] 对照视觉概念完成桌面截图、fidelity ledger 和性能功能检查
+- [x] 完成 README、指标说明、设备模板、SECURITY 与素材来源
 - [x] 执行敏感信息、绝对路径、未授权素材与 staged diff 检查
 - **Status:** in_progress
 

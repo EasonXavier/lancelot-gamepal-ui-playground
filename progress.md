@@ -258,6 +258,19 @@
 - Pages workflow run `30305196701` 成功：build 31 秒，deploy 9 秒；Checkout、Node、依赖安装、项目验证、Pages 配置、artifact 上传与部署步骤全部通过。
 - 线上缓存破除验证确认新资源 `index-BEsYy-mJ.js` / `index-C3mvqVYK.css`、人物 Pages 子路径、Task 6 实验控制入口和 Canvas 已生效；390×844 外层视口无横向溢出，控制台 0 error/warn。
 
+## Phase 5 Resume: 2026-07-28
+
+- 从 `origin/main` 的 Task 6 文档合并提交 `80d017c` 创建独立工作树 `.worktrees/phase5-docs-validation` 与分支 `agent/phase5-docs-validation`；主工作树保持不变。
+- 新工作树复用项目既有 `node_modules` junction，未下载、升级或全局安装依赖；恢复基线为 TypeScript 退出 0、17 files / 136 tests passed。
+- 继续执行既定 Task 7，不重新设计产品范围：文档单元补齐 README、指标说明、设备模板与 fidelity ledger；浏览器单元补齐可本机验证的 UI/交互证据。
+- 本地首轮浏览器验证通过页面身份、非空渲染、无框架覆盖、控制台健康、人物/玻璃构图、Blur 切换及 Benchmark 运行锁定/取消恢复。
+- 五个指定视口与横屏重新验证通过：请求的外层尺寸准确，全部无 document 横向溢出，底栏可见且 `--app-height` 同步；390×844 展开控制面板也无页面或面板横向溢出。
+- 提交前首轮完整门禁中，TypeScript、ESLint、Prettier 与 17 files / 136 tests 通过；Vite 已转换 52 modules，但沙箱在创建新 worktree 的 `dist` 目录时报 EPERM。源代码错误尚无证据，需在文档审查修复后于授权 Windows 上下文重跑同一 build。
+- Task 7 新增 README、performance metrics、device test template 与 UI exploration/fidelity ledger；初审发现 2 Important + 2 Minor，全部修复后定向复审 APPROVED，0 个新 Critical/Important。
+- 审查修复明确：取消报告即使 `completedInForeground: true` 也不可用于正式比较；正式结果必须有 UI `completed`、未取消和完整前台证据。阶段文档现与 3/8/8/8/3 实际负载、Reduced Motion 和整窗聚合语义一致。
+- 审查修复后的控制器最终门禁全部通过：TypeScript、ESLint、Prettier、17 files / 136 tests、52 modules production build 与 `git diff --check` 均退出 0；授权构建解决了仅由沙箱 `dist` 创建权限导致的 EPERM。
+- 真实非零 Safe Area 和微信 WebView 仍必须由真机填写设备模板，不把桌面模拟或单元测试冒充真机证据；本轮不创建 Release 或标签。
+
 ---
 
 _每个阶段和每次错误后更新本文件。_
