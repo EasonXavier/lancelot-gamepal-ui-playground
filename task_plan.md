@@ -8,11 +8,11 @@
 
 ## Next Step
 
-从 `origin/main@b7b421b` 的独立 `codex/layout-baseline-suite` 工作树实施紧凑首页、模态实验抽屉、交互 HUD、独立 `BaselineSuiteRunner` 与统一报告 schema v2；完成审查后合并并部署 Pages。真实设备证据继续保持 pending-device。
+使用真实 iOS/Android 设备和微信 WebView 执行一次完整四模式 Baseline Suite，填写 `docs/device-test-template.md` 并保存 schema v2 报告。紧凑布局、独立 `BaselineSuiteRunner`、PR 合并和 Pages 部署均已完成；真实设备证据继续保持 pending-device。
 
 ## Current Phase
 
-Phase 7
+Phase 5/6 真机验证（pending-device）
 
 ## Phases
 
@@ -70,7 +70,7 @@ Phase 7
 - [x] 启用 GitHub Actions Pages 发布源并运行 CI/部署
 - [x] 验证线上 HTML、CSS、JS、图片、路由与 HUD/实验控制入口
 - [ ] 在真实微信 WebView 验证完整 Benchmark 与报告导出
-- [ ] 提供完整的仓库、构建、测试、截图、部署和限制证据
+- [x] 提供完整的仓库、构建、测试、截图、部署和限制证据
 - **Status:** in_progress
 
 ### Phase 7: 紧凑布局与四模式 Baseline Suite
@@ -79,8 +79,8 @@ Phase 7
 - [x] 以 TDD 实现独立 `BaselineSuiteRunner` 和恢复/失败语义
 - [x] 将单模式与批量报告统一升级为 schema v2 `runs[]`
 - [x] 更新文档并完成五视口、名义 132 秒桌面 Suite 与全量门禁
-- [ ] 审查、PR 合并、Pages 部署与线上复核
-- **Status:** in_progress
+- [x] 审查、PR 合并、Pages 部署与线上复核
+- **Status:** complete; PR #6 merged and deployed
 
 ## Key Questions
 
@@ -123,3 +123,4 @@ Phase 7
 - 每次重大决策前重读本文件；每个阶段结束后更新状态与进度。
 - **Current published checkpoint（2026-07-27）：** PR #1 将 Task 3–5 的性能核心、设置/Benchmark 与首页提交合并为 `4f42867`；Pages run `30273041434` 的 build/deploy 均成功，线上已确认新 JS/CSS、朗世乐品牌、原生 modal、人物与 WOFF2 子路径。没有创建 Release 或版本标签；Task 6/7 仍未完成。
 - **Current published checkpoint（2026-07-28）：** PR #4 将 Task 7 文档与桌面验证证据合并为 `59b2d78`；Pages run `30320699031` 的 build 35 秒、deploy 10 秒且均成功。公开页面仍加载 `index-BEsYy-mJ.js` / `index-C3mvqVYK.css`、朗世乐品牌、人物和实验控制，390×844 外层视口无横向溢出且控制台 0 error/warn。真实设备项仍 pending-device，没有创建 Release 或标签。
+- **Current published checkpoint（2026-07-29）：** PR #6 已合并为 `cd4722e2de8978a2432b5d9352ca3c7fd468cd80`；Pages workflow run `30404555049` 的 build/deploy 均成功，线上紧凑布局与四模式 Baseline Suite 已复核。真实 Safe Area、iOS/Android 微信 WebView 和真机 Suite 报告仍 pending-device；没有创建 Release 或标签。

@@ -299,7 +299,15 @@
 - 主代理已完成五视口生产预览：全部无横向溢出、服务区不与底栏重叠，抽屉保持视口内且中部独立滚动；390×844 完整桌面 Suite 得到四个固定顺序结果，复制 JSON 显示成功，但浏览器隔离剪贴板未返回页面写入内容，字段结构继续由集成测试证明。
 - 报告链路补齐逐模式中断图：RED 为导出器、控制器与 App 共 4 个预期失败；GREEN 为 4 files / 37 tests。`BenchmarkReportTerminal`、App 快照与 schema v2 现均保留固定四键 `interruptionsByMode`，单模式全为 0，累计 `interruptions` 保持兼容。
 - 当前 HEAD 的新鲜门禁为 TypeScript、ESLint、Prettier 全部退出 0，Vitest 20 files / 185 tests passed；Vite 首次因预览后的 `dist/assets` 沙箱 EPERM 失败，停止预览后仍需在授权上下文重建，最终 53 modules / 144ms 成功。
-- 仍待主代理完成：最终整体审查、PR/Pages 和线上复核。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
+- 最终整体审查、PR/Pages 和线上复核均已完成。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
+
+## Phase 7 Merge and Pages Deployment: 2026-07-29
+
+- `codex/layout-baseline-suite` 最终提交为 `1f67e0f`；ready PR #6 已合并到 `main`，merge commit 为 `cd4722e2de8978a2432b5d9352ca3c7fd468cd80`。
+- GitHub Pages workflow run `30404555049` 的 build 与 deploy 均成功；线上 `https://easonx.me/lancelot-gamepal-ui-playground/` 已复核可访问并加载本次部署。
+- 合并前最终门禁为 TypeScript、ESLint、Prettier、20 files / 185 tests、Vite production build 与 `git diff --check` 全部通过。
+- 发布内容包括紧凑首页、可展开 HUD、82dvh 模态实验抽屉、独立四模式 `BaselineSuiteRunner`、schema v2 报告以及逐模式中断证据。
+- 没有创建 Release 或标签。真实非零 Safe Area、iOS/Android 微信 WebView、真实触摸和真机 Suite 导出继续为 `pending-device`。
 
 ---
 

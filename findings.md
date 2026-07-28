@@ -3,6 +3,7 @@
 # Findings & Decisions
 
 - 2026-07-29 中断计数缺口已修复：`BaselineSuiteState.interruptions` 保留整个 Suite 的累计中断数，`interruptionsByMode` 保留四个模式各自的计数，`consecutiveInterruptions` 只用于当前模式连续第三次中断的失败判定。成功跨越模式边界只重置连续计数，不再清空 UI 或报告所需的累计历史。
+- 2026-07-29 PR #6 已合并为 `cd4722e2de8978a2432b5d9352ca3c7fd468cd80`；Pages workflow run `30404555049` 的 build/deploy 均成功，公开页面已包含紧凑布局、模态实验抽屉和四模式 Baseline Suite。桌面与线上复核不替代真实 Safe Area、微信 WebView 或真机性能证据。
 
 ## Requirements
 
@@ -147,14 +148,10 @@
 
 ## Resume Checkpoint
 
-1. 重读 `task_plan.md`、本文件和 `progress.md`。
-2. 当前位于 Phase 4 暂停点：Task 6.1 已通过独立审查；Task 6.2 已提交为 `549fa19`，但尚未独立审查。
-3. 不重做 Task 6.1/6.2 实现；恢复后先审查 `d09b410..549fa19`，review clean 后才进入 Task 6.3 性能 HUD RED。
-4. 停止前 Task 6.2 已通过 focused 9/9、全量 11 files / 63 tests、typecheck、ESLint、scoped Prettier 和 `git diff --check`；这些是既有证据，暂停后不要无目的重复测试。
-
-历史发布背景：Task 5 已通过 PR #1 合并为 `4f42867`，Pages run `30273041434` 成功；当前 `agent/experiment-controls` 的 Task 6 提交仅在本地，尚未 push、deploy、tag 或 release。
-
-恢复检查点复核确认：三个规划文件均包含当前 Phase 4/Task 6 RED 指令；历史 Pages 检查点与当前本地状态已明确区分。
+1. 重读 `task_plan.md`、本文件、`progress.md` 和 `docs/device-test-template.md`。
+2. 紧凑布局与四模式 Baseline Suite 已通过 PR #6 合并并部署；不要重做 Phase 7 实现或把桌面 Suite 当作真机证据。
+3. 后续只需在真实 iOS/Android 与微信 WebView 上复核非零 Safe Area、前后台/旋转语义、触摸交互、复制/下载和完整 Suite 报告。
+4. 真机证据取得前继续标记 `pending-device`；没有 Release 或标签。
 
 ---
 
