@@ -19,6 +19,12 @@
 
 ## Research Findings
 
+- 2026-07-29 线上 390×844 审计确认当前首页约 919px 高，最后一张服务卡与固定底栏重叠；`padding-top: clamp(180px, 39vh, 360px)` 造成过大顶部空区，展开 HUD 与人物主视觉竞争。
+- 当前窄屏实验面板把全部选项强制成单列，整体约 1856px 高；用户已采用约 82dvh 的模态底部抽屉、两列分段选项、固定 Baseline 卡和中部独立滚动。
+- 用户已确认四模式固定顺序 `real → simulated → preblur → off`，每模式采样前额外稳定 3 秒并完整运行现有 30 秒，总计 132 秒。
+- 用户已确认独立 `BaselineSuiteRunner`、冻结当前非 Glass 配置、后台重试、同模式第三次中断失败、旋转即失败、活动 run 取消后完全丢弃，以及统一 schema v2 `runs[]`。
+- 单模式与套件取消都不得导出部分性能指标；套件已完成 run 保留。真实设备与微信 WebView 证据在实际导出前继续为 pending-device。
+
 - 2026-07-27 现场检查确认目标 GitHub 仓库原先不存在，随后已创建为 PUBLIC。
 - 当前仓库根目录为 `C:/Project/lancelot-gamepal-ui-playground`，分支为 `main`，唯一远程为目标仓库 `origin`。
 - 当前目录此前为空，不含旧试验场代码，也未访问主项目仓库。

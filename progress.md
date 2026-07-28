@@ -275,6 +275,14 @@
 - 线上缓存破除验证确认品牌、实验控制、人物 Pages 子路径与既有 JS/CSS bundle 正常；390×844 外层视口无横向溢出，`--app-height` 正确，控制台 0 error/warn。
 - 本轮结束边界：Task 7 文档和桌面证据已发布；真实非零 Safe Area、iOS/Android 微信 WebView、完整真机 Benchmark/导出仍 pending-device；没有 Release 或标签。
 
+## Phase 7 Start: 2026-07-29
+
+- 用户批准紧凑布局与四模式 Baseline Suite 实施计划，并授权完成 PR 合并、Pages 部署和线上复核；不创建 Release 或标签。
+- 从 `origin/main@b7b421b85ac6d36825bad5765ba73ceeaf54bdbf` 创建独立工作树 `.worktrees/layout-baseline-suite` 与分支 `codex/layout-baseline-suite`；旧主工作树及 Phase 5 草稿工作树未修改。
+- 新工作树复用项目现有 `node_modules` junction；未下载、升级或全局安装依赖。
+- 新鲜基线为 17 files / 136 tests passed，耗时 19.61 秒。
+- 已固化专项实施计划 `docs/superpowers/plans/2026-07-29-layout-baseline-suite.md`；下一步按 SDD/TDD 从 Task 1 RED 开始。
+
 ---
 
 _每个阶段和每次错误后更新本文件。_

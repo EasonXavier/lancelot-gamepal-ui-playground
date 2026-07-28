@@ -8,11 +8,11 @@
 
 ## Next Step
 
-Task 7 文档已通过 PR #4 合并为 `59b2d78`，Pages run `30320699031` 的 build/deploy 均成功，线上应用已复核。下一步只剩真实非零 Safe Area、iOS/Android 微信 WebView 与完整真机 Benchmark/报告导出；按设备模板记录，不创建 Release 或标签。
+从 `origin/main@b7b421b` 的独立 `codex/layout-baseline-suite` 工作树实施紧凑首页、模态实验抽屉、交互 HUD、独立 `BaselineSuiteRunner` 与统一报告 schema v2；完成审查后合并并部署 Pages。真实设备证据继续保持 pending-device。
 
 ## Current Phase
 
-Phase 5
+Phase 7
 
 ## Phases
 
@@ -71,6 +71,15 @@ Phase 5
 - [x] 验证线上 HTML、CSS、JS、图片、路由与 HUD/实验控制入口
 - [ ] 在真实微信 WebView 验证完整 Benchmark 与报告导出
 - [ ] 提供完整的仓库、构建、测试、截图、部署和限制证据
+- **Status:** in_progress
+
+### Phase 7: 紧凑布局与四模式 Baseline Suite
+
+- [ ] 修正首页、HUD、实验抽屉与 Safe Area 布局
+- [ ] 以 TDD 实现独立 `BaselineSuiteRunner` 和恢复/失败语义
+- [ ] 将单模式与批量报告统一升级为 schema v2 `runs[]`
+- [ ] 更新文档并完成五视口、完整 132 秒桌面 Suite 与全量门禁
+- [ ] 审查、PR 合并、Pages 部署与线上复核
 - **Status:** in_progress
 
 ## Key Questions
