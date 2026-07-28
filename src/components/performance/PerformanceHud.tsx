@@ -7,7 +7,9 @@ import './performance-hud.css';
 
 export interface PerformanceHudProps {
   mode: HudMode;
+  workloadLocked: boolean;
   runtime: PerformanceRuntime;
+  onModeChange: (mode: HudMode) => void;
 }
 
 const statusLabel = {
@@ -35,7 +37,12 @@ function frameValue(value: number | null, digits = 0): string {
   return value === null ? statusLabel.waiting : value.toFixed(digits);
 }
 
-export function PerformanceHud({ mode, runtime }: PerformanceHudProps) {
+export function PerformanceHud({
+  mode,
+  workloadLocked,
+  runtime,
+  onModeChange,
+}: PerformanceHudProps) {
   const snapshot = useSyncExternalStore(
     runtime.subscribe,
     runtime.getSnapshot,
@@ -66,22 +73,25 @@ export function PerformanceHud({ mode, runtime }: PerformanceHudProps) {
     ['LoAF', durationValue(mainThread.longAnimationFrames, 0)],
     ['Resources', String(resources.resourceCount)],
   ];
+  const metrics = compactMetrics.concat(mode === 'expanded' ? expandedMetrics : []);
 
   return (
-    <GlassSurface
+    <button
+      aria-expanded={mode === 'expanded'}
       aria-label="Performance HUD"
       className={`performance-hud performance-hud--${mode}`}
-      mode="real"
-      role="region"
+      disabled={workloadLocked}
+      onClick={() => onModeChange(mode === 'expanded' ? 'compact' : 'expanded')}
+      type="button"
     >
-      {compactMetrics
-        .concat(mode === 'expanded' ? expandedMetrics : [])
-        .map(([label, value]) => (
+      <GlassSurface className="performance-hud__surface" mode="real">
+        {metrics.map(([label, value]) => (
           <div className="performance-hud__metric" key={label}>
             <span>{label}</span>
             <strong>{value}</strong>
           </div>
         ))}
-    </GlassSurface>
+      </GlassSurface>
+    </button>
   );
 }

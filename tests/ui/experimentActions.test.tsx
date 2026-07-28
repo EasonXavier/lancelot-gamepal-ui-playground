@@ -315,6 +315,80 @@ describe('benchmark runtime ownership', () => {
 });
 
 describe('experiment actions', () => {
+  it('keeps user dismissal locked while benchmark-controlled close and reopen still work', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+    await user.click(screen.getByRole('button', { name: '运行 30 秒 Benchmark' }));
+
+    const close = screen.getByRole('button', { name: '关闭' });
+    expect(close).toBeDisabled();
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByTestId('experiment-panel-scrim'));
+    expect(screen.getByRole('dialog', { name: '实验控制' })).toBeVisible();
+
+    act(() => clock.advanceBy(19_000));
+    expect(screen.queryByRole('dialog', { name: '实验控制' })).toBeNull();
+    act(() => clock.advanceBy(8_000));
+    expect(screen.getByRole('dialog', { name: '实验控制' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '关闭' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: '取消 Benchmark' }));
+    expect(screen.getByRole('button', { name: '关闭' })).toBeEnabled();
+  });
+
+  it('shows four-mode suite progress, interruptions and the focused result columns', async () => {
+    installBrowserBoundaries();
+    const clock = new FakeClock();
+    const user = userEvent.setup();
+    render(<App benchmarkClock={clock} performanceRuntime={new FakeRuntime()} />);
+    await user.click(screen.getByRole('button', { name: '实验控制' }));
+
+    const suite = screen.getByRole('region', { name: '四模式基线套件' });
+    expect(within(suite).getByText('预计 2 分 12 秒')).toBeVisible();
+    expect(within(suite).getAllByRole('listitem')).toHaveLength(4);
+    await user.click(within(suite).getByRole('button', { name: '开始全部' }));
+
+    expect(within(suite).getByText('真实模糊 · 准备')).toBeVisible();
+    expect(within(suite).getByText('中断 0 次')).toBeVisible();
+    expect(within(suite).getAllByRole('listitem')[0]).toHaveAttribute(
+      'data-state',
+      'active',
+    );
+    expect(within(suite).getByRole('button', { name: '开始全部' })).toBeDisabled();
+    expect(within(suite).getByRole('button', { name: '取消全部' })).toBeEnabled();
+
+    act(() => clock.advanceBy(33_000));
+    expect(within(suite).getAllByRole('listitem')[0]).toHaveAttribute(
+      'data-state',
+      'completed',
+    );
+    expect(within(suite).getAllByRole('listitem')[1]).toHaveAttribute(
+      'data-state',
+      'active',
+    );
+    const table = within(suite).getByRole('table', { name: '套件结果' });
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map((cell) => cell.textContent),
+    ).toEqual(['模式', 'FPS', 'P95', '估算丢帧']);
+    expect(within(table).getByRole('row', { name: /真实模糊 60 16 0/ })).toBeVisible();
+    expect(within(table).queryByText('Max frame')).toBeNull();
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'hidden',
+    });
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    expect(within(suite).getByText('中断 1 次')).toBeVisible();
+    expect(within(suite).getByText('模拟玻璃 · 等待页面可见')).toBeVisible();
+    await user.click(within(suite).getByRole('button', { name: '取消全部' }));
+    expect(within(suite).getByRole('button', { name: '取消全部' })).toBeDisabled();
+  });
+
   it('catches repeated start, transient profile persistence or incomplete full-run scene restore', async () => {
     installBrowserBoundaries();
     const clock = new FakeClock();
@@ -354,7 +428,7 @@ describe('experiment actions', () => {
       'aria-pressed',
       'true',
     );
-    expect(screen.getByRole('region', { name: '实验控制' })).toBeVisible();
+    expect(screen.getByRole('dialog', { name: '实验控制' })).toBeVisible();
     expect(screen.getByRole('main')).toHaveAttribute('data-motion-level', 'medium');
     expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', '20');
     expect(window.scrollY).toBe(320);
@@ -377,7 +451,7 @@ describe('experiment actions', () => {
       'aria-pressed',
       'true',
     );
-    expect(screen.getByRole('region', { name: '实验控制' })).toBeVisible();
+    expect(screen.getByRole('dialog', { name: '实验控制' })).toBeVisible();
     expect(screen.getByRole('main')).toHaveAttribute('data-particle-count', '20');
     expect(window.scrollY).toBe(320);
   });
@@ -635,6 +709,9 @@ describe('experiment actions', () => {
       act(() => clock.advanceBy(elapsedMs));
 
       const attemptedControls = [
+        within(screen.getByRole('group', { name: '玻璃方式' })).getByRole('radio', {
+          name: '关闭模糊',
+        }),
         within(screen.getByRole('group', { name: '动态等级' })).getByRole('radio', {
           name: '最大',
         }),
@@ -648,7 +725,11 @@ describe('experiment actions', () => {
         screen.getByRole('checkbox', { name: '触摸视差' }),
         screen.getByRole('checkbox', { name: '卡片浮动' }),
         screen.getByRole('checkbox', { name: '模拟减少动态' }),
+        within(screen.getByRole('group', { name: 'HUD' })).getByRole('radio', {
+          name: '展开',
+        }),
         screen.getByRole('button', { name: '重置设置' }),
+        screen.getByRole('button', { name: '关闭' }),
       ];
 
       for (const control of attemptedControls) {

@@ -52,6 +52,10 @@ export function HomeScreen({
   const motionEnabled = effectiveSettings.motionLevel !== 'off';
   const particlePaused =
     !visible || !effectiveSettings.backgroundMotion || !motionEnabled;
+  const suiteActive =
+    benchmarkController.suiteState.status === 'settling' ||
+    benchmarkController.suiteState.status === 'running' ||
+    benchmarkController.suiteState.status === 'waiting-for-visibility';
 
   useTouchParallax(
     screenRef,
@@ -95,18 +99,21 @@ export function HomeScreen({
         <button
           aria-expanded={panelOpen}
           className="tap-target home-screen__experiment-toggle"
+          disabled={benchmarkController.workloadLocked}
           onClick={() => onPanelOpenChange(!panelOpen)}
           type="button"
         >
           实验控制
         </button>
-        {benchmarkController.state.status === 'running' && !panelOpen ? (
+        {benchmarkController.workloadLocked && !panelOpen ? (
           <button
             className="tap-target home-screen__experiment-toggle"
-            onClick={benchmarkController.cancel}
+            onClick={
+              suiteActive ? benchmarkController.cancelSuite : benchmarkController.cancel
+            }
             type="button"
           >
-            取消 Benchmark
+            {suiteActive ? '取消全部' : '取消 Benchmark'}
           </button>
         ) : null}
       </header>
@@ -119,7 +126,12 @@ export function HomeScreen({
         <ServiceGrid mode={mode} onSelect={setActiveService} />
       </div>
       <BottomNav mode={mode} onSelect={setSelectedNav} selectedItem={selectedNav} />
-      <PerformanceHud mode={effectiveSettings.hudMode} runtime={performanceRuntime} />
+      <PerformanceHud
+        mode={effectiveSettings.hudMode}
+        onModeChange={(hudMode) => onSettingsChange({ hudMode })}
+        runtime={performanceRuntime}
+        workloadLocked={benchmarkController.workloadLocked}
+      />
       {activeService ? (
         <ExperimentalPlaceholder
           onClose={() => setActiveService(null)}

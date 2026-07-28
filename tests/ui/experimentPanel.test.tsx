@@ -16,7 +16,7 @@ describe('ExperimentPanel', () => {
 
     await user.click(screen.getByRole('button', { name: '实验控制' }));
     const group = screen.getByRole('group', { name: '玻璃方式' });
-    await user.click(within(group).getByRole('radio', { name: 'Preblur Layer' }));
+    await user.click(within(group).getByRole('radio', { name: '预模糊层' }));
 
     expect(within(group).getAllByRole('radio', { checked: true })).toHaveLength(1);
     expect(screen.getByRole('main')).toHaveAttribute('data-glass-mode', 'preblur');
@@ -65,7 +65,7 @@ describe('ExperimentPanel', () => {
     }
   });
 
-  it('uses disclosure semantics and highlights exactly one selected option per group', async () => {
+  it('uses modal disclosure semantics and highlights one selected option per group', async () => {
     const user = userEvent.setup();
     render(<App />);
     const opener = screen.getByRole('button', { name: '实验控制' });
@@ -73,10 +73,9 @@ describe('ExperimentPanel', () => {
     expect(opener).toHaveAttribute('aria-expanded', 'false');
     await user.click(opener);
 
-    const panel = screen.getByRole('region', { name: '实验控制' });
+    const panel = screen.getByRole('dialog', { name: '实验控制' });
     expect(opener).toHaveAttribute('aria-expanded', 'true');
-    expect(panel).not.toHaveAttribute('aria-modal');
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(panel).toHaveAttribute('aria-modal', 'true');
 
     for (const name of ['玻璃方式', '动态等级', '粒子数量', '像素密度', 'HUD']) {
       const group = screen.getByRole('group', { name });
@@ -84,9 +83,44 @@ describe('ExperimentPanel', () => {
       expect(group.querySelectorAll('label.glass-surface--selected')).toHaveLength(1);
     }
 
-    await user.click(within(panel).getByRole('button', { name: '收起' }));
+    await user.click(within(panel).getByRole('button', { name: '关闭' }));
     expect(opener).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('region', { name: '实验控制' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: '实验控制' })).not.toBeInTheDocument();
+  });
+
+  it('enters, cycles and restores focus for the modal sheet', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const opener = screen.getByRole('button', { name: '实验控制' });
+
+    await user.click(opener);
+    const dialog = screen.getByRole('dialog', { name: '实验控制' });
+    const close = within(dialog).getByRole('button', { name: '关闭' });
+    expect(close).toHaveFocus();
+
+    await user.tab({ shift: true });
+    const enabled = within(dialog)
+      .getAllByRole('button')
+      .filter((button) => !button.hasAttribute('disabled'));
+    expect(enabled.at(-1)).toHaveFocus();
+
+    await user.tab();
+    expect(close).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: '实验控制' })).toBeNull();
+    expect(opener).toHaveFocus();
+  });
+
+  it('dismisses from the idle scrim and restores the opener', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const opener = screen.getByRole('button', { name: '实验控制' });
+
+    await user.click(opener);
+    await user.click(screen.getByTestId('experiment-panel-scrim'));
+
+    expect(screen.queryByRole('dialog', { name: '实验控制' })).toBeNull();
+    expect(opener).toHaveFocus();
   });
 
   it('resets defaults and persists the exact next state', async () => {
@@ -95,10 +129,10 @@ describe('ExperimentPanel', () => {
 
     await user.click(screen.getByRole('button', { name: '实验控制' }));
     const group = screen.getByRole('group', { name: '玻璃方式' });
-    await user.click(within(group).getByRole('radio', { name: 'Blur Off' }));
+    await user.click(within(group).getByRole('radio', { name: '关闭模糊' }));
     await user.click(screen.getByRole('button', { name: '重置设置' }));
 
-    expect(within(group).getByRole('radio', { name: 'Real Blur' })).toBeChecked();
+    expect(within(group).getByRole('radio', { name: '真实模糊' })).toBeChecked();
     expect(JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}')).toEqual({
       schemaVersion: 1,
       settings: {
