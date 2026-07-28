@@ -75,10 +75,10 @@ Phase 7
 
 ### Phase 7: 紧凑布局与四模式 Baseline Suite
 
-- [ ] 修正首页、HUD、实验抽屉与 Safe Area 布局
-- [ ] 以 TDD 实现独立 `BaselineSuiteRunner` 和恢复/失败语义
-- [ ] 将单模式与批量报告统一升级为 schema v2 `runs[]`
-- [ ] 更新文档并完成五视口、完整 132 秒桌面 Suite 与全量门禁
+- [x] 修正首页、HUD、实验抽屉与 Safe Area 布局
+- [x] 以 TDD 实现独立 `BaselineSuiteRunner` 和恢复/失败语义
+- [x] 将单模式与批量报告统一升级为 schema v2 `runs[]`
+- [ ] 更新文档并完成五视口、完整 132 秒桌面 Suite 与全量门禁（文档与本地门禁已完成；浏览器验收待主代理）
 - [ ] 审查、PR 合并、Pages 部署与线上复核
 - **Status:** in_progress
 
@@ -103,14 +103,17 @@ Phase 7
 
 ## Errors Encountered
 
-| Error                                         | Attempt | Resolution                                                                                            |
-| --------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
-| 空目录执行 Git 检查返回“not a git repository” | 1       | 先创建远程，再在正确空目录执行 `git init -b main`                                                     |
-| 沙箱 Git 报 `dubious ownership`               | 1       | 不改系统配置；所有沙箱 Git 命令显式使用 `-c safe.directory=C:/Project/lancelot-gamepal-ui-playground` |
-| 帧基准首次 GREEN 被长帧拉高为 12ms            | 1       | 使用低四分位建立稳定窗口后再取中位数；10 个帧测试通过                                                 |
-| ESLint 报测试 fake cancel 的 `_id` 未使用     | 1       | 提交前将 fake cancel 改为无参数实现；lint 通过且未降低规则                                            |
-| `gh pr checks` 对无检查项分支返回退出码 1     | 1       | 通过 PR mergeability、本地 48 项门禁和 Pages workflow 全门禁确认可合并                                |
-| 主工作树 ESLint 扫描嵌套已合并 worktree       | 1       | 清理已合并 worktree 后重跑；typecheck、lint、format 与 48 项测试全部通过                              |
+| Error                                            | Attempt | Resolution                                                                                            |
+| ------------------------------------------------ | ------- | ----------------------------------------------------------------------------------------------------- |
+| 空目录执行 Git 检查返回“not a git repository”    | 1       | 先创建远程，再在正确空目录执行 `git init -b main`                                                     |
+| 沙箱 Git 报 `dubious ownership`                  | 1       | 不改系统配置；所有沙箱 Git 命令显式使用 `-c safe.directory=C:/Project/lancelot-gamepal-ui-playground` |
+| 帧基准首次 GREEN 被长帧拉高为 12ms               | 1       | 使用低四分位建立稳定窗口后再取中位数；10 个帧测试通过                                                 |
+| ESLint 报测试 fake cancel 的 `_id` 未使用        | 1       | 提交前将 fake cancel 改为无参数实现；lint 通过且未降低规则                                            |
+| `gh pr checks` 对无检查项分支返回退出码 1        | 1       | 通过 PR mergeability、本地 48 项门禁和 Pages workflow 全门禁确认可合并                                |
+| 主工作树 ESLint 扫描嵌套已合并 worktree          | 1       | 清理已合并 worktree 后重跑；typecheck、lint、format 与 48 项测试全部通过                              |
+| Prettier 写入 linked worktree 文档时报 EPERM     | 1       | 在授权上下文只机械格式化 Task 4 的三个文档；未扩大文件范围                                            |
+| 首次 Task 4 `format:check` 发现模板未格式化      | 1       | 格式化最后修改的设备模板后重跑，全部文件通过                                                          |
+| Vite 清理当前 worktree 的 `dist/assets` 报 EPERM | 1       | 最终构建在授权上下文重跑，53 modules、151ms 成功                                                      |
 
 ## Notes
 

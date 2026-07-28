@@ -283,6 +283,19 @@
 - 新鲜基线为 17 files / 136 tests passed，耗时 19.61 秒。
 - 已固化专项实施计划 `docs/superpowers/plans/2026-07-29-layout-baseline-suite.md`；下一步按 SDD/TDD 从 Task 1 RED 开始。
 
+## Phase 7 Task 1–4 local checkpoint: 2026-07-29
+
+- Task 1 `BaselineSuiteRunner` 已提交为 `9963846`，修复 settle 采样边界为 `9b9c809`；独立审查 clean。
+- Task 2 schema v2 控制器/报告已提交为 `505850c`，修复卸载设置与 Reduced Motion 冻结为 `89d8ed7`；独立审查 clean。
+- Task 3 紧凑布局、HUD 与模态抽屉已提交为 `bae93f7`，两轮布局/焦点修复为 `de07213`、`eb2aa74`；独立审查 clean。
+- Task 4 已更新 README、性能指标、真机模板与 fidelity ledger，明确四模式固定顺序、3+30 秒、精确 132 秒、schema v2、前台比较资格、后台/旋转终止、一次真机 Suite、固定顺序热偏差与 pending-device 边界。
+- 新增完整 App→controller→report 集成断言；focused 为 1 file / 4 tests passed，并确认 4 个 ordered runs 均为 30 秒、完整前台且可比较。
+- 本地静态门禁：TypeScript 退出 0（1.8s）、ESLint 退出 0（1.7s）、Prettier 全部文件通过；全量 Vitest 为 20 files / 179 tests passed（6.48s）。
+- 生产构建首次在清理 linked worktree 的 `dist/assets` 时被沙箱以 EPERM 拒绝；最终同一 typecheck + Vite build 在授权上下文重跑，53 modules transformed、151ms，产出 `index-BrBFbAci.css`、`index-CI60FQOQ.js` 与 `web-vitals-BxxX5THq.js`。
+- `git diff --check` 退出 0。相对 `b7b421b` 的 3,673 条新增行扫描结果：生产/文档敏感凭据 0、绝对用户路径 0、tracked `.env` 0、变更素材文件 0；唯一 secret-pattern 命中是测试夹具字面量 `run-secret-token`，已人工确认不是真实凭据。
+- 发现计划缺口：runner 只公开并重置 `consecutiveInterruptions`，无法在完成报告保留 Suite 累计/逐模式中断计数；已通知主代理，Task 5 整体审查前修正并补测试，本任务不越界修改 runner。
+- 仍待主代理完成：当前紧凑版五视口生产预览、390×844 完整 132 秒桌面 Suite/导出、最终整体审查、PR/Pages 和线上复核。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
+
 ---
 
 _每个阶段和每次错误后更新本文件。_

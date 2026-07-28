@@ -150,6 +150,67 @@ describe('App suite settings ownership', () => {
     expect(report.runs.map(({ glassMode }) => glassMode)).toEqual(['real']);
   });
 
+  it('publishes a completed suite as four ordered schema v2 runs', async () => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const writeText = vi.fn<(text: string) => Promise<void>>(async () => undefined);
+    const dependencies: ReportActionDependencies = {
+      clipboard: { writeText },
+      document,
+      Blob,
+      url: {
+        createObjectURL: () => 'blob:report',
+        revokeObjectURL: () => undefined,
+      },
+      now: () => new Date('2026-07-29T00:00:00.000Z'),
+    };
+    const clock = new FakeClock();
+    render(<App benchmarkClock={clock} reportActionDependencies={dependencies} />);
+    if (!home.controller) throw new Error('Expected controller from HomeScreen');
+
+    act(() => home.controller?.startSuite());
+    act(() => clock.advanceBy(132_000));
+    if (!home.reportActions) throw new Error('Expected report actions from HomeScreen');
+    await act(() => home.reportActions?.copyJson());
+    const report = JSON.parse(writeText.mock.calls[0]?.[0] ?? '{}') as {
+      schemaVersion: number;
+      reportType: string;
+      benchmark: {
+        status: string;
+        elapsedMs: number;
+        completedModes: string[];
+      };
+      runs: Array<{
+        glassMode: string;
+        elapsedMs: number;
+        completedInForeground: boolean;
+        eligibleForComparison: boolean;
+      }>;
+    };
+    const expectedOrder = ['real', 'simulated', 'preblur', 'off'];
+
+    expect(report).toMatchObject({
+      schemaVersion: 2,
+      reportType: 'suite',
+      benchmark: {
+        status: 'completed',
+        elapsedMs: 132_000,
+        completedModes: expectedOrder,
+      },
+    });
+    expect(report.runs.map(({ glassMode }) => glassMode)).toEqual(expectedOrder);
+    expect(report.runs).toHaveLength(4);
+    expect(report.runs).toEqual(
+      expectedOrder.map((glassMode) =>
+        expect.objectContaining({
+          glassMode,
+          elapsedMs: 30_000,
+          completedInForeground: true,
+          eligibleForComparison: true,
+        }),
+      ),
+    );
+  });
+
   it('freezes the effective reduced-motion decision for the active suite workload', () => {
     const mediaQuery = createMediaQuery(false);
     vi.stubGlobal(

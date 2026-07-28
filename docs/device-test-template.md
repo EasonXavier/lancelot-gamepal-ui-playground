@@ -11,7 +11,7 @@
 | 测试人员代号（可选） | `TODO` |
 | 页面 URL             | `TODO` |
 | 页面 build version   | `TODO` |
-| 报告 schemaVersion   | `TODO` |
+| 报告 schemaVersion   | `2`    |
 
 ## 2. 设备与软件环境
 
@@ -66,26 +66,52 @@
 | 人物、字体、Canvas 与玻璃资源加载    | `pass/fail/pending`       |                                       |
 | 触摸按钮与滚动无误触                 | `pass/fail/pending`       |                                       |
 | 触摸视差可用/降级合理                | `pass/fail/pending`       |                                       |
-| 前台运行 30 秒 Benchmark             | `pass/fail/pending`       |                                       |
-| UI 已观察到终态 `completed`          | `pass/fail/pending`       | 必填截图/录屏编号；JSON 不导出 status |
-| 确认本轮未点击“取消 Benchmark”       | `pass/fail/pending`       | 必填人工记录                          |
-| 切后台后暂停并标记未完整前台         | `pass/fail/pending`       |                                       |
-| 回前台后页面可继续操作               | `pass/fail/pending`       |                                       |
+| 前台运行完整 132 秒 Baseline Suite   | `pass/fail/pending`       | 四个模式各 3 秒稳定 + 30 秒 Benchmark |
+| UI 与 JSON 终态均为 `completed`      | `pass/fail/pending`       | 必填截图/录屏编号                     |
+| 四个 `runs[]` 均为完整前台可比较项   | `pass/fail/pending`       | 两个布尔字段都应为 `true`             |
+| 确认本轮未点击“取消全部”             | `pass/fail/pending`       | 必填人工记录                          |
+| 切后台后活动 run 作废                | `pass/fail/pending`       | 已完成 run 应保留                     |
+| 回前台后从该模式 3 秒稳定阶段重开始  | `pass/fail/pending`       | 不沿用被中断样本                      |
+| 同模式连续第三次后台中断后失败       | `pass/fail/pending`       | `visibility-interruption-limit`       |
+| Suite 期间旋转立即失败并丢弃活动 run | `pass/fail/pending`       | 已完成 run 应保留                     |
 | 复制 JSON                            | `pass/fail/pending`       | 微信权限/提示                         |
 | 下载 JSON                            | `pass/fail/pending`       | 微信可能限制下载，记录实际行为        |
 | 复制摘要                             | `pass/fail/pending`       |                                       |
 | 控制台错误（如可取得）               | `0` / `TODO` / `不可取得` |                                       |
 
-## 6. 模式矩阵
+## 6. 四模式 Baseline Suite
 
-固定 Motion、粒子、DPR 和动态开关，只切换 Glass；每个组合建议完整运行 3 次。若浏览器不支持某指标，记录状态，不填 0。
+固定 Motion、粒子、DPR 和动态开关，点击一次“四模式 Baseline Suite”。实现会冻结这些设置，只临时覆盖 Glass，并固定按 `real → simulated → preblur → off` 执行。一次无中断测试的精确总时长为
+`4 × (3 秒稳定 + 30 秒 Benchmark) = 132 秒`。
 
-| Glass Mode  | Motion | 粒子   | DPR    | Run 1 报告 | Run 2 报告 | Run 3 报告 | UI `completed`/未取消证据 | 前台完整 | 视觉异常/备注 |
-| ----------- | ------ | ------ | ------ | ---------- | ---------- | ---------- | ------------------------- | -------- | ------------- |
-| `real`      | `TODO` | `TODO` | `TODO` | `TODO`     | `TODO`     | `TODO`     | `TODO`                    | `TODO`   |               |
-| `simulated` | `TODO` | `TODO` | `TODO` | `TODO`     | `TODO`     | `TODO`     | `TODO`                    | `TODO`   |               |
-| `preblur`   | `TODO` | `TODO` | `TODO` | `TODO`     | `TODO`     | `TODO`     | `TODO`                    | `TODO`   |               |
-| `off`       | `TODO` | `TODO` | `TODO` | `TODO`     | `TODO`     | `TODO`     | `TODO`                    | `TODO`   |               |
+### Suite 记录
+
+| 字段                           | 填写值                                   |
+| ------------------------------ | ---------------------------------------- |
+| 报告文件                       | `TODO`                                   |
+| `benchmark.status`             | `TODO`；正式 baseline 必须为 `completed` |
+| `benchmark.order`              | `real, simulated, preblur, off`          |
+| `benchmark.elapsedMs`          | `TODO`；无中断完成应为 `132000`          |
+| `benchmark.completedModes`     | `TODO`                                   |
+| `benchmark.interruptions`      | `TODO`                                   |
+| `benchmark.terminatedPhase`    | `TODO`                                   |
+| `benchmark.failureReason`      | `TODO`                                   |
+| UI 状态/录屏编号               | `TODO`                                   |
+| 开始/结束设备主观温度          | `TODO` / `TODO`                          |
+| 是否观察到后序模式热衰减可能性 | `是` / `否` / `无法判断`                 |
+
+### 四行 baseline
+
+若浏览器不支持某指标，记录结构化状态，不填 0。Suite UI 摘要只比较下列三项，不计算综合分数。
+
+| 顺序 | Glass Mode  | Average FPS | P95 Frame Time | Estimated Dropped Frames | 完整前台 | 可比较 | 视觉异常/备注 |
+| ---- | ----------- | ----------- | -------------- | ------------------------ | -------- | ------ | ------------- |
+| 1    | `real`      | `TODO`      | `TODO`         | `TODO`                   | `TODO`   | `TODO` |               |
+| 2    | `simulated` | `TODO`      | `TODO`         | `TODO`                   | `TODO`   | `TODO` |               |
+| 3    | `preblur`   | `TODO`      | `TODO`         | `TODO`                   | `TODO`   | `TODO` |               |
+| 4    | `off`       | `TODO`      | `TODO`         | `TODO`                   | `TODO`   | `TODO` |               |
+
+当前真机验收允许一次完整 Suite。固定顺序存在热累积/热衰减偏差；若需要严格统计，在设备冷却到相近状态后重复整个 Suite，并把每份四行原始结果全部保留，不只挑最好一次。
 
 如需比较负载档位，复制下面的行并保持 Glass 与其他设置固定：
 
@@ -114,7 +140,7 @@
 - 截图/录屏清单：`TODO`
 - 无法测量的指标及状态：`TODO`
 - 异常复现步骤：`TODO`
-- 同环境三次运行的中位数/离散情况：`TODO`
+- 同环境重复 Suite 的中位数/离散情况（如执行）：`TODO`
 - 结论：`TODO`
 - 是否需要复测：`TODO`
 
@@ -123,5 +149,7 @@
 - [ ] JSON 没有姓名、账号、Cookie、Token、IP、精确位置或私有 URL。
 - [ ] `userAgent` 与截图状态栏已人工检查，不含不希望公开的标识。
 - [ ] 报告、截图与本模板使用匿名设备代号。
-- [ ] 每份纳入正式比较的报告都有 UI 终态 `completed` 的截图/录屏编号，并确认本轮未取消。
-- [ ] 取消报告、缺少完成证据的报告以及 `completedInForeground !== true` 的结果均未用于正式横向比较。
+- [ ] 每份纳入正式比较的报告均为 schema v2，且 UI/JSON 终态都是 `completed`。
+- [ ] 四模式比较只使用顺序完整的 4 个 run；每项都满足 `completedInForeground === true` 与 `eligibleForComparison === true`。
+- [ ] 取消、失败、部分完成、缺少完成证据或任一不可比较 run 均未用于正式四模式横向比较。
+- [ ] 结论明确记录固定顺序热偏差；如做严格统计，已保留全部重复 Suite 原始报告。

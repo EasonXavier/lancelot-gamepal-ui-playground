@@ -16,9 +16,9 @@
 
 - 四种互斥 Glass Mode：`Real Blur`、`Simulated Glass`、`Preblur Layer`、`Blur Off`；内容、布局、图片与交互树保持一致。
 - 五档动态、五档粒子数量、三档 Canvas DPR，以及背景动态、触摸视差、卡片浮动和模拟减少动态开关。
-- `compact`、`expanded`、`hidden` 三种性能 HUD 显示方式。
-- 固定 30 秒 Benchmark、本地 JSON/摘要复制和 JSON 下载。
-- 页面隐藏时暂停采样；Benchmark 若未全程处于前台，会在报告中标记。
+- `compact`、`expanded`、`hidden` 三种性能 HUD 显示方式；HUD 默认是可点击的单行胶囊，隐藏后可从设置恢复。
+- 单模式 30 秒 Benchmark，以及固定顺序的四模式 Baseline Suite；报告可在本地复制 JSON/摘要或下载 JSON。
+- 页面隐藏时按测试类型应用不同规则，并在 schema v2 报告中保留完成性与比较资格。
 
 页面采用移动优先布局。品牌固定为“朗世乐”；游戏栏为低高度四选项，只有当前游戏显示近似图标；六个服务入口保持不同宽高；普通玻璃不发光，仅选中态使用暖色强调。
 
@@ -54,17 +54,17 @@ Pages workflow 会在 `main` 推送时运行 `npm ci`，再执行 lint、测试�
 
 ## 使用实验控制
 
-1. 打开右上角“实验控制”。
-2. 先固定设备、方向、网络与其余设置，只改变一个待比较变量。
-3. 选择 Glass、动态、粒子、DPR 与 HUD 模式；设置保存在当前浏览器的 `localStorage`，可用“重置设置”恢复默认值。
-4. 点击“运行 30 秒 Benchmark”。运行期间会锁定会改变负载的设置；可随时取消。
-5. 等待控制面板状态显示 `completed`，确认本轮没有点击取消，再使用“复制 JSON”“下载 JSON”或“复制摘要”保存结果。报告只在浏览器本地生成，不会上传。
+1. 打开右上角“实验控制”。控制区是约 `82dvh` 的模态底部抽屉；闲置时可用 Escape 或遮罩关闭。
+2. 先固定设备、方向、网络与 Glass 之外的设置。Glass、动态、粒子、DPR 与 HUD 设置保存在当前浏览器的 `localStorage`，可用“重置设置”恢复默认值。
+3. 推荐点击“四模式 Baseline Suite”。它固定按 `Real Blur → Simulated → Preblur → Blur Off` 执行；每个模式先稳定 3 秒，再完整运行现有 30 秒 Benchmark，总计精确 132 秒。四次临时 Glass 覆盖不会写入 `localStorage`。
+4. 如只需检查当前 Glass，也可运行单模式 30 秒 Benchmark。单模式与 Suite 互斥；运行期间会锁定所有会改变负载的设置，复制、下载和取消仍可用。
+5. 等待状态进入 `completed` 后，再使用“复制 JSON”“下载 JSON”或“复制摘要”保存 schema v2 报告。报告只在浏览器内存中生成，新测试会替换旧报告，不会上传或建立历史数据库。
 
 Benchmark 的固定阶段为：`warmup` 3 秒、`ambient` 8 秒、`stress` 8 秒、`scroll-transition` 8 秒、`summarize` 3 秒。各阶段如何应用设置、如何滚动/开合面板，以及报告的聚合边界见[性能指标说明](./docs/performance-metrics.md)。
 
 ## 已验证与当前局限
 
-已在桌面浏览器的 375×812、390×844、393×852、430×932、844×390 外层视口验证无横向溢出，并验证 Glass/Motion/HUD 切换、Benchmark 锁定与取消恢复、JSON 复制以及 Pages 子路径资源加载。该证据只代表桌面浏览器模拟环境。
+自动化测试覆盖 Suite 的固定顺序、132 秒边界、取消/后台/旋转终止、报告结构、焦点循环和运行锁定。合并前的桌面生产预览门禁还会检查 375×812、390×844、393×852、430×932、844×390，以及一次完整 132 秒 Suite。即使这些桌面门禁通过，也只代表桌面浏览器模拟环境。
 
 以下项目仍为 **pending**，不能由桌面设备模拟器代替：
 
@@ -74,7 +74,9 @@ Benchmark 的固定阶段为：`warmup` 3 秒、`ambient` 8 秒、`stress` 8 秒
 
 浏览器对 Performance API 的支持并不一致。HUD/JSON 中的 `waiting`、`unsupported`、`not-measurable` 是有效状态，不应当当作数值 `0`。最终结论必须附设备与环境记录，并优先比较同设备、同浏览器版本、同方向和同网络条件下的多次运行。
 
-`benchmark.completedInForeground: true` 只能说明运行期间没有观察到页面进入后台，不能单独证明 30 秒流程完成。只有同时在 UI 观察到终态 `completed`、确认没有取消，且该字段为 `true` 的报告才能用于正式横向比较；取消时捕获的报告必须排除。当前 schema 1 JSON 不导出 Benchmark 的 `status` 或 `elapsedMs`，因此必须在设备记录中另存 UI 终态证据。
+schema v2 将单模式与 Suite 统一为顶层 `benchmark` 和 `runs[]`。每个可比较 run 必须是完整 30 秒、`completedInForeground: true` 且 `eligibleForComparison: true`；Suite 的最终横向比较只接受四个完整前台 run。取消或失败会丢弃活动 run，但可保留此前完整完成的 run；这些报告的终态、完成模式、中断次数、终止阶段和失败原因都在 `benchmark` 中明确记录。
+
+固定 Suite 顺序方便一次真机操作得到四模式 baseline，但后运行模式可能受设备热衰减影响。当前真机验收允许一次完整 Suite；需要严格统计时，应在设备冷却到相近状态后重复完整 Suite，并报告原始结果与离散程度，而不是将固定顺序解释为无偏随机实验。
 
 ## 安全与素材
 
