@@ -206,6 +206,18 @@ describe('suite benchmark controller ownership', () => {
     ]);
   });
 
+  it('restores temporary suite settings when the hook unmounts while active', () => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const view = renderController();
+
+    act(() => view.result.current.startSuite());
+    expect(view.overrides.at(-1)).toMatchObject({ glassMode: 'real' });
+
+    view.unmount();
+
+    expect(view.overrides.at(-1)).toBeNull();
+  });
+
   it.each([
     ['settle cancellation', 1_000, 'cancel'],
     ['run cancellation', 4_000, 'cancel'],

@@ -294,10 +294,14 @@ export function useBenchmarkController(
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      const suiteWasActive = isSuiteActive(suiteRunner.getState().status);
       runner.cancel();
       suiteRunner.cancel();
+      if (suiteWasActive) {
+        restoreSuiteSettings();
+      }
     };
-  }, [runner, suiteRunner]);
+  }, [restoreSuiteSettings, runner, suiteRunner]);
 
   const start = useCallback(() => {
     if (

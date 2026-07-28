@@ -61,6 +61,9 @@ export function App({
   const [benchmarkProfile, setBenchmarkProfile] = useState<BenchmarkProfile>('idle');
   const [benchmarkSettingsOverride, setBenchmarkSettingsOverride] =
     useState<ExperimentSettings | null>(null);
+  const [benchmarkReducedMotionOverride, setBenchmarkReducedMotionOverride] = useState<
+    boolean | null
+  >(null);
   const systemReducedMotion = useReducedMotion();
   const visible = useVisibility();
   const effectiveSettings = useMemo(
@@ -68,8 +71,10 @@ export function App({
     [settings, systemReducedMotion],
   );
   const benchmarkEffectiveSettings = benchmarkSettingsOverride ?? effectiveSettings;
-  const reducedMotionEffective =
+  const liveReducedMotionEffective =
     systemReducedMotion || settings.reducedMotionSimulation;
+  const reducedMotionEffective =
+    benchmarkReducedMotionOverride ?? liveReducedMotionEffective;
   const displayedSettings = useMemo(
     () =>
       applyBenchmarkProfile(
@@ -89,6 +94,7 @@ export function App({
     );
   const startBenchmarkReport = useCallback(
     (reportType: BenchmarkReportType, settingsAtStart: ExperimentSettings) => {
+      setBenchmarkReducedMotionOverride(liveReducedMotionEffective);
       setBenchmarkReportSnapshot(
         buildReportSnapshot(
           reportType,
@@ -98,7 +104,7 @@ export function App({
         ),
       );
     },
-    [systemReducedMotion],
+    [liveReducedMotionEffective, systemReducedMotion],
   );
   const captureBenchmarkReport = useCallback((capture: BenchmarkResultCapture) => {
     setBenchmarkReportSnapshot((current) => {
@@ -115,6 +121,7 @@ export function App({
     });
   }, []);
   const finishBenchmarkReport = useCallback((terminal: BenchmarkReportTerminal) => {
+    setBenchmarkReducedMotionOverride(null);
     setBenchmarkReportSnapshot((current) => {
       if (current.reportType !== terminal.reportType) return current;
       return {

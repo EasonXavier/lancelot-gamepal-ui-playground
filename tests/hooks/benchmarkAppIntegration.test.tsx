@@ -21,6 +21,29 @@ const home = vi.hoisted(() => ({
   settings: null as ExperimentSettings | null,
 }));
 
+type MediaQueryListener = (event: MediaQueryListEvent) => void;
+
+function createMediaQuery(initialMatches: boolean) {
+  const listeners = new Set<MediaQueryListener>();
+  const query = {
+    media: '(prefers-reduced-motion: reduce)',
+    matches: initialMatches,
+    addEventListener: vi.fn((type: string, listener: MediaQueryListener) => {
+      if (type === 'change') listeners.add(listener);
+    }),
+    removeEventListener: vi.fn((type: string, listener: MediaQueryListener) => {
+      if (type === 'change') listeners.delete(listener);
+    }),
+    setMatches(matches: boolean) {
+      query.matches = matches;
+      listeners.forEach((listener) =>
+        listener({ matches, media: query.media } as MediaQueryListEvent),
+      );
+    },
+  };
+  return query;
+}
+
 vi.mock('../../src/experiments/home/HomeScreen', () => ({
   HomeScreen: (props: {
     benchmarkController: BenchmarkController;
@@ -30,7 +53,12 @@ vi.mock('../../src/experiments/home/HomeScreen', () => ({
     home.controller = props.benchmarkController;
     home.reportActions = props.reportActions;
     home.settings = props.effectiveSettings;
-    return <main data-glass-mode={props.effectiveSettings.glassMode} />;
+    return (
+      <main
+        data-glass-mode={props.effectiveSettings.glassMode}
+        data-motion-level={props.effectiveSettings.motionLevel}
+      />
+    );
   },
 }));
 
@@ -71,6 +99,7 @@ afterEach(() => {
   home.reportActions = null;
   home.settings = null;
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('App suite settings ownership', () => {
@@ -119,5 +148,26 @@ describe('App suite settings ownership', () => {
 
     expect(report.benchmark.completedModes).toEqual(['real']);
     expect(report.runs.map(({ glassMode }) => glassMode)).toEqual(['real']);
+  });
+
+  it('freezes the effective reduced-motion decision for the active suite workload', () => {
+    const mediaQuery = createMediaQuery(false);
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => mediaQuery),
+    );
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const clock = new FakeClock();
+    render(<App benchmarkClock={clock} />);
+    if (!home.controller) throw new Error('Expected controller from HomeScreen');
+
+    act(() => home.controller?.startSuite());
+    act(() => mediaQuery.setMatches(true));
+    act(() => clock.advanceBy(14_000));
+
+    expect(screen.getByRole('main')).toHaveAttribute('data-motion-level', 'maximum');
+
+    act(() => home.controller?.cancelSuite());
+    expect(screen.getByRole('main')).toHaveAttribute('data-motion-level', 'off');
   });
 });
