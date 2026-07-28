@@ -373,11 +373,21 @@ describe('experiment actions', () => {
     render(<App benchmarkClock={clock} performanceRuntime={new FakeRuntime()} />);
     await user.click(screen.getByRole('button', { name: '实验控制' }));
     await user.click(screen.getByRole('button', { name: '开始全部' }));
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    focus.mockClear();
 
     act(() => clock.advanceBy(22_000));
 
     expect(screen.queryByRole('dialog', { name: '实验控制' })).toBeNull();
     expect(screen.getByRole('button', { name: '取消全部' })).toHaveFocus();
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(window.scrollY).toBe(document.documentElement.scrollHeight);
+
+    act(() => clock.advanceBy(8_000));
+
+    const reopenedDialog = screen.getByRole('dialog', { name: '实验控制' });
+    expect(reopenedDialog).toBeVisible();
+    expect(reopenedDialog).toContainElement(document.activeElement as HTMLElement);
   });
 
   it('renders every suite-labelled glass mode through the real HomeScreen without persisting overrides', async () => {

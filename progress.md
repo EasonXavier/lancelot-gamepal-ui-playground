@@ -298,7 +298,7 @@
 - 中断计数缺口已按 TDD 修复：runner 新增累计 `interruptions` 与 `interruptionsByMode`，连续计数仍独立驱动同模式第三次失败；控制器终止报告与 UI 均改读累计值。RED 为 4 个预期失败；GREEN 为 focused 5 files / 75 tests、全量 20 files / 182 tests，TypeScript、ESLint、Prettier 与生产构建均通过。
 - 主代理已完成五视口生产预览：全部无横向溢出、服务区不与底栏重叠，抽屉保持视口内且中部独立滚动；390×844 完整桌面 Suite 得到四个固定顺序结果，复制 JSON 显示成功，但浏览器隔离剪贴板未返回页面写入内容，字段结构继续由集成测试证明。
 - 报告链路补齐逐模式中断图：RED 为导出器、控制器与 App 共 4 个预期失败；GREEN 为 4 files / 37 tests。`BenchmarkReportTerminal`、App 快照与 schema v2 现均保留固定四键 `interruptionsByMode`，单模式全为 0，累计 `interruptions` 保持兼容。
-- 当前 HEAD 的新鲜门禁为 TypeScript、ESLint、Prettier 全部退出 0，Vitest 20 files / 182 tests passed；Vite 首次因预览后的 `dist/assets` 沙箱 EPERM 失败，停止预览后仍需在授权上下文重建，最终 53 modules / 144ms 成功。
+- 当前 HEAD 的新鲜门禁为 TypeScript、ESLint、Prettier 全部退出 0，Vitest 20 files / 185 tests passed；Vite 首次因预览后的 `dist/assets` 沙箱 EPERM 失败，停止预览后仍需在授权上下文重建，最终 53 modules / 144ms 成功。
 - 仍待主代理完成：最终整体审查、PR/Pages 和线上复核。真实非零 Safe Area、iOS/Android 微信 WebView 与真机 Suite 仍为 `pending-device`。
 
 ---

@@ -61,7 +61,7 @@ export function HomeScreen({
 
   useEffect(() => {
     if (benchmarkController.workloadLocked && !panelOpen) {
-      externalCancelRef.current?.focus();
+      externalCancelRef.current?.focus({ preventScroll: true });
     }
   }, [benchmarkController.workloadLocked, panelOpen]);
 
