@@ -273,6 +273,39 @@ describe('suite benchmark controller ownership', () => {
     });
   });
 
+  it('reports cumulative interruptions after interrupted modes complete successfully', () => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const view = renderController();
+
+    act(() => view.result.current.startSuite());
+    view.rerender({ settings: createDefaultSettings(), visible: false });
+    view.rerender({ settings: createDefaultSettings(), visible: true });
+    act(() => view.clock.advanceBy(33_000));
+
+    expect(view.result.current.suiteState).toMatchObject({
+      mode: 'simulated',
+      consecutiveInterruptions: 0,
+      interruptions: 1,
+      interruptionsByMode: { real: 1, simulated: 0, preblur: 0, off: 0 },
+    });
+
+    view.rerender({ settings: createDefaultSettings(), visible: false });
+    view.rerender({ settings: createDefaultSettings(), visible: true });
+    act(() => view.clock.advanceBy(99_000));
+
+    expect(view.result.current.suiteState).toMatchObject({
+      status: 'completed',
+      interruptions: 2,
+      interruptionsByMode: { real: 1, simulated: 1, preblur: 0, off: 0 },
+    });
+    expect(view.terminals.at(-1)).toMatchObject({
+      reportType: 'suite',
+      status: 'completed',
+      interruptions: 2,
+      completedModes: ['real', 'simulated', 'preblur', 'off'],
+    });
+  });
+
   it('retains completed suite runs but excludes the active run on cancellation', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     const view = renderController();

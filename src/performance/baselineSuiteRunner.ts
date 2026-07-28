@@ -35,6 +35,8 @@ export interface BaselineSuiteState {
   mode: GlassMode | null;
   modeIndex: number | null;
   elapsedMs: number;
+  interruptions: number;
+  interruptionsByMode: Readonly<Record<GlassMode, number>>;
   consecutiveInterruptions: number;
   failureReason: BaselineSuiteFailureReason | null;
   runs: ReadonlyArray<BaselineSuiteRun>;
@@ -45,6 +47,13 @@ export interface BaselineSuiteContext extends BenchmarkContext {
 }
 
 const SETTLE_DURATION_MS = 3_000;
+
+const createInterruptionCounts = (): Record<GlassMode, number> => ({
+  real: 0,
+  simulated: 0,
+  preblur: 0,
+  off: 0,
+});
 
 export class BaselineSuiteRunner {
   private readonly benchmarkRunner: BenchmarkRunner;
@@ -57,6 +66,8 @@ export class BaselineSuiteRunner {
     mode: null,
     modeIndex: null,
     elapsedMs: 0,
+    interruptions: 0,
+    interruptionsByMode: createInterruptionCounts(),
     consecutiveInterruptions: 0,
     failureReason: null,
     runs: [],
@@ -81,6 +92,8 @@ export class BaselineSuiteRunner {
       mode: BASELINE_MODE_ORDER[0],
       modeIndex: 0,
       elapsedMs: 0,
+      interruptions: 0,
+      interruptionsByMode: createInterruptionCounts(),
       consecutiveInterruptions: 0,
       failureReason: null,
       runs: [],
@@ -110,16 +123,32 @@ export class BaselineSuiteRunner {
       return;
     }
 
+    const mode = this.state.mode;
+    if (!mode) {
+      return;
+    }
     const consecutiveInterruptions = this.state.consecutiveInterruptions + 1;
+    const interruptions = this.state.interruptions + 1;
+    const interruptionsByMode = {
+      ...this.state.interruptionsByMode,
+      [mode]: this.state.interruptionsByMode[mode] + 1,
+    };
     this.stopCurrentAttempt();
     if (consecutiveInterruptions >= 3) {
-      this.state = { ...this.state, consecutiveInterruptions };
+      this.state = {
+        ...this.state,
+        interruptions,
+        interruptionsByMode,
+        consecutiveInterruptions,
+      };
       this.finish('failed', 'visibility-interruption-limit');
       return;
     }
     this.state = {
       ...this.state,
       status: 'waiting-for-visibility',
+      interruptions,
+      interruptionsByMode,
       consecutiveInterruptions,
     };
   }
@@ -137,6 +166,7 @@ export class BaselineSuiteRunner {
     return {
       ...this.state,
       elapsedMs,
+      interruptionsByMode: { ...this.state.interruptionsByMode },
       runs: this.state.runs.map((run) => ({ ...run })),
     };
   }

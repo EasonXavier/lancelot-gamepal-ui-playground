@@ -167,6 +167,13 @@ describe('BaselineSuiteRunner', () => {
       mode: null,
       modeIndex: null,
       elapsedMs: 132_000,
+      interruptions: 0,
+      interruptionsByMode: {
+        real: 0,
+        simulated: 0,
+        preblur: 0,
+        off: 0,
+      },
       consecutiveInterruptions: 0,
       failureReason: null,
       runs: [
@@ -366,6 +373,52 @@ describe('BaselineSuiteRunner', () => {
     expect(context.captures).toEqual(['real']);
   });
 
+  it('retains cumulative and per-mode interruptions after successful mode boundaries', () => {
+    const clock = new FakeClock();
+    const context = new FakeBaselineSuiteContext();
+    const runner = new BaselineSuiteRunner(clock);
+
+    runner.start(context);
+    runner.setVisibility(false);
+    runner.setVisibility(true);
+    clock.advanceBy(33_000);
+
+    expect(runner.getState()).toMatchObject({
+      status: 'settling',
+      mode: 'simulated',
+      consecutiveInterruptions: 0,
+      interruptions: 1,
+      interruptionsByMode: {
+        real: 1,
+        simulated: 0,
+        preblur: 0,
+        off: 0,
+      },
+    });
+
+    runner.setVisibility(false);
+    runner.setVisibility(true);
+    clock.advanceBy(99_000);
+
+    expect(runner.getState()).toMatchObject({
+      status: 'completed',
+      consecutiveInterruptions: 0,
+      interruptions: 2,
+      interruptionsByMode: {
+        real: 1,
+        simulated: 1,
+        preblur: 0,
+        off: 0,
+      },
+      runs: [
+        { mode: 'real' },
+        { mode: 'simulated' },
+        { mode: 'preblur' },
+        { mode: 'off' },
+      ],
+    });
+  });
+
   it('fails on the third consecutive visibility interruption', () => {
     const clock = new FakeClock();
     const context = new FakeBaselineSuiteContext();
@@ -385,6 +438,13 @@ describe('BaselineSuiteRunner', () => {
       mode: null,
       modeIndex: null,
       consecutiveInterruptions: 3,
+      interruptions: 3,
+      interruptionsByMode: {
+        real: 3,
+        simulated: 0,
+        preblur: 0,
+        off: 0,
+      },
       failureReason: 'visibility-interruption-limit',
       runs: [],
     });

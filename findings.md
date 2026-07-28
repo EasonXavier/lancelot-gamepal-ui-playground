@@ -2,6 +2,8 @@
 
 # Findings & Decisions
 
+- 2026-07-29 中断计数缺口已修复：`BaselineSuiteState.interruptions` 保留整个 Suite 的累计中断数，`interruptionsByMode` 保留四个模式各自的计数，`consecutiveInterruptions` 只用于当前模式连续第三次中断的失败判定。成功跨越模式边界只重置连续计数，不再清空 UI 或报告所需的累计历史。
+
 ## Requirements
 
 - 独立公开仓库：`EasonXavier/lancelot-gamepal-ui-playground`，默认分支 `main`，独立 GitHub Pages。

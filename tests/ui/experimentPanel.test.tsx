@@ -33,6 +33,8 @@ function renderCompletedSuiteResult(estimatedDroppedFrames?: number) {
       mode: null,
       modeIndex: null,
       elapsedMs: 132_000,
+      interruptions: 0,
+      interruptionsByMode: { real: 0, simulated: 0, preblur: 0, off: 0 },
       consecutiveInterruptions: 0,
       failureReason: null,
       runs: [

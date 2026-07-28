@@ -447,7 +447,7 @@ function BaselineSuiteCard({ controller }: { controller: BenchmarkController }) 
           <h3>四模式基线套件</h3>
           <p>预计 2 分 12 秒</p>
         </div>
-        <p>{`中断 ${suiteState.consecutiveInterruptions} 次`}</p>
+        <p>{`中断 ${suiteState.interruptions} 次`}</p>
       </div>
       <ol aria-label="四模式进度" className="experiment-panel__progress">
         {BASELINE_MODE_ORDER.map((mode) => {

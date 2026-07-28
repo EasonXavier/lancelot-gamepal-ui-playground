@@ -411,6 +411,16 @@ describe('experiment actions', () => {
     act(() => document.dispatchEvent(new Event('visibilitychange')));
     expect(within(suite).getByText('中断 1 次')).toBeVisible();
     expect(within(suite).getByText('模拟玻璃 · 等待页面可见')).toBeVisible();
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    });
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    act(() => clock.advanceBy(33_000));
+    expect(within(suite).getByText('中断 1 次')).toBeVisible();
+    expect(within(suite).getByText('预模糊层 · 准备')).toBeVisible();
+
     await user.click(within(suite).getByRole('button', { name: '取消全部' }));
     expect(within(suite).getByRole('button', { name: '取消全部' })).toBeDisabled();
   });

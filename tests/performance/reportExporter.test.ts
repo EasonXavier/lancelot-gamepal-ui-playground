@@ -159,6 +159,25 @@ describe('serializeReport', () => {
     });
   });
 
+  it('serializes the cumulative interruption total after completed suite modes', () => {
+    const snapshot = createSnapshot('suite', [
+      createRun('real'),
+      createRun('simulated'),
+      createRun('preblur'),
+      createRun('off'),
+    ]);
+    snapshot.benchmark.interruptions = 2;
+
+    const report = JSON.parse(serializeReport(snapshot)) as {
+      benchmark: { status: string; interruptions: number };
+    };
+
+    expect(report.benchmark).toMatchObject({
+      status: 'completed',
+      interruptions: 2,
+    });
+  });
+
   it('preserves null and explicit unsupported states instead of numeric zeroes', () => {
     const run = createRun();
     run.performance.frames.averageFps = null;

@@ -134,7 +134,7 @@ export function useBenchmarkController(
         status: currentState.status,
         elapsedMs: currentState.elapsedMs,
         completedModes: currentState.runs.map(({ mode }) => mode),
-        interruptions: currentState.consecutiveInterruptions,
+        interruptions: currentState.interruptions,
         terminatedPhase,
         failureReason: currentState.failureReason,
       });
