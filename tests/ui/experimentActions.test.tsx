@@ -165,10 +165,12 @@ function renderBenchmarkController(runtime: PerformanceRuntime, clock: FakeClock
       performanceRuntime: runtime,
       selectedGame: 'delta',
       visible: true,
+      onEffectiveSettingsOverrideChange: vi.fn(),
       onPanelOpenChange: vi.fn(),
       onProfileChange: vi.fn(),
+      onReportStart: vi.fn(),
+      onReportTerminal: vi.fn(),
       onResultCapture: vi.fn(),
-      onResultClear: vi.fn(),
       onSelectedGameChange: vi.fn(),
     }),
   );
@@ -426,7 +428,9 @@ describe('experiment actions', () => {
     await user.click(screen.getByRole('button', { name: '复制摘要' }));
 
     expect(screen.getByText('已复制')).toBeVisible();
-    expect(writeText.mock.calls.at(-1)?.[0]).toContain('Foreground Complete: no');
+    expect(writeText.mock.calls.at(-1)?.[0]).toContain(
+      'real | waiting | waiting | waiting | no | no',
+    );
   });
 
   it('catches missing actions or clipboard rejection becoming blocking or invisible', async () => {
@@ -728,11 +732,11 @@ describe('experiment actions', () => {
       if (!capturedJson || !capturedSummary) {
         throw new Error('Expected both captured report formats');
       }
-      const capturedFps = (
-        JSON.parse(capturedJson) as {
-          performance: { frames: { averageFps: number | null } };
-        }
-      ).performance.frames.averageFps;
+      const parsedReport = JSON.parse(capturedJson) as {
+        runs: Array<{ performance: { frames: { averageFps: number | null } } }>;
+      };
+      const capturedFps = parsedReport.runs[0]?.performance.frames.averageFps;
+      expect(parsedReport.runs).toHaveLength(cancel ? 0 : 1);
 
       const motion = screen.getByRole('group', { name: '动态等级' });
       await user.click(within(motion).getByRole('radio', { name: '关闭' }));
@@ -748,7 +752,9 @@ describe('experiment actions', () => {
       });
       act(() => document.dispatchEvent(new Event('visibilitychange')));
       runtime.tick();
-      expect(runtime.getSnapshot().frames.metrics.currentFps).not.toBe(capturedFps);
+      if (capturedFps !== undefined) {
+        expect(runtime.getSnapshot().frames.metrics.currentFps).not.toBe(capturedFps);
+      }
 
       await user.click(screen.getByRole('button', { name: '复制 JSON' }));
       await user.click(screen.getByRole('button', { name: '复制摘要' }));

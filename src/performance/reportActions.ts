@@ -89,14 +89,23 @@ export function sanitizePageIdentifier(input: string): string {
 }
 
 function formatSummary(snapshot: ReportSnapshot): string {
-  const { frames } = snapshot.performance;
+  const rows = snapshot.runs.map((run) => {
+    const { frames } = run.performance;
+    return [
+      run.glassMode,
+      metricText(frames.averageFps),
+      metricText(frames.p95FrameTime),
+      metricText(frames.estimatedDroppedFrames),
+      yesNo(run.completedInForeground),
+      yesNo(run.eligibleForComparison),
+    ].join(' | ');
+  });
   return [
     '朗世乐 UI 性能报告',
-    `Glass: ${snapshot.settings.glassMode}`,
-    `FPS: ${metricText(frames.averageFps)}`,
-    `P95 Frame: ${metricText(frames.p95FrameTime)}`,
-    `Estimated Dropped Frames: ${metricText(frames.estimatedDroppedFrames)}`,
-    `Foreground Complete: ${foregroundText(snapshot.benchmark.completedInForeground)}`,
+    `Report: ${snapshot.reportType}`,
+    `Status: ${snapshot.benchmark.status}`,
+    'Glass | FPS | P95 Frame | Estimated Dropped Frames | Foreground Complete | Eligible',
+    ...(rows.length === 0 ? ['No completed runs'] : rows),
   ].join('\n');
 }
 
@@ -104,10 +113,7 @@ function metricText(value: number | null): string {
   return value === null ? 'waiting' : String(value);
 }
 
-function foregroundText(value: boolean | null): string {
-  if (value === null) {
-    return 'waiting';
-  }
+function yesNo(value: boolean): string {
   return value ? 'yes' : 'no';
 }
 
